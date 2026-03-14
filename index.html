@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Projetos LM · Hélder Melo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="view-login" class="view">
+  <div class="login-marca">
+    <div class="login-marca-lm">Leroy Merlin Portugal</div>
+    <div class="login-marca-nome">Projetos <span>LM</span></div>
+    <div class="login-marca-sub">Gestão de Propostas · Hélder Melo</div>
+  </div>
+  <div class="login-form">
+    <input type="email"    id="login-email" class="login-input" placeholder="Email"
+           onkeydown="if(event.key==='Enter')window.doLogin()">
+    <input type="password" id="login-pass"  class="login-input" placeholder="Palavra-passe"
+           onkeydown="if(event.key==='Enter')window.doLogin()">
+    <button class="login-btn" onclick="window.doLogin()">Entrar</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ══ PAINEL ══ -->
+<div id="view-painel" class="view">
+  <header class="painel-header">
+    <div class="painel-marca">
+      <span class="painel-marca-nome">Projetos <em>LM</em></span>
+      <span class="painel-marca-sep">·</span>
+      <span class="painel-marca-sub">Hélder Melo</span>
+    </div>
+    <div class="painel-header-right">
+      <span class="sync-status" id="sync-status"></span>
+      <button class="btn-logout" onclick="window.doLogout()">Sair</button>
+    </div>
+  </header>
+
+  <div class="painel-body">
+    <div class="painel-top">
+      <h1 class="painel-titulo">Projetos</h1>
+      <button class="btn-novo" onclick="window.abrirModalNovo()">+ Novo Projeto</button>
+    </div>
+
+    <!-- Filtros e pesquisa -->
+    <div class="painel-toolbar">
+      <div class="search-wrap">
+        <input type="text" id="painel-pesquisa" class="search-input"
+               placeholder="Pesquisar nome, localidade…"
+               oninput="window.renderPainel()">
+      </div>
+      <div class="filtros">
+        <button class="filtro-btn active" onclick="window.setFiltro(this,'todos')">Todos</button>
+        <button class="filtro-btn" onclick="window.setFiltro(this,'proposta')">Em Análise</button>
+        <button class="filtro-btn" onclick="window.setFiltro(this,'aprovado')">Aprovado</button>
+        <button class="filtro-btn" onclick="window.setFiltro(this,'obra')">Em Obra</button>
+        <button class="filtro-btn" onclick="window.setFiltro(this,'concluido')">Concluído</button>
+        <button class="filtro-btn filtro-exp" onclick="window.setFiltro(this,'expirado')">Expirado</button>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="dashboard">
+      <div class="dash-card">
+        <div class="dash-num" id="stat-total">0</div>
+        <div class="dash-lbl">Projetos</div>
+      </div>
+      <div class="dash-card dash-destaque">
+        <div class="dash-num" id="stat-taxa">0%</div>
+        <div class="dash-lbl">Taxa de Aprovação</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-num dash-num-sm" id="stat-valor">—</div>
+        <div class="dash-lbl">Valor Médio</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-num" id="stat-tempo">—</div>
+        <div class="dash-lbl">Dias Médios p/ Aprovar</div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-num" id="stat-concluidos">0</div>
+        <div class="dash-lbl">Concluídos</div>
+      </div>
+      <div class="dash-card dash-alerta">
+        <div class="dash-num" id="stat-expira">0</div>
+        <div class="dash-lbl">A Expirar (7 dias)</div>
+      </div>
+    </div>
+
+    <div class="proj-grid" id="proj-grid"></div>
+  </div>
+</div>
+
+<!-- ══ MODAL ══ -->
+<div class="overlay-modal" id="modal-projeto">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-titulo" id="modal-proj-titulo">Novo Projeto</div>
+      <button class="modal-close" onclick="window.fecharModal()">×</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-bloco">
+        <div class="form-bloco-titulo">Cliente</div>
+        <div class="form-grid">
+          <div class="form-campo">
+            <label class="form-label">Nome / Referência</label>
+            <input type="text" id="f-nome" class="f-input" placeholder="Ex: João S. · Cozinha Aveiro">
+          </div>
+          <div class="form-campo">
+            <label class="form-label">Tipo de Projeto</label>
+            <select id="f-tipo" class="f-select" onchange="window.atualizarTipoProjeto()"></select>
+          </div>
+          <div class="form-campo" id="f-tipo-outro-wrap" style="display:none">
+            <label class="form-label">Especificar</label>
+            <input type="text" id="f-tipo-outro" class="f-input" placeholder="Descrição do projeto">
+          </div>
+          <div class="form-campo">
+            <label class="form-label">Contacto</label>
+            <input type="text" id="f-contacto" class="f-input" placeholder="Nº de telefone">
+          </div>
+          <div class="form-campo">
+            <label class="form-label">Localidade</label>
+            <input type="text" id="f-localidade" class="f-input" placeholder="Ex: Viseu">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-bloco">
+        <div class="form-bloco-titulo">Proposta</div>
+        <div class="form-grid">
+          <div class="form-campo">
+            <label class="form-label">Fase</label>
+            <select id="f-fase" class="f-select">
+              <option value="proposta">Em Análise</option>
+              <option value="aprovado">Aprovado</option>
+              <option value="encomenda">Materiais Encomendados</option>
+              <option value="entrega">Entrega da Mercadoria</option>
+              <option value="montagem">Em Montagem</option>
+              <option value="concluido">Concluído</option>
+            </select>
+          </div>
+          <div class="form-campo">
+            <label class="form-label">Validade da Proposta</label>
+            <div class="prazo-wrap">
+              <input type="date" id="f-prazo" class="f-input">
+              <button type="button" class="btn-reiniciar" onclick="window.reiniciarPrazoForm()">↺ Reiniciar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-bloco">
+        <div class="form-bloco-titulo">Datas da Obra</div>
+        <div class="form-note">Preenche à medida que a obra avança.</div>
+        <div class="form-grid">
+          <div class="form-campo">
+            <label class="form-label">Entrega de Materiais</label>
+            <input type="date" id="f-data-entrega-mat" class="f-input">
+          </div>
+          <div class="form-campo">
+            <label class="form-label">Início da Instalação</label>
+            <input type="date" id="f-data-instalacao" class="f-input">
+          </div>
+          <div class="form-campo">
+            <label class="form-label">Conclusão Prevista</label>
+            <input type="date" id="f-data-conclusao" class="f-input">
+          </div>
+          <div class="form-campo">
+            <label class="form-label">Previsão <span class="label-hint">(texto livre)</span></label>
+            <input type="text" id="f-entrega" class="f-input" placeholder="Ex: Semana de 21/04">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-bloco">
+        <div class="form-bloco-titulo">📸 Imagens</div>
+        <div class="upload-area" id="upload-area">
+          <input type="file" id="f-imagens" accept="image/*" multiple
+                 onchange="window.processarImagens(this.files)">
+          <div class="upload-icon">🖼️</div>
+          <div class="upload-txt">Clica ou arrasta imagens</div>
+          <div class="upload-sub">Até 5 imagens · Máx 4MB cada</div>
+        </div>
+        <div class="img-thumbs" id="img-thumbs-preview"></div>
+      </div>
+
+      <div class="form-bloco">
+        <div class="form-bloco-titulo">Orçamento</div>
+
+        <div class="form-subsec">Tampos</div>
+        <div id="sec-tampos"></div>
+        <button class="btn-add" onclick="window.addLinhaElem('tampos')">+ Tampo</button>
+
+        <div class="form-subsec" style="margin-top:14px">Eletrodomésticos</div>
+        <div id="sec-eletros"></div>
+        <button class="btn-add" onclick="window.addLinhaElem('eletros')">+ Eletrodoméstico</button>
+
+        <div class="form-subsec" style="margin-top:14px">Acessórios</div>
+        <div id="sec-acessorios"></div>
+        <button class="btn-add" onclick="window.addLinhaElem('acessorios')">+ Acessório</button>
+
+        <div class="form-subsec" style="margin-top:20px">Categorias Livres</div>
+        <div id="sec-orcamento-cats"></div>
+        <button class="btn-add btn-add-cat" onclick="window.addCatOrcamento()">+ Categoria</button>
+
+        <div class="form-subsec" style="margin-top:20px">Extras</div>
+        <div id="sec-extras-cats"></div>
+        <button class="btn-add btn-add-cat" onclick="window.addCatExtra()">+ Extra</button>
+
+        <div class="form-campo" style="max-width:180px;margin-top:16px">
+          <label class="form-label">Desconto (€)</label>
+          <input type="number" id="f-desconto" class="f-input" placeholder="0.00"
+                 oninput="window.atualizarTotalPreview()">
+        </div>
+        <div class="modal-total">
+          <span class="modal-total-lbl">Total previsto</span>
+          <span class="modal-total-val" id="modal-total-preview">0,00 €</span>
+        </div>
+      </div>
+
+      <div class="form-bloco">
+        <div class="form-bloco-titulo">Notas</div>
+        <textarea id="f-notas" class="f-textarea" placeholder="Observações, condições especiais…"></textarea>
+      </div>
+
+      <div class="form-bloco">
+        <div class="form-bloco-titulo">Timeline Personalizada</div>
+        <div id="sec-timeline-custom"></div>
+        <button class="btn-add" onclick="window.addLinhaTimeline()">+ Marco</button>
+      </div>
+
+      <div class="form-bloco">
+        <div class="form-bloco-titulo">Interacções</div>
+        <div class="int-form">
+          <select id="f-interacao-tipo" class="f-select" style="width:120px;flex-shrink:0">
+            <option value="nota">📝 Nota</option>
+            <option value="chamada">📞 Chamada</option>
+            <option value="email">✉️ Email</option>
+            <option value="visita">🏠 Visita</option>
+            <option value="whatsapp">💬 WhatsApp</option>
+          </select>
+          <input type="text" id="f-interacao-texto" class="f-input" placeholder="Resumo…" style="flex:1">
+          <button class="btn-int-add" onclick="window.addInteracao(
+            document.getElementById('f-interacao-tipo').value,
+            document.getElementById('f-interacao-texto').value
+          );document.getElementById('f-interacao-texto').value=''">Adicionar</button>
+        </div>
+        <div id="f-interacoes-lista"></div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" onclick="window.fecharModal()">Cancelar</button>
+      <button class="btn-guardar"  onclick="window.guardarProjeto()">Guardar Projeto</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PÁGINA DO CLIENTE ══ -->
+<div id="view-cliente" class="view">
+
+  <nav class="cli-nav" id="cli-nav">
+    <div class="cli-nav-marca">Projetos <em>LM</em></div>
+    <div class="cli-nav-links" id="cli-nav-links"></div>
+    <button class="btn-voltar" id="btn-voltar-painel"
+            onclick="window.setView('painel')" style="display:none">← Painel</button>
+  </nav>
+
+  <!-- Hero editorial -->
+  <section class="cli-hero" id="hero">
+    <div class="hero-inner" id="cli-hero-content"></div>
+  </section>
+
+  <!-- Orçamento -->
+  <section id="orcamento" class="cli-sec">
+    <div class="cli-sec-inner">
+      <div class="sec-header">
+        <span class="sec-num">01</span>
+        <div>
+          <div class="sec-eyebrow">Proposta Financeira</div>
+          <h2 class="sec-titulo">O seu Orçamento</h2>
+        </div>
+      </div>
+      <div id="sec-orcamento"></div>
+    </div>
+  </section>
+
+  <!-- Timeline -->
+  <section id="timeline" class="cli-sec cli-sec-dark">
+    <div class="cli-sec-inner">
+      <div class="sec-header">
+        <span class="sec-num sec-num-light">02</span>
+        <div>
+          <div class="sec-eyebrow sec-eyebrow-light">Acompanhamento</div>
+          <h2 class="sec-titulo sec-titulo-light">Progresso do Projeto</h2>
+        </div>
+      </div>
+      <div id="sec-timeline" class="tl-wrap"></div>
+    </div>
+  </section>
+
+  <!-- Notas -->
+  <div id="wrap-notas">
+    <section class="cli-sec">
+      <div class="cli-sec-inner">
+        <div class="sec-header">
+          <span class="sec-num">03</span>
+          <div>
+            <div class="sec-eyebrow">Detalhes</div>
+            <h2 class="sec-titulo">Notas do Projeto</h2>
+          </div>
+        </div>
+        <div id="sec-notas"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Galeria -->
+  <div id="wrap-galeria">
+    <section class="cli-sec cli-sec-soft">
+      <div class="cli-sec-inner">
+        <div class="sec-header">
+          <span class="sec-num">04</span>
+          <div>
+            <div class="sec-eyebrow">Visualização</div>
+            <h2 class="sec-titulo">Galeria do Projeto</h2>
+          </div>
+        </div>
+        <div id="sec-galeria" class="gal-grid"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Aprovação -->
+  <section id="aprovacao" class="cli-sec cli-sec-dark">
+    <div class="cli-sec-inner" id="sec-aprovacao"></div>
+  </section>
+
+  <!-- Contacto -->
+  <section id="contacto" class="cli-sec cli-sec-ink">
+    <div class="cli-sec-inner">
+      <div class="contacto-layout">
+        <div class="contacto-texto">
+          <h2 class="contacto-titulo">Estou<br><em>aqui para si.</em></h2>
+          <p class="contacto-sub">Tenha aprovado ou ainda esteja a pensar — estou disponível para qualquer dúvida, ajuste ou esclarecimento.</p>
+        </div>
+        <div class="contacto-card">
+          <div class="contacto-avatar">H</div>
+          <div class="contacto-nome">Hélder Melo</div>
+          <div class="contacto-cargo">Gestor de Projetos · Leroy Merlin</div>
+          <div class="contacto-linha">
+            <div class="contacto-dado-label">Telefone</div>
+            <div class="contacto-dado-val">917 880 364</div>
+            <div class="contacto-dado-hint">Disponível também por WhatsApp</div>
+          </div>
+          <div class="contacto-divider"></div>
+          <div class="contacto-linha">
+            <div class="contacto-dado-label">Email</div>
+            <div class="contacto-email-row">
+              <span id="cli-email-val">helder.melo<!-- -->@leroymerlin.pt</span>
+              <button class="btn-copiar-email" onclick="window.copiarEmail(this)">Copiar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer privacidade -->
+  <footer class="cli-footer">
+    <div class="footer-inner">
+      <span class="footer-lock">🔒</span>
+      <p id="privacidade-texto"></p>
+    </div>
+  </footer>
+
+</div>
+
+<!-- ══ EXPIRADA ══ -->
+<div id="view-expirada" class="view">
+  <div class="exp-wrap">
+    <div class="exp-icon">⌛</div>
+    <h1 class="exp-titulo">Proposta Expirada</h1>
+    <p class="exp-sub">O prazo de validade desta proposta terminou.<br>Contacte-nos para retomar o processo.</p>
+    <a href="tel:917880364" class="btn-hero-primary" style="margin-top:28px;display:inline-flex">📞 917 880 364</a>
+  </div>
+</div>
+
+<!-- ══ LIGHTBOX ══ -->
+<div class="lightbox" id="lightbox" onclick="window.fecharLightbox(event)">
+  <button class="lb-close lightbox-close" onclick="window.fecharLightbox(event)">×</button>
+  <button class="lb-nav lb-prev" onclick="event.stopPropagation();window.lightboxNav(-1)">‹</button>
+  <img id="lightbox-img" src="" alt="">
+  <button class="lb-nav lb-next" onclick="event.stopPropagation();window.lightboxNav(1)">›</button>
+  <div class="lb-counter" id="lightbox-counter"></div>
+</div>
+
+<!-- ══ TOAST ══ -->
+<div class="toast" id="toast-notif">
+  <div class="toast-ico">👁</div>
+  <div>
+    <div class="toast-titulo" id="toast-titulo"></div>
+    <div class="toast-sub"    id="toast-sub"></div>
+  </div>
+</div>
+
+<script type="module" src="main.js"></script>
+</body>
+</html>
