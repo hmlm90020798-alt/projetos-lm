@@ -272,10 +272,10 @@ export function renderPaginaCliente(p) {
 
   // ── Nav
   document.getElementById('cli-nav-links').innerHTML = `
-    <a href="#orcamento" class="nav-link">${tH.ctaOrcamento}</a>
-    <a href="#timeline"  class="nav-link">${t.timeline.titulo}</a>
-    <a href="#galeria"   class="nav-link">${t.galeria.titulo}</a>
-    <a href="#contacto"  class="nav-link">${tC.titulo.split('.')[0]}</a>
+    <a href="#wrap-galeria" class="nav-link">🖼 ${t.galeria.titulo}</a>
+    <a href="#timeline"     class="nav-link">${t.timeline.titulo}</a>
+    <a href="#orcamento"    class="nav-link">${tH.ctaOrcamento}</a>
+    <a href="#contacto"     class="nav-link">${tC.titulo.split('.')[0]}</a>
     <button class="nav-lang" onclick="window.setLang(window._LANG==='pt'?'en':'pt')">${lang==='pt'?'EN':'PT'}</button>
     <button class="nav-pdf" id="btn-pdf" onclick="window.exportarPDF()">${tH.ctaPdf}</button>`;
 
@@ -293,8 +293,8 @@ export function renderPaginaCliente(p) {
       ? `<div class="hero-expirada">${tH.expirada}</div>`
       : `<div id="countdown-wrap" class="countdown-wrap"></div>`}
     <div class="hero-cta">
-      <a href="#orcamento" class="btn-hero-primary">📋 ${tH.ctaOrcamento}</a>
-      <a href="#timeline"  class="btn-hero-ghost">📍 ${tH.ctaProgresso}</a>
+      <a href="#wrap-galeria" class="btn-hero-primary">🖼 Ver Projeto</a>
+      <a href="#timeline"     class="btn-hero-ghost">📍 ${tH.ctaProgresso}</a>
       ${p.fase==='proposta'&&!prazoPassou
         ? `<a href="#aprovacao" class="btn-hero-approve">✓ ${tH.ctaAprovar}</a>` : ''}
     </div>`;
