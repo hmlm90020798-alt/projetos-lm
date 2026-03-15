@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Projetos LM · Hélder Melo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -47,7 +47,6 @@
       <button class="btn-novo" onclick="window.abrirModalNovo()">+ Novo Projeto</button>
     </div>
 
-    <!-- Filtros e pesquisa -->
     <div class="painel-toolbar">
       <div class="search-wrap">
         <input type="text" id="painel-pesquisa" class="search-input"
@@ -64,7 +63,6 @@
       </div>
     </div>
 
-    <!-- Dashboard -->
     <div class="dashboard">
       <div class="dash-card">
         <div class="dash-num" id="stat-total">0</div>
@@ -80,7 +78,7 @@
       </div>
       <div class="dash-card">
         <div class="dash-num" id="stat-tempo">—</div>
-        <div class="dash-lbl">Dias Médios p/ Aprovar</div>
+        <div class="dash-lbl">Dias p/ Aprovar</div>
       </div>
       <div class="dash-card">
         <div class="dash-num" id="stat-concluidos">0</div>
@@ -88,7 +86,11 @@
       </div>
       <div class="dash-card dash-alerta">
         <div class="dash-num" id="stat-expira">0</div>
-        <div class="dash-lbl">A Expirar (7 dias)</div>
+        <div class="dash-lbl">A Expirar (7d)</div>
+      </div>
+      <div class="dash-card dash-ocorr">
+        <div class="dash-num" id="stat-ocorr">0</div>
+        <div class="dash-lbl">Ocorrências Abertas</div>
       </div>
     </div>
 
@@ -105,12 +107,13 @@
     </div>
     <div class="modal-body">
 
+      <!-- Cliente -->
       <div class="form-bloco">
         <div class="form-bloco-titulo">Cliente</div>
         <div class="form-grid">
           <div class="form-campo">
             <label class="form-label">Nome / Referência</label>
-            <input type="text" id="f-nome" class="f-input" placeholder="Ex: João S. · Cozinha Aveiro">
+            <input type="text" id="f-nome" class="f-input" placeholder="Ex: Ana Silva · Cozinha Régua">
           </div>
           <div class="form-campo">
             <label class="form-label">Tipo de Projeto</label>
@@ -126,11 +129,12 @@
           </div>
           <div class="form-campo">
             <label class="form-label">Localidade</label>
-            <input type="text" id="f-localidade" class="f-input" placeholder="Ex: Viseu">
+            <input type="text" id="f-localidade" class="f-input" placeholder="Ex: Peso da Régua">
           </div>
         </div>
       </div>
 
+      <!-- Proposta -->
       <div class="form-bloco">
         <div class="form-bloco-titulo">Proposta</div>
         <div class="form-grid">
@@ -138,6 +142,7 @@
             <label class="form-label">Fase</label>
             <select id="f-fase" class="f-select">
               <option value="proposta">Em Análise</option>
+              <option value="retificacao">Em Análise · Retificação</option>
               <option value="aprovado">Aprovado</option>
               <option value="encomenda">Materiais Encomendados</option>
               <option value="entrega">Entrega da Mercadoria</option>
@@ -155,6 +160,7 @@
         </div>
       </div>
 
+      <!-- Datas -->
       <div class="form-bloco">
         <div class="form-bloco-titulo">Datas da Obra</div>
         <div class="form-note">Preenche à medida que a obra avança.</div>
@@ -178,32 +184,81 @@
         </div>
       </div>
 
+      <!-- Imagens 3D -->
       <div class="form-bloco">
-        <div class="form-bloco-titulo">📸 Imagens</div>
+        <div class="form-bloco-titulo">📸 Imagens 3D / Renders</div>
         <div class="upload-area" id="upload-area">
           <input type="file" id="f-imagens" accept="image/*" multiple
                  onchange="window.processarImagens(this.files)">
           <div class="upload-icon">🖼️</div>
-          <div class="upload-txt">Clica ou arrasta imagens</div>
+          <div class="upload-txt">Clica ou arrasta as imagens do projeto</div>
           <div class="upload-sub">Até 5 imagens · Máx 4MB cada</div>
         </div>
         <div class="img-thumbs" id="img-thumbs-preview"></div>
       </div>
 
+      <!-- Elementos do Projeto (com URL) -->
+      <div class="form-bloco">
+        <div class="form-bloco-titulo">Elementos do Projeto</div>
+        <div class="form-note">Para cada artigo, indica o nome e o link do produto (abre num novo separador para o cliente).</div>
+
+        <div class="form-subsec">Móveis</div>
+        <div id="sec-elem-moveis"></div>
+        <button class="btn-add" onclick="window.addLinhaElem('moveis')">+ Artigo</button>
+
+        <div class="form-subsec" style="margin-top:14px">Tampos</div>
+        <div id="sec-elem-tampos"></div>
+        <button class="btn-add" onclick="window.addLinhaElem('tampos')">+ Artigo</button>
+
+        <div class="form-subsec" style="margin-top:14px">Eletrodomésticos</div>
+        <div id="sec-elem-eletros"></div>
+        <button class="btn-add" onclick="window.addLinhaElem('eletros')">+ Artigo</button>
+
+        <div class="form-subsec" style="margin-top:14px">Acessórios</div>
+        <div id="sec-elem-acessorios"></div>
+        <button class="btn-add" onclick="window.addLinhaElem('acessorios')">+ Artigo</button>
+
+        <div class="form-subsec" style="margin-top:14px">Pavimentos</div>
+        <div id="sec-elem-pavimentos"></div>
+        <button class="btn-add" onclick="window.addLinhaElem('pavimentos')">+ Artigo</button>
+
+        <div class="form-subsec" style="margin-top:14px">Revestimentos</div>
+        <div id="sec-elem-revestimentos"></div>
+        <button class="btn-add" onclick="window.addLinhaElem('revestimentos')">+ Artigo</button>
+
+        <div class="form-subsec" style="margin-top:14px">Sanitários</div>
+        <div id="sec-elem-sanitarios"></div>
+        <button class="btn-add" onclick="window.addLinhaElem('sanitarios')">+ Artigo</button>
+
+        <div class="form-subsec" style="margin-top:14px">Iluminação</div>
+        <div id="sec-elem-iluminacao"></div>
+        <button class="btn-add" onclick="window.addLinhaElem('iluminacao')">+ Artigo</button>
+
+        <div class="form-subsec" style="margin-top:14px">Aquecimento</div>
+        <div id="sec-elem-aquecimento"></div>
+        <button class="btn-add" onclick="window.addLinhaElem('aquecimento')">+ Artigo</button>
+
+        <div class="form-subsec" style="margin-top:20px">Categorias Extras</div>
+        <div id="sec-elem-extras"></div>
+        <button class="btn-add btn-add-cat" onclick="window.addCatElemExtra()">+ Categoria</button>
+      </div>
+
+      <!-- Orçamento -->
       <div class="form-bloco">
         <div class="form-bloco-titulo">Orçamento</div>
+        <div class="form-note">Valores por categoria — apresentados graficamente ao cliente.</div>
 
         <div class="form-subsec">Tampos</div>
         <div id="sec-tampos"></div>
-        <button class="btn-add" onclick="window.addLinhaElem('tampos')">+ Tampo</button>
+        <button class="btn-add" onclick="window.addLinhaOrc('tampos')">+ Item</button>
 
         <div class="form-subsec" style="margin-top:14px">Eletrodomésticos</div>
         <div id="sec-eletros"></div>
-        <button class="btn-add" onclick="window.addLinhaElem('eletros')">+ Eletrodoméstico</button>
+        <button class="btn-add" onclick="window.addLinhaOrc('eletros')">+ Item</button>
 
         <div class="form-subsec" style="margin-top:14px">Acessórios</div>
         <div id="sec-acessorios"></div>
-        <button class="btn-add" onclick="window.addLinhaElem('acessorios')">+ Acessório</button>
+        <button class="btn-add" onclick="window.addLinhaOrc('acessorios')">+ Item</button>
 
         <div class="form-subsec" style="margin-top:20px">Categorias Livres</div>
         <div id="sec-orcamento-cats"></div>
@@ -224,21 +279,26 @@
         </div>
       </div>
 
+      <!-- Notas -->
       <div class="form-bloco">
-        <div class="form-bloco-titulo">Notas</div>
-        <textarea id="f-notas" class="f-textarea" placeholder="Observações, condições especiais…"></textarea>
+        <div class="form-bloco-titulo">Notas Importantes</div>
+        <textarea id="f-notas" class="f-textarea"
+                  placeholder="Condições especiais, observações técnicas, informações relevantes para o cliente…"></textarea>
       </div>
 
+      <!-- Timeline personalizada -->
       <div class="form-bloco">
         <div class="form-bloco-titulo">Timeline Personalizada</div>
+        <div class="form-note">Marcos adicionais visíveis na evolução do projeto.</div>
         <div id="sec-timeline-custom"></div>
         <button class="btn-add" onclick="window.addLinhaTimeline()">+ Marco</button>
       </div>
 
+      <!-- Interacções -->
       <div class="form-bloco">
-        <div class="form-bloco-titulo">Interacções</div>
+        <div class="form-bloco-titulo">Interacções com o Cliente</div>
         <div class="int-form">
-          <select id="f-interacao-tipo" class="f-select" style="width:120px;flex-shrink:0">
+          <select id="f-interacao-tipo" class="f-select" style="width:130px;flex-shrink:0">
             <option value="nota">📝 Nota</option>
             <option value="chamada">📞 Chamada</option>
             <option value="email">✉️ Email</option>
@@ -252,6 +312,33 @@
           );document.getElementById('f-interacao-texto').value=''">Adicionar</button>
         </div>
         <div id="f-interacoes-lista"></div>
+      </div>
+
+      <!-- Ocorrências -->
+      <div class="form-bloco">
+        <div class="form-bloco-titulo">⚠️ Ocorrências</div>
+        <div class="form-note">Regista problemas que surgem durante o processo para acompanhamento e resolução.</div>
+        <div class="ocorr-form">
+          <select id="f-ocorr-tipo" class="f-select" style="width:180px;flex-shrink:0">
+            <option value="atraso">Atraso na entrega</option>
+            <option value="defeito">Defeito de material</option>
+            <option value="instalacao">Problema na instalação</option>
+            <option value="falta">Material em falta</option>
+            <option value="outro">Outro</option>
+          </select>
+          <select id="f-ocorr-estado" class="f-select" style="width:150px;flex-shrink:0">
+            <option value="detectada">Detectada</option>
+            <option value="resolucao">Em resolução</option>
+            <option value="resolvida">Resolvida</option>
+          </select>
+          <input type="text" id="f-ocorr-desc" class="f-input" placeholder="Descrição da ocorrência…" style="flex:1">
+          <button class="btn-int-add btn-ocorr-add" onclick="window.addOcorrencia(
+            document.getElementById('f-ocorr-tipo').value,
+            document.getElementById('f-ocorr-desc').value,
+            document.getElementById('f-ocorr-estado').value
+          );document.getElementById('f-ocorr-desc').value=''">Registar</button>
+        </div>
+        <div id="f-ocorrencias-lista"></div>
       </div>
 
     </div>
@@ -272,12 +359,12 @@
             onclick="window.setView('painel')" style="display:none">← Painel</button>
   </nav>
 
-  <!-- Hero editorial -->
+  <!-- Hero -->
   <section class="cli-hero" id="hero">
     <div class="hero-inner" id="cli-hero-content"></div>
   </section>
 
-  <!-- Galeria — 01: primeiro impacto visual -->
+  <!-- 01 · Projeto 3D -->
   <div id="wrap-galeria">
     <section class="cli-sec cli-sec-soft">
       <div class="cli-sec-inner">
@@ -288,34 +375,50 @@
             <h2 class="sec-titulo">O seu Projeto</h2>
           </div>
         </div>
-        <div id="sec-galeria" class="gal-grid"></div>
+        <div id="sec-galeria"></div>
       </div>
     </section>
   </div>
 
-  <!-- Timeline — 02 -->
-  <section id="timeline" class="cli-sec cli-sec-dark">
+  <!-- 02 · Elementos do Projeto -->
+  <div id="wrap-elementos">
+    <section class="cli-sec">
+      <div class="cli-sec-inner">
+        <div class="sec-header">
+          <span class="sec-num">02</span>
+          <div>
+            <div class="sec-eyebrow">Especificação Técnica</div>
+            <h2 class="sec-titulo">Elementos do Projeto</h2>
+          </div>
+        </div>
+        <div id="sec-elementos"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- 03 · Orçamento -->
+  <section id="orcamento" class="cli-sec cli-sec-dark">
     <div class="cli-sec-inner">
       <div class="sec-header">
-        <span class="sec-num sec-num-light">02</span>
+        <span class="sec-num sec-num-light">03</span>
         <div>
-          <div class="sec-eyebrow sec-eyebrow-light">Acompanhamento</div>
-          <h2 class="sec-titulo sec-titulo-light">Progresso do Projeto</h2>
+          <div class="sec-eyebrow sec-eyebrow-light">Proposta Financeira</div>
+          <h2 class="sec-titulo sec-titulo-light">O seu Orçamento</h2>
         </div>
       </div>
-      <div id="sec-timeline" class="tl-wrap"></div>
+      <div id="sec-orcamento"></div>
     </div>
   </section>
 
-  <!-- Notas — 03 -->
+  <!-- 04 · Notas -->
   <div id="wrap-notas">
     <section class="cli-sec">
       <div class="cli-sec-inner">
         <div class="sec-header">
-          <span class="sec-num">03</span>
+          <span class="sec-num">04</span>
           <div>
-            <div class="sec-eyebrow">Detalhes</div>
-            <h2 class="sec-titulo">Notas do Projeto</h2>
+            <div class="sec-eyebrow">Informação Relevante</div>
+            <h2 class="sec-titulo">Notas Importantes</h2>
           </div>
         </div>
         <div id="sec-notas"></div>
@@ -323,17 +426,17 @@
     </section>
   </div>
 
-  <!-- Orçamento — 04: números depois do entusiasmo -->
-  <section id="orcamento" class="cli-sec">
+  <!-- 05 · Acompanhamento -->
+  <section id="timeline" class="cli-sec cli-sec-dark">
     <div class="cli-sec-inner">
       <div class="sec-header">
-        <span class="sec-num">04</span>
+        <span class="sec-num sec-num-light">05</span>
         <div>
-          <div class="sec-eyebrow">Proposta Financeira</div>
-          <h2 class="sec-titulo">O seu Orçamento</h2>
+          <div class="sec-eyebrow sec-eyebrow-light">Acompanhamento</div>
+          <h2 class="sec-titulo sec-titulo-light">Evolução do Projeto</h2>
         </div>
       </div>
-      <div id="sec-orcamento"></div>
+      <div id="sec-timeline" class="tl-wrap"></div>
     </div>
   </section>
 

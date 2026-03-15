@@ -16,56 +16,59 @@ import { setView, mostrarToast } from './ui.js';
 import {
   renderPainel, abrirModalNovo, fecharModal, guardarProjeto,
   editarProjeto, apagarProjeto, verCliente, partilharCliente,
-  setFiltro, addLinhaElem, addCatOrcamento, addCatExtra,
-  addLinhaOrcamento, addLinhaTimeline, processarImagens,
-  removerImagem, renderThumbs, atualizarTotalPreview,
-  reiniciarPrazoForm, atualizarTipoProjeto, iniciarPollingAprovacoes,
-  addInteracao, copiarEmail, TIPOS_PROJETO,
+  setFiltro, addLinhaElem, addCatElemExtra, addLinhaElemExtra,
+  addLinhaOrc, addCatOrcamento, addCatExtra, addLinhaOrcamento,
+  addLinhaTimeline, processarImagens, removerImagem, renderThumbs,
+  atualizarTotalPreview, reiniciarPrazoForm, atualizarTipoProjeto,
+  iniciarPollingAprovacoes, addInteracao, addOcorrencia,
+  atualizarEstadoOcorrencia, copiarEmail, TIPOS_PROJETO,
 } from './painel.js';
 import {
   renderPaginaCliente, renderEstadoAprovacao, aprovarProposta,
-  abrirLightbox, fecharLightbox, lightboxNav, setLang, exportarPDF,
+  abrirLightbox, fecharLightbox, lightboxNav, setLang,
 } from './cliente.js';
 
-// Expor módulo cliente ao painel
 window._clienteModule = { renderPaginaCliente };
 
-// ── Exposição global (necessário com type="module") ──
-window.doLogin              = () => loginHandler();
-window.doLogout             = async () => { await doLogout(); setView('login'); };
-window.setFiltro            = setFiltro;
-window.abrirModalNovo       = abrirModalNovo;
-window.fecharModal          = fecharModal;
-window.guardarProjeto       = guardarProjeto;
-window.editarProjeto        = editarProjeto;
-window.apagarProjeto        = apagarProjeto;
-window.verCliente           = verCliente;
-window.partilharCliente     = partilharCliente;
-window.setView              = setView;
-window.renderPainel         = renderPainel;
-window.addLinhaElem         = addLinhaElem;
-window.addCatOrcamento      = addCatOrcamento;
-window.addCatExtra          = addCatExtra;
-window.addLinhaOrcamento    = addLinhaOrcamento;
-window.addLinhaTimeline     = addLinhaTimeline;
-window.processarImagens     = processarImagens;
-window.removerImagem        = removerImagem;
-window.renderThumbs         = renderThumbs;
-window.atualizarTotalPreview= atualizarTotalPreview;
-window.aprovarProposta      = aprovarProposta;
-window.atualizarTipoProjeto = atualizarTipoProjeto;
-window.reiniciarPrazoForm   = reiniciarPrazoForm;
-window.setLang              = setLang;
-window.abrirLightbox        = abrirLightbox;
-window.fecharLightbox       = fecharLightbox;
-window.lightboxNav          = lightboxNav;
-window.addInteracao         = addInteracao;
-window.copiarEmail          = copiarEmail;
-window.mostrarToast         = mostrarToast;
-window.exportarPDF          = exportarPDF;
+// ── Exposição global ──────────────────────────────
+window.doLogin                  = () => loginHandler();
+window.doLogout                 = async () => { await doLogout(); setView('login'); };
+window.setFiltro                = setFiltro;
+window.abrirModalNovo           = abrirModalNovo;
+window.fecharModal              = fecharModal;
+window.guardarProjeto           = guardarProjeto;
+window.editarProjeto            = editarProjeto;
+window.apagarProjeto            = apagarProjeto;
+window.verCliente               = verCliente;
+window.partilharCliente         = partilharCliente;
+window.setView                  = setView;
+window.renderPainel             = renderPainel;
+window.addLinhaElem             = addLinhaElem;
+window.addCatElemExtra          = addCatElemExtra;
+window.addLinhaElemExtra        = addLinhaElemExtra;
+window.addLinhaOrc              = addLinhaOrc;
+window.addCatOrcamento          = addCatOrcamento;
+window.addCatExtra              = addCatExtra;
+window.addLinhaOrcamento        = addLinhaOrcamento;
+window.addLinhaTimeline         = addLinhaTimeline;
+window.processarImagens         = processarImagens;
+window.removerImagem            = removerImagem;
+window.renderThumbs             = renderThumbs;
+window.atualizarTotalPreview    = atualizarTotalPreview;
+window.aprovarProposta          = aprovarProposta;
+window.atualizarTipoProjeto     = atualizarTipoProjeto;
+window.reiniciarPrazoForm       = reiniciarPrazoForm;
+window.setLang                  = setLang;
+window.abrirLightbox            = abrirLightbox;
+window.fecharLightbox           = fecharLightbox;
+window.lightboxNav              = lightboxNav;
+window.addInteracao             = addInteracao;
+window.addOcorrencia            = addOcorrencia;
+window.atualizarEstadoOcorrencia= atualizarEstadoOcorrencia;
+window.copiarEmail              = copiarEmail;
+window.mostrarToast             = mostrarToast;
 
 // ── Login ─────────────────────────────────────────
-
 async function loginHandler() {
   const email = document.getElementById('login-email')?.value?.trim();
   const pass  = document.getElementById('login-pass')?.value;
@@ -82,8 +85,7 @@ async function loginHandler() {
   }
 }
 
-// ── checkUrlParam ────────────────────────────────
-
+// ── checkUrlParam ─────────────────────────────────
 async function checkUrlParam() {
   const id = new URLSearchParams(window.location.search).get('p');
   if (!id) return false;
@@ -107,8 +109,7 @@ async function checkUrlParam() {
   return true;
 }
 
-// ── Popular select de tipos no modal ─────────────
-
+// ── Popular select de tipos ───────────────────────
 function popularTiposSelect() {
   const sel = document.getElementById('f-tipo');
   if (!sel) return;
@@ -117,10 +118,8 @@ function popularTiposSelect() {
   ).join('');
 }
 
-// ── INIT ─────────────────────────────────────────
-
+// ── INIT ──────────────────────────────────────────
 (async function init() {
-  // Loading overlay
   const ov = document.createElement('div');
   ov.id = 'loading-overlay';
   ov.style.cssText = 'position:fixed;inset:0;background:#0F1610;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:99999;';
@@ -132,7 +131,6 @@ function popularTiposSelect() {
 
   popularTiposSelect();
 
-  // 1. Modo standalone
   if (typeof MODO_STANDALONE !== 'undefined' && MODO_STANDALONE) {
     setState({ modoStandalone: true });
     await carregar();
@@ -149,11 +147,9 @@ function popularTiposSelect() {
     return;
   }
 
-  // 2. Modo cliente via ?p=ID
   const isCliente = await checkUrlParam();
   if (isCliente) { ov.remove(); return; }
 
-  // 3. Aguardar Auth
   window._loginFallbackTimer = setTimeout(() => {
     const o = document.getElementById('loading-overlay');
     if (o) { o.remove(); setView('login'); }
