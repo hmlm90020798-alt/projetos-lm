@@ -334,11 +334,12 @@ export async function renderEstadoAprovacao(projetoId, aprovacao) {
   const sec = document.getElementById('sec-aprovacao');
   if (!sec) return;
 
-  let aprovado = aprovacao?.data;
-  if (!aprovado) {
-    const local = getState('projetos').find(x => x.id === projetoId);
-    aprovado = local?.fase && faseOrdem(local.fase) >= faseOrdem('aprovado');
-  }
+  // Aprovado se: tem aprovacao.data OU fase >= aprovado
+  const local = getState('projetos').find(x => x.id === projetoId);
+  let aprovado = !!(aprovacao?.data)
+    || (local?.fase && faseOrdem(local.fase) >= faseOrdem('aprovado'));
+
+  // Verificar no Firebase se necessário
   if (!aprovado && projetoId) {
     try {
       const snap = await getDoc(doc(_db, 'projetos', projetoId));
@@ -513,9 +514,14 @@ export function renderPaginaCliente(p) {
     ? `<div class="hero-estado ${estadoAtual.cls}">${estadoAtual.icon} ${estadoAtual.label}</div>` : '';
 
   // Datas no hero após aprovação
-  const validadeHtml = jaAprovado && p.aprovacao?.data
-    ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${tH.aprovadoEm} ${p.aprovacao.data}</div>
-       ${p.dataInstalacao ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${lang==='en'?'Installation':'Instalação'}: ${new Date(p.dataInstalacao+'T12:00:00').toLocaleDateString(lang==='en'?'en-GB':'pt-PT')}</div>` : ''}`
+  const dataAprovacao = p.aprovacao?.data || null;
+  const dataInstalacaoFmt = p.dataInstalacao
+    ? new Date(p.dataInstalacao + 'T12:00:00').toLocaleDateString(lang === 'en' ? 'en-GB' : 'pt-PT')
+    : null;
+
+  const validadeHtml = jaAprovado
+    ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${tH.aprovadoEm} ${dataAprovacao || (p.prazo ? new Date(p.prazo+'T12:00:00').toLocaleDateString('pt-PT') : '—')}</div>
+       ${dataInstalacaoFmt ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${lang==='en'?'Installation':'Instalação'}: ${dataInstalacaoFmt}</div>` : ''}`
     : p.prazo
       ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${tH.validadeAte} ${new Date(p.prazo+'T12:00:00').toLocaleDateString('pt-PT')}</div>`
       : '';
