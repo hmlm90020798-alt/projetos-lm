@@ -519,22 +519,27 @@ export function renderPaginaCliente(p) {
       ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${tH.validadeAte} ${new Date(p.prazo+'T12:00:00').toLocaleDateString('pt-PT')}</div>`
       : '';
 
+  // Extrair só o nome do tipo (sem emoji) para o título 3D
+  const tipoNome = tipoLabel.replace(/^\S+\s+/, ''); // Remove emoji
+
   document.getElementById('cli-hero-content').innerHTML = `
-    <div class="hero-eyebrow">${tH.eyebrow}</div>
-    ${estadoHtml}
-    <h1 class="hero-titulo">${tipoLabel}</h1>
-    <div class="hero-para">${tH.para} <em>${nome}</em></div>
-    <div class="hero-meta">
-      ${p.localidade ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${p.localidade}</div>` : ''}
-      ${validadeHtml}
-    </div>
-    ${prazoPassou
-      ? `<div class="hero-expirada">${tH.expirada}</div>`
-      : jaAprovado ? '' : `<div id="countdown-wrap" class="countdown-wrap"></div>`}
-    <div class="hero-cta">
-      <a href="#timeline" class="btn-hero-primary">📍 ${tH.ctaProgresso}</a>
-      ${faseOrdem(p.fase||'proposta') < faseOrdem('aprovado') && !prazoPassou
-        ? `<a href="#aprovacao" class="btn-hero-approve">✓ ${tH.ctaAprovar}</a>` : ''}
+    <div class="hero-3d-block">
+      <div class="hero-eyebrow">${tH.eyebrow}</div>
+      ${estadoHtml}
+      <h1 class="hero-titulo">${tipoNome}</h1>
+      <div class="hero-para">${tH.para} <em>${nome}</em></div>
+      <div class="hero-meta">
+        ${p.localidade ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${p.localidade}</div>` : ''}
+        ${validadeHtml}
+      </div>
+      ${prazoPassou
+        ? `<div class="hero-expirada">${tH.expirada}</div>`
+        : jaAprovado ? '' : `<div id="countdown-wrap" class="countdown-wrap"></div>`}
+      <div class="hero-cta">
+        <a href="#timeline" class="btn-hero-primary">📍 ${tH.ctaProgresso}</a>
+        ${faseOrdem(p.fase||'proposta') < faseOrdem('aprovado') && !prazoPassou
+          ? `<a href="#aprovacao" class="btn-hero-approve">✓ ${tH.ctaAprovar}</a>` : ''}
+      </div>
     </div>`;
 
   if (p.prazo && !prazoPassou && !jaAprovado) iniciarCountdown(p.prazo);
