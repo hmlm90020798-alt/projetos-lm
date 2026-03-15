@@ -135,18 +135,35 @@ function renderOrcamento(p) {
   // Cores — escala de verde do mais escuro ao mais claro
   const cores = ['#27500A','#3B6D11','#639922','#97C459','#C0DD97','#D8EABC'];
 
-  // Construir secções com valor único por categoria
+  // Construir secções — compatível com estrutura nova (orc_*) e antiga (arrays)
   const secoes = [];
+
   const addSec = (label, val) => {
+    if (!label) return;
     const v = parseFloat(val) || 0;
     if (v > 0) secoes.push({ label, sub: v });
   };
 
-  addSec(lang === 'en' ? 'Fitted Furniture' : 'Móveis',           p.orc_moveis);
-  addSec(lang === 'en' ? 'Worktops'         : 'Tampos',           p.orc_tampos);
-  addSec(lang === 'en' ? 'Appliances'       : 'Eletrodomésticos', p.orc_eletros);
-  addSec(lang === 'en' ? 'Accessories'      : 'Acessórios',       p.orc_acessorios);
-  (p.orcamento||[]).forEach(c => addSec(c.categoria, c.valor));
+  // Estrutura nova: valor único por campo
+  const somaArray = arr => (arr||[]).reduce((a, i) => a + (parseFloat(i.preco)||0), 0);
+
+  const vMoveis    = parseFloat(p.orc_moveis)    || somaArray(p.moveis);
+  const vTampos    = parseFloat(p.orc_tampos)    || somaArray(p.tampos);
+  const vEletros   = parseFloat(p.orc_eletros)   || somaArray(p.eletros);
+  const vAcessorios= parseFloat(p.orc_acessorios)|| somaArray(p.acessorios);
+
+  if (vMoveis)     addSec(lang === 'en' ? 'Fitted Furniture' : 'Móveis',           vMoveis);
+  if (vTampos)     addSec(lang === 'en' ? 'Worktops'         : 'Tampos',           vTampos);
+  if (vEletros)    addSec(lang === 'en' ? 'Appliances'       : 'Eletrodomésticos', vEletros);
+  if (vAcessorios) addSec(lang === 'en' ? 'Accessories'      : 'Acessórios',       vAcessorios);
+
+  // Categorias livres — estrutura nova (valor) e antiga (itens com preço)
+  (p.orcamento||[]).forEach(c => {
+    const v = parseFloat(c.valor) || somaArray(c.itens);
+    addSec(c.categoria, v);
+  });
+  // Extras da estrutura antiga
+  (p.extras||[]).forEach(c => addSec(c.categoria, somaArray(c.itens)));
 
   if (!secoes.length) return `<p class="sec-vazio">${tO.semItens}</p>`;
 
@@ -380,6 +397,49 @@ export async function aprovarProposta() {
   }
 }
 
+// ── Notas — cartões fixos com datas dinâmicas ────────
+
+function renderNotasCartoes(p) {
+  const tN  = T[getLang()].notas.cartoes;
+  const lang = getLang();
+
+  // Data de validade formatada
+  const prazoFmt = p.prazo
+    ? new Date(p.prazo + 'T12:00:00').toLocaleDateString(lang === 'en' ? 'en-GB' : 'pt-PT')
+    : null;
+
+  // Data de entrega formatada
+  const entregaFmt = p.entrega || (p.dataEntregaMat
+    ? new Date(p.dataEntregaMat + 'T12:00:00').toLocaleDateString(lang === 'en' ? 'en-GB' : 'pt-PT')
+    : null);
+
+  const cartoes = [
+    { ...tN.base },
+    prazoFmt   ? { ...tN.validade,  texto: tN.validade.prefixo  + prazoFmt   + '.' } : null,
+    entregaFmt ? { ...tN.entrega,   texto: tN.entrega.prefixo   + entregaFmt + '.' } : null,
+    { ...tN.flex },
+    { ...tN.transp },
+  ].filter(Boolean);
+
+  // Notas manuais adicionais
+  const notasExtra = p.notas
+    ? `<div class="notas-extra">${p.notas.replace(/\n/g, '<br>')}</div>`
+    : '';
+
+  return `
+    <div class="notas-grid">
+      ${cartoes.map(c => `
+        <div class="nota-card">
+          <div class="nota-card-titulo">
+            <span class="nota-card-icon">${c.icon}</span>
+            ${c.titulo}
+          </div>
+          <p class="nota-card-texto">${c.texto}</p>
+        </div>`).join('')}
+    </div>
+    ${notasExtra}`;
+}
+
 // ── Render principal ──────────────────────────────
 
 export function renderPaginaCliente(p) {
@@ -440,6 +500,25 @@ export function renderPaginaCliente(p) {
 
   if (p.prazo && !prazoPassou && !jaAprovado) iniciarCountdown(p.prazo);
 
+  // ── Títulos das secções (todos renderizados via JS para suportar tradução)
+  const secTitulos = {
+    'sec-header-galeria':   { num: '01', eyebrow: t.galeria.eyebrow,   titulo: t.galeria.titulo,   light: false },
+    'sec-header-elementos': { num: '02', eyebrow: t.elementos.eyebrow, titulo: t.elementos.titulo, light: false },
+    'sec-header-orcamento': { num: '03', eyebrow: t.orcamento.eyebrow, titulo: t.orcamento.titulo, light: true  },
+    'sec-header-notas':     { num: '04', eyebrow: t.notas.eyebrow,     titulo: t.notas.titulo,     light: false },
+    'sec-header-timeline':  { num: '05', eyebrow: t.timeline.eyebrow,  titulo: t.timeline.titulo,  light: true  },
+  };
+  Object.entries(secTitulos).forEach(([id, s]) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = `
+      <span class="sec-num${s.light?' sec-num-light':''}">${s.num}</span>
+      <div>
+        <div class="sec-eyebrow${s.light?' sec-eyebrow-light':''}">${s.eyebrow}</div>
+        <h2 class="sec-titulo${s.light?' sec-titulo-light':''}">${s.titulo}</h2>
+      </div>`;
+  });
+
   // ── 01 Galeria
   const wrapGal = document.getElementById('wrap-galeria');
   if (wrapGal) {
@@ -456,14 +535,11 @@ export function renderPaginaCliente(p) {
   // ── 03 Orçamento
   document.getElementById('sec-orcamento').innerHTML = renderOrcamento(p);
 
-  // ── 04 Notas
+  // ── 04 Notas — cartões fixos com datas dinâmicas
   const wrapNotas = document.getElementById('wrap-notas');
-  if (p.notas) {
-    document.getElementById('sec-notas').innerHTML =
-      `<div class="notas-texto">${p.notas.replace(/\n/g, '<br>')}</div>`;
-    if (wrapNotas) wrapNotas.style.display = '';
-  } else {
-    if (wrapNotas) wrapNotas.style.display = 'none';
+  if (wrapNotas) {
+    wrapNotas.style.display = '';
+    document.getElementById('sec-notas').innerHTML = renderNotasCartoes(p);
   }
 
   // ── 05 Timeline
@@ -472,10 +548,16 @@ export function renderPaginaCliente(p) {
   // ── Aprovação
   renderEstadoAprovacao(getState('projAtualId'), p.aprovacao);
 
+  // ── Email — injectado via JS para evitar ofuscação do Cloudflare
+  const emailParts = ['helder.melo', '@', 'leroymerlin.pt'];
+  const emailAddr  = emailParts.join('');
+  const emailEl    = document.getElementById('cli-email-val');
+  if (emailEl) emailEl.textContent = emailAddr;
+
   // ── Privacidade
   const secPriv = document.getElementById('privacidade-texto');
   if (secPriv)
-    secPriv.innerHTML = `${tP.texto} <a href="mailto:helder.melo@leroymerlin.pt">${tP.contacto} helder.melo@leroymerlin.pt</a>`;
+    secPriv.innerHTML = `${tP.texto} <a href="mailto:${emailAddr}">${tP.contacto} ${emailAddr}</a>`;
 
   // ── Animar barras de orçamento
   requestAnimationFrame(() => {

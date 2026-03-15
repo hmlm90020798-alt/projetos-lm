@@ -58,8 +58,15 @@ export const T = {
       doTotal:  'do total',
     },
     notas: {
-      eyebrow: 'Informação Relevante',
+      eyebrow: 'Transparência',
       titulo:  'Notas Importantes',
+      cartoes: {
+        base:        { icon: '✅', titulo: 'Base do Projeto',      texto: 'Este projeto foi desenvolvido com base nas preferências e necessidades apresentadas, procurando aliar estética, funcionalidade e aproveitamento do espaço.' },
+        validade:    { icon: '📅', titulo: 'Validade da Proposta', prefixo: 'Este orçamento é válido até ' },
+        entrega:     { icon: '🚚', titulo: 'Previsão de Entrega',  prefixo: 'A entrega da mercadoria está prevista para ' },
+        flex:        { icon: '🔄', titulo: 'Flexibilidade',        texto: 'Todos os elementos do projeto, incluindo materiais, cores e disposições, podem ser ajustados mediante nova análise e revisão do orçamento.' },
+        transp:      { icon: '💛', titulo: 'Transparência Total',  texto: 'Este documento pretende ser uma base clara para análise e tomada de decisão, promovendo uma comunicação transparente e eficaz.' },
+      },
     },
     timeline: {
       eyebrow: 'Acompanhamento',
@@ -179,8 +186,15 @@ export const T = {
       doTotal:  'of total',
     },
     notas: {
-      eyebrow: 'Relevant Information',
+      eyebrow: 'Transparency',
       titulo:  'Important Notes',
+      cartoes: {
+        base:        { icon: '✅', titulo: 'Project Basis',        texto: 'This project was developed based on the preferences and requirements presented, seeking to combine aesthetics, functionality and space efficiency.' },
+        validade:    { icon: '📅', titulo: 'Proposal Validity',    prefixo: 'This quote is valid until ' },
+        entrega:     { icon: '🚚', titulo: 'Estimated Delivery',   prefixo: 'Materials delivery is estimated for ' },
+        flex:        { icon: '🔄', titulo: 'Flexibility',          texto: 'All project elements, including materials, colours and layouts, can be adjusted subject to further review and revised quotation.' },
+        transp:      { icon: '💛', titulo: 'Full Transparency',    texto: 'This document is intended as a clear basis for review and decision-making, promoting transparent and effective communication.' },
+      },
     },
     timeline: {
       eyebrow: 'Project Tracking',
