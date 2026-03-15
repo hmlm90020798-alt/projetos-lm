@@ -203,8 +203,8 @@ function renderOrcamento(p) {
     { key: 'iva6',         pt: 'IVA taxa reduzida 6% (mão de obra — renovação)', en: 'Reduced VAT 6% (labour — renovation)' },
   ];
   const packActivo = !!inc.pack;
-
   const ativas = opcoes.filter(o => inc[o.key]);
+
   const packHtml = packActivo ? `
     <div class="orc-pack-badge">
       <span class="orc-pack-icon">✦</span>
@@ -213,6 +213,7 @@ function renderOrcamento(p) {
 
   const incluidoHtml = (ativas.length || packActivo) ? `
     <div class="orc-incluido">
+      ${packHtml}
       <div class="orc-incluido-titulo">${lang === 'en' ? 'What\'s included' : 'O que está incluído'}</div>
       <div class="orc-incluido-lista">
         ${ativas.map(o => `
@@ -221,13 +222,15 @@ function renderOrcamento(p) {
             <span>${lang === 'en' ? o.en : o.pt}</span>
           </div>`).join('')}
       </div>
-      ${packHtml}
     </div>` : '';
 
   return `
     <div class="orc-lista">${rows}</div>
     <div class="orc-total-card">
-      <span class="orc-total-lbl">${tO.total}</span>
+      <div class="orc-total-left">
+        <span class="orc-total-lbl">${tO.total}</span>
+        <div class="orc-total-linha"></div>
+      </div>
       <span class="orc-total-val">${fmt(total)}</span>
     </div>
     ${incluidoHtml}`;
@@ -425,19 +428,23 @@ function renderNotasCartoes(p) {
     { ...tN.transp },
   ].filter(Boolean);
 
-  // Notas manuais adicionais — array ou string legada
+  // Notas manuais — array de {titulo, texto} ou strings legadas
   const notasArr = Array.isArray(p.notas)
-    ? p.notas.filter(Boolean)
-    : (p.notas ? [p.notas] : []);
+    ? p.notas.filter(n => n && (n.texto || typeof n === 'string'))
+    : (p.notas ? [{ titulo: '', texto: p.notas }] : []);
 
-  const notasExtra = notasArr.length ? notasArr.map(n => `
+  const notasExtra = notasArr.map(n => {
+    const titulo = typeof n === 'string' ? '' : (n.titulo || '');
+    const texto  = typeof n === 'string' ? n  : (n.texto  || '');
+    return `
     <div class="nota-card nota-card-manual">
       <div class="nota-card-titulo">
         <span class="nota-card-icon">📌</span>
-        Nota
+        ${titulo || (lang === 'en' ? 'Important Note' : 'Nota Importante')}
       </div>
-      <p class="nota-card-texto">${n.replace(/\n/g, '<br>')}</p>
-    </div>`).join('') : '';
+      <p class="nota-card-texto">${texto.replace(/\n/g, '<br>')}</p>
+    </div>`;
+  }).join('');
 
   return `
     <div class="notas-grid">

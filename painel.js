@@ -346,10 +346,13 @@ export async function guardarProjeto() {
     pack:           !!document.getElementById('inc-pack')?.checked,
   };
 
-  // Notas múltiplas
+  // Notas múltiplas com título
   const notas = Array.from(document.querySelectorAll('#f-notas-lista .nota-form-item'))
-    .map(el => el.querySelector('.nota-form-input')?.value?.trim())
-    .filter(Boolean);
+    .map(el => ({
+      titulo: el.querySelector('.nota-form-titulo')?.value?.trim() || '',
+      texto:  el.querySelector('.nota-form-input')?.value?.trim()  || '',
+    }))
+    .filter(n => n.titulo || n.texto);
 
   const interacoes = Array.from(document.querySelectorAll('#f-interacoes-lista .interacao-item'))
     .map(el => ({ tipo: el.dataset.tipo||'nota', texto: el.dataset.texto||'', data: el.dataset.data||'', hora: el.dataset.hora||'' }));
@@ -586,13 +589,16 @@ export function addOcorrencia(tipo, descricao, estado) {
 
 // ── Notas múltiplas ───────────────────────────────
 
-export function addNota(texto = '') {
+export function addNota(titulo = '', texto = '') {
   const lista = document.getElementById('f-notas-lista');
   if (!lista) return;
   const d = document.createElement('div');
   d.className = 'nota-form-item';
   d.innerHTML = `
-    <textarea class="f-textarea nota-form-input" placeholder="Nota para o cliente…" rows="2">${texto}</textarea>
+    <div class="nota-form-fields">
+      <input type="text" class="f-input nota-form-titulo" placeholder="Título da nota (ex: Condições de Pagamento)" value="${titulo}">
+      <textarea class="f-textarea nota-form-input" placeholder="Descrição detalhada…" rows="2">${texto}</textarea>
+    </div>
     <button class="prod-line-del nota-del" onclick="this.closest('.nota-form-item').remove()">×</button>`;
   lista.appendChild(d);
 }
@@ -601,8 +607,11 @@ function renderNotasForm(notas) {
   const lista = document.getElementById('f-notas-lista');
   if (!lista) return;
   lista.innerHTML = '';
-  const arr = Array.isArray(notas) ? notas : (notas ? [notas] : []);
-  arr.forEach(n => addNota(n));
+  const arr = Array.isArray(notas) ? notas : (notas ? [{ titulo: 'Nota', texto: notas }] : []);
+  arr.forEach(n => {
+    if (typeof n === 'string') addNota('', n);
+    else addNota(n.titulo || '', n.texto || '');
+  });
 }
 
 export function atualizarEstadoOcorrencia(btnEl, novoEstado) {
