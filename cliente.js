@@ -548,19 +548,14 @@ export function renderPaginaCliente(p) {
   // ── Aprovação
   renderEstadoAprovacao(getState('projAtualId'), p.aprovacao);
 
-  // ── Email — construído via charCodes para evitar qualquer interceptação
-  const emailAddr = [104,101,108,100,101,114,46,109,101,108,111,64,108,101,114,111,121,109,101,114,108,105,110,46,112,116]
-    .map(c => String.fromCharCode(c)).join('');
-  const emailEl = document.getElementById('cli-email-val');
-  if (emailEl) {
-    emailEl.textContent = emailAddr;
-    emailEl.style.display = 'inline';
-  }
+  // ── Email — visível via spans no HTML (imune ao Cloudflare)
+  // Não é necessário injectar via JS — os spans .em-u/.em-a/.em-d estão no HTML
 
   // ── Privacidade
+  const emailPriv = 'helder' + '.melo' + '\u0040' + 'leroymerlin' + '.pt';
   const secPriv = document.getElementById('privacidade-texto');
   if (secPriv)
-    secPriv.innerHTML = `${tP.texto} <a href="mailto:${emailAddr}">${tP.contacto} ${emailAddr}</a>`;
+    secPriv.innerHTML = `${tP.texto} <a href="mailto:${emailPriv}">${tP.contacto} ${emailPriv}</a>`;
 
   // ── Animar barras de orçamento
   requestAnimationFrame(() => {

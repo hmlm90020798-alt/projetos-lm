@@ -606,9 +606,9 @@ export function verCliente(id) {
 }
 
 export function copiarEmail(btnEl) {
-  // Usa data-email para garantir que o valor está sempre disponível
-  const el = document.getElementById('cli-email-val');
-  const v  = el?.dataset.email || el?.textContent?.replace(/\s/g,'') || '';
+  const u = document.querySelector('.em-u')?.textContent || '';
+  const d = document.querySelector('.em-d')?.textContent || '';
+  const v = u + '@' + d;
   navigator.clipboard.writeText(v).then(() => {
     const o = btnEl.textContent; btnEl.textContent = '✓ Copiado';
     setTimeout(() => { btnEl.textContent = o; }, 2000);
