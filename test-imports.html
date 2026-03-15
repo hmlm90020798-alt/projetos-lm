@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Test</title></head>
+<body>
+<div id="log" style="font-family:monospace;padding:20px;white-space:pre"></div>
+<script type="module">
+const log = t => document.getElementById('log').textContent += t + '\n';
+log('A testar imports...');
+
+try {
+  const m1 = await import('./state.js');
+  log('✓ state.js OK');
+} catch(e) { log('✗ state.js: ' + e.message); }
+
+try {
+  const m2 = await import('./ui.js');
+  log('✓ ui.js OK');
+} catch(e) { log('✗ ui.js: ' + e.message); }
+
+try {
+  const m3 = await import('./i18n.js');
+  log('✓ i18n.js OK');
+} catch(e) { log('✗ i18n.js: ' + e.message); }
+
+try {
+  const m4 = await import('./firebase.js');
+  log('✓ firebase.js OK');
+} catch(e) { log('✗ firebase.js: ' + e.message); }
+
+try {
+  const m5 = await import('./painel.js');
+  log('✓ painel.js OK');
+} catch(e) { log('✗ painel.js: ' + e.message); }
+
+try {
+  const m6 = await import('./cliente.js');
+  log('✓ cliente.js OK');
+} catch(e) { log('✗ cliente.js: ' + e.message); }
+
+log('Concluído.');
+</script>
+</body>
+</html>
