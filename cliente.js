@@ -207,7 +207,6 @@ function renderOrcamento(p) {
     </div>
     ${incluidoHtml}`;
 }
-}
 
 // ── Timeline ──────────────────────────────────────
 
