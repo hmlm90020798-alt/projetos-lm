@@ -491,11 +491,6 @@
     </div>
   </footer>
 
-  <!-- Botão scroll to top — canto inferior direito -->
-  <button class="btn-topo" id="btn-topo"
-          onclick="window.scrollTo({top:0,behavior:'smooth'})"
-          title="Voltar ao topo" aria-label="Voltar ao topo">↑</button>
-
 </div>
 
 <!-- ══ EXPIRADA ══ -->
@@ -527,11 +522,5 @@
 </div>
 
 <script type="module" src="main.js"></script>
-<script>
-  window.addEventListener('scroll', () => {
-    const btn = document.getElementById('btn-topo');
-    if (btn) btn.classList.toggle('visible', window.scrollY > 400);
-  }, { passive: true });
-</script>
 </body>
 </html>

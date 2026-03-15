@@ -489,6 +489,7 @@ export function renderPaginaCliente(p) {
 
   // ── Nav
   document.getElementById('cli-nav-links').innerHTML = `
+    <a href="#hero"           class="nav-link nav-link-inicio">↑</a>
     <a href="#wrap-galeria"   class="nav-link">${t.nav.galeria}</a>
     <a href="#wrap-elementos" class="nav-link">${t.nav.elementos}</a>
     <a href="#orcamento"      class="nav-link">${t.nav.orcamento}</a>
@@ -525,7 +526,6 @@ export function renderPaginaCliente(p) {
   document.getElementById('cli-hero-content').innerHTML = `
     <div class="hero-3d-block">
       <div class="hero-eyebrow">${tH.eyebrow}</div>
-      ${estadoHtml}
       <h1 class="hero-titulo">${tipoNome}</h1>
       <div class="hero-para">${tH.para} <em>${nome}</em></div>
       <div class="hero-meta">
