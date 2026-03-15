@@ -332,20 +332,14 @@ img   { display: block; max-width: 100%; }
   margin-bottom: 24px;
   letter-spacing: -.02em;
   text-shadow:
-    1px  1px  0   #1a3d10,
-    2px  2px  0   #1a3d10,
-    3px  3px  0   #173810,
-    4px  4px  0   #15340e,
-    5px  5px  0   #12300c,
-    6px  6px  0   #102c0a,
-    7px  7px  0   #0e2808,
-    8px  8px  0   #0b2306,
-    9px  9px  0   #091f05,
-    10px 10px 0   #071b04,
-    11px 11px 0   #051703,
-    12px 12px 0   #031302,
-    14px 14px 22px rgba(44,94,26,.95),
-    0    0    40px rgba(103,171,47,.08);
+    2px  2px  0   #c8c4b8,
+    4px  4px  0   #a8a49a,
+    6px  6px  0   #888480,
+    8px  8px  0   #686460,
+    10px 10px 0   #484440,
+    12px 12px 0   #2e2b28,
+    14px 14px 0   #1a1816,
+    16px 16px 28px rgba(0,0,0,.85);
 }
 
 /* Countdown — inline e compacto, não bloco separado */
