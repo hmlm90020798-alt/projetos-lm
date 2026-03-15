@@ -800,3 +800,46 @@ img   { display: block; max-width: 100%; }
 
 /* ── Refs PC/OS no card ── */
 .card-refs         { display: block; font-family: var(--mono); font-size: 10px; color: var(--ink4); margin-top: 3px; letter-spacing: .3px; }
+
+/* ══════════════════════════════════════════════
+   NOVOS COMPONENTES — v3
+══════════════════════════════════════════════ */
+
+/* ── Accordion no modal ── */
+.form-bloco-titulo.accordion-titulo { cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; }
+.form-bloco-titulo.accordion-titulo:hover { color: var(--green-mid); }
+.accordion-arrow  { font-size: 14px; transition: transform .2s; color: var(--ink4); font-style: normal; }
+.form-bloco.collapsed .accordion-arrow { transform: rotate(-90deg); }
+.form-bloco.collapsed > *:not(.form-bloco-titulo) { display: none !important; }
+
+/* ── Notas múltiplas no formulário ── */
+.nota-form-item   { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+.nota-form-input  { flex: 1; resize: vertical; min-height: 60px; }
+.nota-del         { flex-shrink: 0; margin-top: 4px; }
+.nota-card-manual { border-color: var(--champ-pale); background: rgba(196,169,106,.04); }
+
+/* ── Hero — estado da obra ── */
+.hero-estado      { display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; border-radius: 99px; font-family: var(--sans); font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+.hero-estado-ok   { background: rgba(74,140,42,.12); color: var(--green-light); border: 1px solid rgba(74,140,42,.25); }
+.hero-estado-info { background: rgba(196,169,106,.12); color: var(--champ-light); border: 1px solid rgba(196,169,106,.25); }
+.hero-estado-ativo{ background: rgba(186,117,23,.15); color: #EFC97A; border: 1px solid rgba(186,117,23,.35); animation: tlpulse-amber 2.5s ease-in-out infinite; }
+
+/* ── Pack Projeto no orçamento ── */
+.orc-pack-badge   { display: flex; align-items: center; gap: 10px; margin-top: 14px; padding: 12px 16px; background: rgba(196,169,106,.08); border: 1px solid rgba(196,169,106,.2); border-radius: 8px; font-family: var(--sans); font-size: 13px; font-weight: 600; color: var(--champ-light); }
+.orc-pack-icon    { font-size: 14px; color: var(--champ); }
+.incluido-item-destaque { border-color: rgba(196,169,106,.4); background: rgba(196,169,106,.05); }
+
+/* ── Visitas no card ── */
+.card-meta-right  { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.card-visitas     { font-family: var(--mono); font-size: 11px; color: var(--ink4); }
+
+/* ── Scroll to top ── */
+.btn-topo         { background: rgba(245,242,236,.08); border: 1px solid rgba(245,242,236,.12); color: rgba(245,242,236,.5); font-family: var(--sans); font-size: 13px; font-weight: 600; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; transition: all .15s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.btn-topo:hover   { background: rgba(245,242,236,.15); color: #F5F2EC; }
+
+/* ── Estatísticas de visitas no separador alertas ── */
+.visitas-stat     { display: flex; align-items: center; gap: 8px; padding: 10px 14px; background: var(--white); border-radius: 8px; border: 1.5px solid var(--border); margin-bottom: 6px; }
+.visitas-nome     { font-size: 13px; font-weight: 500; color: var(--ink2); flex: 1; }
+.visitas-count    { font-family: var(--mono); font-size: 13px; color: var(--green); font-weight: 600; }
+.visitas-bar      { flex: 1; height: 4px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.visitas-bar-fill { height: 100%; background: var(--green-mid); border-radius: 99px; transition: width .6s cubic-bezier(.16,1,.3,1); }

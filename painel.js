@@ -3,7 +3,7 @@
 // ════════════════════════════════════════════════
 
 import { getState, setState, getProjects, getEditId } from './state.js';
-import { guardar, apagar, verificarAprovacoes }        from './firebase.js';
+import { guardar, apagar, verificarAprovacoes, carregarVisitas } from './firebase.js';
 import { mostrarToast, setView, fmt, gerarId, dataHoje, formatarData } from './ui.js';
 
 // ── Tipos de projecto ─────────────────────────────
@@ -137,6 +137,19 @@ export function renderPainel() {
     return;
   }
   grid.innerHTML = filtrados.map(p => renderCard(p)).join('');
+
+  // Carregar visitas assincronamente e actualizar os cards
+  const ids = filtrados.map(p => p.id);
+  carregarVisitas(ids).then(visitas => {
+    ids.forEach(id => {
+      const el = document.getElementById('visitas-' + id);
+      if (el) {
+        const v = visitas[id]?.total || 0;
+        el.textContent = `👁 ${v}`;
+        el.title = `${v} visita${v !== 1 ? 's' : ''} do cliente`;
+      }
+    });
+  }).catch(() => {});
 }
 
 function renderCard(p) {
@@ -163,7 +176,10 @@ function renderCard(p) {
       <div class="card-local">${p.localidade || ''}${(p.refPc||p.refOs) ? `<span class="card-refs">${p.refPc?'PC: '+p.refPc:''}${p.refPc&&p.refOs?' · ':''}${p.refOs?'OS: '+p.refOs:''}</span>` : ''}</div>
       <div class="card-financeiro">
         <div class="card-total">${total > 0 ? fmt(total) : '—'}</div>
-        ${p.aprovacao?.data ? `<div class="card-aprovado">✓ ${p.aprovacao.data}</div>` : ''}
+        <div class="card-meta-right">
+          ${p.aprovacao?.data ? `<div class="card-aprovado">✓ ${p.aprovacao.data}</div>` : ''}
+          <div class="card-visitas" id="visitas-${p.id}">👁 —</div>
+        </div>
       </div>
       ${p.prazo ? `<div class="card-prazo${urg ? ' urgente' : ''}">
         ${urg ? '⚠️ ' : ''}Válido até ${formatarData(p.prazo)}</div>` : ''}
@@ -197,7 +213,7 @@ export function fecharModal() {
 function limparForm() {
   ['f-nome','f-contacto','f-localidade','f-prazo','f-entrega',
    'f-data-entrega-mat','f-data-instalacao','f-data-conclusao',
-   'f-notas','f-tipo-outro','f-ref-pc','f-ref-os',
+   'f-tipo-outro','f-ref-pc','f-ref-os',
    'f-orc-moveis','f-orc-tampos','f-orc-eletros','f-orc-acessorios'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
@@ -205,7 +221,7 @@ function limparForm() {
   ['inc-iva23','inc-entrega','inc-instalacao'].forEach(id => {
     const el = document.getElementById(id); if (el) el.checked = true;
   });
-  ['inc-loja','inc-inst-cliente','inc-iva6'].forEach(id => {
+  ['inc-loja','inc-inst-cliente','inc-iva6','inc-pack'].forEach(id => {
     const el = document.getElementById(id); if (el) el.checked = false;
   });
   document.getElementById('f-tipo').value = 'cozinha';
@@ -214,7 +230,7 @@ function limparForm() {
   document.getElementById('img-thumbs-preview').innerHTML = '';
 
   ['sec-elem-tampos','sec-elem-eletros','sec-elem-acessorios','sec-elem-extras',
-   'sec-orcamento-cats','f-interacoes-lista','f-ocorrencias-lista'].forEach(id => {
+   'sec-orcamento-cats','f-interacoes-lista','f-ocorrencias-lista','f-notas-lista'].forEach(id => {
     const el = document.getElementById(id); if (el) el.innerHTML = '';
   });
   atualizarTotalPreview();
@@ -237,6 +253,10 @@ export function editarProjeto(id) {
   sv('f-notas', p.notas);
   sv('f-ref-pc', p.refPc);
   sv('f-ref-os', p.refOs);
+
+  // Pack Projeto
+  const elPack = document.getElementById('inc-pack');
+  if (elPack) elPack.checked = !!p.incluido?.pack;
 
   if (p.tipo) {
     document.getElementById('f-tipo').value = p.tipo;
@@ -279,12 +299,11 @@ export function editarProjeto(id) {
 
   renderInteracoes(p.interacoes || []);
   renderOcorrenciasForm(p.ocorrencias || []);
+  renderNotasForm(p.notas || []);
   renderThumbs();
   atualizarTotalPreview();
   document.getElementById('modal-projeto').classList.add('open');
 }
-
-// ── Guardar projecto ───────────────────────────────
 
 export async function guardarProjeto() {
   const editId = getEditId();
@@ -318,13 +337,19 @@ export async function guardarProjeto() {
 
   // O que está incluído
   const incluido = {
-    iva23:       !!document.getElementById('inc-iva23')?.checked,
-    entrega:     !!document.getElementById('inc-entrega')?.checked,
-    loja:        !!document.getElementById('inc-loja')?.checked,
-    instalacao:  !!document.getElementById('inc-instalacao')?.checked,
+    iva23:          !!document.getElementById('inc-iva23')?.checked,
+    entrega:        !!document.getElementById('inc-entrega')?.checked,
+    loja:           !!document.getElementById('inc-loja')?.checked,
+    instalacao:     !!document.getElementById('inc-instalacao')?.checked,
     'inst-cliente': !!document.getElementById('inc-inst-cliente')?.checked,
-    iva6:        !!document.getElementById('inc-iva6')?.checked,
+    iva6:           !!document.getElementById('inc-iva6')?.checked,
+    pack:           !!document.getElementById('inc-pack')?.checked,
   };
+
+  // Notas múltiplas
+  const notas = Array.from(document.querySelectorAll('#f-notas-lista .nota-form-item'))
+    .map(el => el.querySelector('.nota-form-input')?.value?.trim())
+    .filter(Boolean);
 
   const interacoes = Array.from(document.querySelectorAll('#f-interacoes-lista .interacao-item'))
     .map(el => ({ tipo: el.dataset.tipo||'nota', texto: el.dataset.texto||'', data: el.dataset.data||'', hora: el.dataset.hora||'' }));
@@ -347,7 +372,7 @@ export async function guardarProjeto() {
     dataEntregaMat:  gv('f-data-entrega-mat'),
     dataInstalacao:  gv('f-data-instalacao'),
     dataConclusao:   gv('f-data-conclusao'),
-    notas:       gv('f-notas').trim(),
+    notas:       notas,
     refPc:       gv('f-ref-pc').trim(),
     refOs:       gv('f-ref-os').trim(),
     // Elementos (com URL)
@@ -557,6 +582,27 @@ export function addOcorrencia(tipo, descricao, estado) {
     </div>
     <div class="ocorr-desc">${descricao}</div>`;
   lista.prepend(d);
+}
+
+// ── Notas múltiplas ───────────────────────────────
+
+export function addNota(texto = '') {
+  const lista = document.getElementById('f-notas-lista');
+  if (!lista) return;
+  const d = document.createElement('div');
+  d.className = 'nota-form-item';
+  d.innerHTML = `
+    <textarea class="f-textarea nota-form-input" placeholder="Nota para o cliente…" rows="2">${texto}</textarea>
+    <button class="prod-line-del nota-del" onclick="this.closest('.nota-form-item').remove()">×</button>`;
+  lista.appendChild(d);
+}
+
+function renderNotasForm(notas) {
+  const lista = document.getElementById('f-notas-lista');
+  if (!lista) return;
+  lista.innerHTML = '';
+  const arr = Array.isArray(notas) ? notas : (notas ? [notas] : []);
+  arr.forEach(n => addNota(n));
 }
 
 export function atualizarEstadoOcorrencia(btnEl, novoEstado) {

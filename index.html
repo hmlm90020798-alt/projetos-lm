@@ -137,7 +137,7 @@
 
       <!-- Cliente -->
       <div class="form-bloco">
-        <div class="form-bloco-titulo">Cliente</div>
+        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>Cliente</span><span class="accordion-arrow">▾</span></div>
         <div class="form-grid">
           <div class="form-campo">
             <label class="form-label">Nome / Referência</label>
@@ -172,7 +172,7 @@
 
       <!-- Proposta -->
       <div class="form-bloco">
-        <div class="form-bloco-titulo">Proposta</div>
+        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>Proposta</span><span class="accordion-arrow">▾</span></div>
         <div class="form-grid">
           <div class="form-campo">
             <label class="form-label">Fase</label>
@@ -198,7 +198,7 @@
 
       <!-- Datas -->
       <div class="form-bloco">
-        <div class="form-bloco-titulo">Datas da Obra</div>
+        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>Datas da Obra</span><span class="accordion-arrow">▾</span></div>
         <div class="form-note">Preenche à medida que a obra avança.</div>
         <div class="form-grid">
           <div class="form-campo">
@@ -222,7 +222,7 @@
 
       <!-- Imagens 3D -->
       <div class="form-bloco">
-        <div class="form-bloco-titulo">📸 Imagens 3D / Renders</div>
+        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>📸 Imagens 3D / Renders</span><span class="accordion-arrow">▾</span></div>
         <div class="upload-area" id="upload-area">
           <input type="file" id="f-imagens" accept="image/*" multiple
                  onchange="window.processarImagens(this.files)">
@@ -235,7 +235,7 @@
 
       <!-- Elementos do Projeto (com URL) -->
       <div class="form-bloco">
-        <div class="form-bloco-titulo">Elementos do Projeto</div>
+        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>Elementos do Projeto</span><span class="accordion-arrow">▾</span></div>
         <div class="form-note">Para cada artigo, indica o nome e o link do produto (abre num novo separador para o cliente).</div>
 
         <div class="form-subsec">Tampos</div>
@@ -257,7 +257,7 @@
 
       <!-- Orçamento -->
       <div class="form-bloco">
-        <div class="form-bloco-titulo">Orçamento</div>
+        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>Orçamento</span><span class="accordion-arrow">▾</span></div>
         <div class="form-note">Introduz o valor final de cada categoria. O total é calculado automaticamente.</div>
 
         <div class="orc-form-grid">
@@ -315,19 +315,24 @@
             <input type="checkbox" id="inc-iva6" class="incluido-check">
             <span class="incluido-label">IVA taxa reduzida 6% (mão de obra — renovação)</span>
           </label>
+          <label class="incluido-item incluido-item-destaque">
+            <input type="checkbox" id="inc-pack" class="incluido-check">
+            <span class="incluido-label">Desconto Pack Projeto (10%) já aplicado</span>
+          </label>
         </div>
       </div>
 
-      <!-- Notas -->
+      <!-- Notas Importantes (múltiplas) -->
       <div class="form-bloco">
-        <div class="form-bloco-titulo">Notas Importantes</div>
-        <textarea id="f-notas" class="f-textarea"
-                  placeholder="Condições especiais, observações técnicas, informações relevantes para o cliente…"></textarea>
+        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>Notas Importantes</span><span class="accordion-arrow">▾</span></div>
+        <div class="form-note">Adiciona notas específicas para este projeto — aparecem como cartões informativos na proposta do cliente.</div>
+        <div id="f-notas-lista"></div>
+        <button class="btn-add" onclick="window.addNota()">+ Nota</button>
       </div>
 
       <!-- Interacções -->
       <div class="form-bloco">
-        <div class="form-bloco-titulo">Interacções com o Cliente</div>
+        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>Interacções com o Cliente</span><span class="accordion-arrow">▾</span></div>
         <div class="int-form">
           <select id="f-interacao-tipo" class="f-select" style="width:130px;flex-shrink:0">
             <option value="nota">📝 Nota</option>
@@ -347,7 +352,7 @@
 
       <!-- Ocorrências -->
       <div class="form-bloco">
-        <div class="form-bloco-titulo">⚠️ Ocorrências</div>
+        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>⚠️ Ocorrências</span><span class="accordion-arrow">▾</span></div>
         <div class="form-note">Regista problemas que surgem durante o processo para acompanhamento e resolução.</div>
         <div class="ocorr-form">
           <select id="f-ocorr-tipo" class="f-select" style="width:180px;flex-shrink:0">
@@ -388,6 +393,7 @@
     <div class="cli-nav-links" id="cli-nav-links"></div>
     <button class="btn-voltar" id="btn-voltar-painel"
             onclick="window.setView('painel')" style="display:none">← Painel</button>
+    <button class="btn-topo" id="btn-topo" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Voltar ao topo">↑</button>
   </nav>
 
   <!-- Hero -->

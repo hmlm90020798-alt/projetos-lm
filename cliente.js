@@ -2,11 +2,11 @@
 // cliente.js — Página Pública do Cliente · Projetos LM
 // ════════════════════════════════════════════════
 
-import { T }                           from './i18n.js';
-import { getState, setState, getLang } from './state.js';
-import { _db, registarVisita }         from './firebase.js';
-import { mostrarToast }                from './ui.js';
-import { doc, getDoc, setDoc }         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { T }                                    from './i18n.js';
+import { getState, setState, getLang }          from './state.js';
+import { _db, registarVisita, aprovarClienteFirebase, carregarUm } from './firebase.js';
+import { mostrarToast }                         from './ui.js';
+import { doc, getDoc }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // ── Helpers ──────────────────────────────────────
 
@@ -195,16 +195,23 @@ function renderOrcamento(p) {
   // Bloco "O que está incluído"
   const inc = p.incluido || {};
   const opcoes = [
-    { key: 'iva23',        pt: 'IVA à taxa legal em vigor (23%)',              en: 'VAT at legal rate (23%)' },
-    { key: 'entrega',      pt: 'Entrega na morada do cliente',                 en: 'Delivery to client\'s address' },
-    { key: 'loja',         pt: 'Levantamento em loja (pelo cliente)',           en: 'In-store collection (by client)' },
-    { key: 'instalacao',   pt: 'Instalação incluída',                          en: 'Installation included' },
-    { key: 'inst-cliente', pt: 'Instalação a cargo do cliente',                en: 'Installation by client' },
+    { key: 'iva23',        pt: 'IVA à taxa legal em vigor (23%)',                en: 'VAT at legal rate (23%)' },
+    { key: 'entrega',      pt: 'Entrega na morada do cliente',                   en: 'Delivery to client\'s address' },
+    { key: 'loja',         pt: 'Levantamento em loja (pelo cliente)',             en: 'In-store collection (by client)' },
+    { key: 'instalacao',   pt: 'Instalação incluída',                            en: 'Installation included' },
+    { key: 'inst-cliente', pt: 'Instalação a cargo do cliente',                  en: 'Installation by client' },
     { key: 'iva6',         pt: 'IVA taxa reduzida 6% (mão de obra — renovação)', en: 'Reduced VAT 6% (labour — renovation)' },
   ];
+  const packActivo = !!inc.pack;
 
   const ativas = opcoes.filter(o => inc[o.key]);
-  const incluidoHtml = ativas.length ? `
+  const packHtml = packActivo ? `
+    <div class="orc-pack-badge">
+      <span class="orc-pack-icon">✦</span>
+      ${lang === 'en' ? 'Pack Projeto discount (10%) already applied' : 'Desconto Pack Projeto (10%) já aplicado'}
+    </div>` : '';
+
+  const incluidoHtml = (ativas.length || packActivo) ? `
     <div class="orc-incluido">
       <div class="orc-incluido-titulo">${lang === 'en' ? 'What\'s included' : 'O que está incluído'}</div>
       <div class="orc-incluido-lista">
@@ -214,6 +221,7 @@ function renderOrcamento(p) {
             <span>${lang === 'en' ? o.en : o.pt}</span>
           </div>`).join('')}
       </div>
+      ${packHtml}
     </div>` : '';
 
   return `
@@ -366,34 +374,30 @@ export async function renderEstadoAprovacao(projetoId, aprovacao) {
 
 export async function aprovarProposta() {
   const id  = getState('projAtualId');
-  if (!id) return;
+  if (!id) { alert('Erro: ID do projeto não encontrado.'); return; }
   const btn = document.getElementById('btn-aprovar-proj');
   if (btn) { btn.disabled = true; btn.textContent = 'A registar…'; }
 
   const agora = new Date();
   const data  = agora.toLocaleDateString('pt-PT');
   const hora  = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
+  const aprovacao = { data, hora, origem: 'cliente' };
 
   try {
-    const ref  = doc(_db, 'projetos', id);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      const p     = snap.data();
-      p.aprovacao = { data, hora, origem: 'cliente' };
-      p.fase      = 'aprovado';
-      await setDoc(ref, p);
-    }
-    await renderEstadoAprovacao(id, { data, hora, origem: 'cliente' });
-    setTimeout(async () => {
-      try {
-        const s = await getDoc(doc(_db, 'projetos', id));
-        if (s.exists()) renderPaginaCliente(s.data());
-      } catch (_) {}
-    }, 1200);
+    await aprovarClienteFirebase(id, aprovacao);
     mostrarToast('✓ Proposta aprovada!', `${data} · ${hora}`);
+    // Recarregar projecto actualizado e re-renderizar
+    const pAtual = await carregarUm(id);
+    if (pAtual) {
+      setState({ projCache: pAtual });
+      renderPaginaCliente(pAtual);
+    } else {
+      await renderEstadoAprovacao(id, aprovacao);
+    }
   } catch (e) {
+    console.error('Erro ao aprovar:', e);
     if (btn) { btn.disabled = false; btn.textContent = T[getLang()].aprovacao.btn; }
-    alert('Erro ao registar. Tente novamente.');
+    alert('Erro ao registar aprovação. Por favor tente novamente.');
   }
 }
 
@@ -421,10 +425,19 @@ function renderNotasCartoes(p) {
     { ...tN.transp },
   ].filter(Boolean);
 
-  // Notas manuais adicionais
-  const notasExtra = p.notas
-    ? `<div class="notas-extra">${p.notas.replace(/\n/g, '<br>')}</div>`
-    : '';
+  // Notas manuais adicionais — array ou string legada
+  const notasArr = Array.isArray(p.notas)
+    ? p.notas.filter(Boolean)
+    : (p.notas ? [p.notas] : []);
+
+  const notasExtra = notasArr.length ? notasArr.map(n => `
+    <div class="nota-card nota-card-manual">
+      <div class="nota-card-titulo">
+        <span class="nota-card-icon">📌</span>
+        Nota
+      </div>
+      <p class="nota-card-texto">${n.replace(/\n/g, '<br>')}</p>
+    </div>`).join('') : '';
 
   return `
     <div class="notas-grid">
@@ -436,8 +449,8 @@ function renderNotasCartoes(p) {
           </div>
           <p class="nota-card-texto">${c.texto}</p>
         </div>`).join('')}
-    </div>
-    ${notasExtra}`;
+      ${notasExtra}
+    </div>`;
 }
 
 // ── Render principal ──────────────────────────────
@@ -474,19 +487,35 @@ export function renderPaginaCliente(p) {
     <a href="#contacto"       class="nav-link">${t.nav.contacto}</a>
     <button class="nav-lang" onclick="window.setLang(window._LANG==='pt'?'en':'pt')">${lang==='pt'?'EN':'PT'}</button>`;
 
-  // ── Hero — validade vs aprovado
+  // ── Hero — validade vs aprovado + estado da obra
+  const faseEstados = {
+    proposta:    null,
+    retificacao: null,
+    aprovado:    { icon: '✓', label: lang==='en' ? 'Approved' : 'Aprovado', cls: 'hero-estado-ok' },
+    encomenda:   { icon: '📦', label: lang==='en' ? 'Materials ordered' : 'Materiais encomendados', cls: 'hero-estado-info' },
+    entrega:     { icon: '🚚', label: lang==='en' ? 'Delivery scheduled' : 'Entrega agendada', cls: 'hero-estado-info' },
+    montagem:    { icon: '🔧', label: lang==='en' ? 'Installation in progress' : 'Instalação em curso', cls: 'hero-estado-ativo' },
+    concluido:   { icon: '🏠', label: lang==='en' ? 'Completed' : 'Concluído', cls: 'hero-estado-ok' },
+  };
+  const estadoAtual = faseEstados[p.fase];
+  const estadoHtml  = estadoAtual
+    ? `<div class="hero-estado ${estadoAtual.cls}">${estadoAtual.icon} ${estadoAtual.label}</div>` : '';
+
+  // Datas no hero após aprovação
   const validadeHtml = jaAprovado && p.aprovacao?.data
-    ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${tH.aprovadoEm} ${p.aprovacao.data}</div>`
+    ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${tH.aprovadoEm} ${p.aprovacao.data}</div>
+       ${p.dataInstalacao ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${lang==='en'?'Installation':'Instalação'}: ${new Date(p.dataInstalacao+'T12:00:00').toLocaleDateString(lang==='en'?'en-GB':'pt-PT')}</div>` : ''}`
     : p.prazo
       ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${tH.validadeAte} ${new Date(p.prazo+'T12:00:00').toLocaleDateString('pt-PT')}</div>`
       : '';
 
   document.getElementById('cli-hero-content').innerHTML = `
     <div class="hero-eyebrow">${tH.eyebrow}</div>
+    ${estadoHtml}
     <h1 class="hero-titulo">${tipoLabel}</h1>
     <div class="hero-para">${tH.para} <em>${nome}</em></div>
     <div class="hero-meta">
-      ${tipoLabel ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${p.localidade || ''}</div>` : ''}
+      ${p.localidade ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${p.localidade}</div>` : ''}
       ${validadeHtml}
     </div>
     ${prazoPassou
