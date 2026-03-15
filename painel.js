@@ -394,8 +394,21 @@ export async function guardarProjeto() {
     imagens:     getState('editImgs'),
     data:        new Date().toLocaleDateString('pt-PT'),
     dataCriacao: editId ? (getProjects().find(p => p.id === editId)?.dataCriacao || dataHoje()) : dataHoje(),
-    aprovacao:   editId ? (getProjects().find(p => p.id === editId)?.aprovacao || null) : null,
   };
+
+  // Se a fase for aprovado ou superior e não houver registo de aprovação, registar agora
+  const faseActual = proj.fase;
+  const aprovacaoExistente = editId ? (getProjects().find(p => p.id === editId)?.aprovacao || null) : null;
+  if (faseOrdem(faseActual) >= faseOrdem('aprovado') && !aprovacaoExistente?.data) {
+    const agora = new Date();
+    proj.aprovacao = {
+      data:   agora.toLocaleDateString('pt-PT'),
+      hora:   String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0'),
+      origem: 'painel',
+    };
+  } else {
+    proj.aprovacao = aprovacaoExistente;
+  }
 
   const lista = getProjects();
   const idx = lista.findIndex(p => p.id === proj.id);
