@@ -311,7 +311,7 @@ function renderTimeline(p) {
       </div>
     </div>`).join('');
 
-  return ocorrHtml + marcosHtml;
+  return marcosHtml + ocorrHtml;
 }
 
 // ── Aprovação ──────────────────────────────────────
@@ -548,11 +548,14 @@ export function renderPaginaCliente(p) {
   // ── Aprovação
   renderEstadoAprovacao(getState('projAtualId'), p.aprovacao);
 
-  // ── Email — injectado via JS para evitar ofuscação do Cloudflare
-  const emailParts = ['helder.melo', '@', 'leroymerlin.pt'];
-  const emailAddr  = emailParts.join('');
-  const emailEl    = document.getElementById('cli-email-val');
-  if (emailEl) emailEl.textContent = emailAddr;
+  // ── Email — construído via charCodes para evitar qualquer interceptação
+  const emailAddr = [104,101,108,100,101,114,46,109,101,108,111,64,108,101,114,111,121,109,101,114,108,105,110,46,112,116]
+    .map(c => String.fromCharCode(c)).join('');
+  const emailEl = document.getElementById('cli-email-val');
+  if (emailEl) {
+    emailEl.textContent = emailAddr;
+    emailEl.style.display = 'inline';
+  }
 
   // ── Privacidade
   const secPriv = document.getElementById('privacidade-texto');
