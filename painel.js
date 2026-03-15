@@ -44,11 +44,12 @@ function faseOrdem(f) {
 
 function calcTotalProjeto(p) {
   let t = 0;
-  const s = a => (a||[]).forEach(i => { t += parseFloat(i.preco)||0; });
-  s(p.tampos); s(p.eletros); s(p.acessorios);
-  (p.extras   ||[]).forEach(c => s(c.itens));
-  (p.orcamento||[]).forEach(c => s(c.itens));
-  return Math.max(0, t - (parseFloat(p.desconto)||0));
+  t += parseFloat(p.orc_moveis)    || 0;
+  t += parseFloat(p.orc_tampos)    || 0;
+  t += parseFloat(p.orc_eletros)   || 0;
+  t += parseFloat(p.orc_acessorios)|| 0;
+  (p.orcamento||[]).forEach(c => { t += parseFloat(c.valor)||0; });
+  return Math.max(0, t);
 }
 
 function calcDashboard(lista) {
@@ -166,6 +167,7 @@ function renderCard(p) {
       <div class="card-actions">
         <button class="btn-card" onclick="event.stopPropagation();window.editarProjeto('${p.id}')">✏️ Editar</button>
         <button class="btn-card primary" onclick="event.stopPropagation();window.verCliente('${p.id}')">👁 Ver</button>
+        <button class="btn-card pdf" onclick="event.stopPropagation();window.gerarPDF('${p.id}')" title="Gerar PDF da proposta">📄 PDF</button>
         <button class="btn-card whatsapp" onclick="event.stopPropagation();window.partilharCliente('${p.id}')">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .99h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
           Partilhar
@@ -192,21 +194,24 @@ export function fecharModal() {
 function limparForm() {
   ['f-nome','f-contacto','f-localidade','f-prazo','f-entrega',
    'f-data-entrega-mat','f-data-instalacao','f-data-conclusao',
-   'f-notas','f-desconto','f-tipo-outro'].forEach(id => {
+   'f-notas','f-tipo-outro',
+   'f-orc-moveis','f-orc-tampos','f-orc-eletros','f-orc-acessorios'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
+  });
+  // Reset checkboxes "incluído"
+  ['inc-iva23','inc-entrega','inc-instalacao'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.checked = true;
+  });
+  ['inc-loja','inc-inst-cliente','inc-iva6'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.checked = false;
   });
   document.getElementById('f-tipo').value = 'cozinha';
   document.getElementById('f-fase').value = 'proposta';
   document.getElementById('f-tipo-outro-wrap').style.display = 'none';
   document.getElementById('img-thumbs-preview').innerHTML = '';
 
-  // Limpar secções dinâmicas
-  ['sec-elem-moveis','sec-elem-tampos','sec-elem-eletros','sec-elem-acessorios',
-   'sec-elem-pavimentos','sec-elem-revestimentos','sec-elem-sanitarios',
-   'sec-elem-iluminacao','sec-elem-aquecimento','sec-elem-extras',
-   'sec-tampos','sec-eletros','sec-acessorios',
-   'sec-orcamento-cats','sec-extras-cats',
-   'sec-timeline-custom','f-interacoes-lista','f-ocorrencias-lista'].forEach(id => {
+  ['sec-elem-tampos','sec-elem-eletros','sec-elem-acessorios','sec-elem-extras',
+   'sec-orcamento-cats','f-interacoes-lista','f-ocorrencias-lista'].forEach(id => {
     const el = document.getElementById(id); if (el) el.innerHTML = '';
   });
   atualizarTotalPreview();
@@ -236,12 +241,9 @@ export function editarProjeto(id) {
     }
   }
 
-  // Elementos do projecto (com URL)
+  // Elementos do projecto (com URL) — só três categorias fixas + extras
   const elemCats = [
-    ['moveis','elem_moveis'], ['tampos','elem_tampos'], ['eletros','elem_eletros'],
-    ['acessorios','elem_acessorios'], ['pavimentos','elem_pavimentos'],
-    ['revestimentos','elem_revestimentos'], ['sanitarios','elem_sanitarios'],
-    ['iluminacao','elem_iluminacao'], ['aquecimento','elem_aquecimento'],
+    ['tampos','elem_tampos'], ['eletros','elem_eletros'], ['acessorios','elem_acessorios'],
   ];
   elemCats.forEach(([secId, campo]) => {
     (p[campo]||[]).forEach(i => addLinhaElem(secId, i.nome, i.url));
@@ -253,24 +255,23 @@ export function editarProjeto(id) {
     if (ult) (cat.itens||[]).forEach(i => addLinhaElemNoCat(ult.querySelector('[data-elem-itens]'), i.nome, i.url));
   });
 
-  // Orçamento
-  (p.tampos    ||[]).forEach(i => addLinhaOrc('tampos',    i.nome, i.preco));
-  (p.eletros   ||[]).forEach(i => addLinhaOrc('eletros',   i.nome, i.preco));
-  (p.acessorios||[]).forEach(i => addLinhaOrc('acessorios',i.nome, i.preco));
+  // Orçamento — valor único por categoria
+  const sv2 = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val || ''; };
+  sv2('f-orc-moveis',    p.orc_moveis);
+  sv2('f-orc-tampos',    p.orc_tampos);
+  sv2('f-orc-eletros',   p.orc_eletros);
+  sv2('f-orc-acessorios',p.orc_acessorios);
   (p.orcamento||[]).forEach(cat => {
-    addCatOrcamento(cat.categoria);
-    const grupos = document.getElementById('sec-orcamento-cats').querySelectorAll('[data-cat-grupo]');
-    const ult = grupos[grupos.length - 1];
-    if (ult) (cat.itens||[]).forEach(i => addLinhaOrcNoCat(ult.querySelector('[data-cat-itens]'), i.nome, i.preco));
-  });
-  (p.extras||[]).forEach(cat => {
-    addCatExtra(cat.categoria);
-    const grupos = document.getElementById('sec-extras-cats').querySelectorAll('[data-cat-grupo]');
-    const ult = grupos[grupos.length - 1];
-    if (ult) (cat.itens||[]).forEach(i => addLinhaOrcNoCat(ult.querySelector('[data-cat-itens]'), i.nome, i.preco));
+    addCatOrcamento(cat.categoria, cat.valor);
   });
 
-  (p.timeline||[]).forEach(it => addLinhaTimeline(it.texto, it.data));
+  // O que está incluído
+  const incIds = ['inc-iva23','inc-entrega','inc-loja','inc-instalacao','inc-inst-cliente','inc-iva6'];
+  incIds.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && p.incluido) el.checked = !!p.incluido[id.replace('inc-','')];
+  });
+
   renderInteracoes(p.interacoes || []);
   renderOcorrenciasForm(p.ocorrencias || []);
   renderThumbs();
@@ -293,14 +294,6 @@ export async function guardarProjeto() {
     })).filter(i => i.nome);
   };
 
-  const recolherLinhasOrc = c => {
-    if (!c) return [];
-    return Array.from(c.querySelectorAll('.prod-line')).map(r => ({
-      nome:  r.querySelector('.prod-line-nome')?.value?.trim()  || '',
-      preco: r.querySelector('.prod-line-preco')?.value?.trim() || '0',
-    })).filter(i => i.nome);
-  };
-
   const recolherCatsElem = c => {
     if (!c) return [];
     return Array.from(c.querySelectorAll('[data-elem-grupo]')).map(g => ({
@@ -309,12 +302,23 @@ export async function guardarProjeto() {
     })).filter(c => c.itens.length);
   };
 
+  // Orçamento — categorias livres com valor único
   const recolherCatsOrc = c => {
     if (!c) return [];
     return Array.from(c.querySelectorAll('[data-cat-grupo]')).map(g => ({
       categoria: g.querySelector('[data-cat-nome]')?.value?.trim() || 'Categoria',
-      itens: recolherLinhasOrc(g.querySelector('[data-cat-itens]')),
-    })).filter(c => c.itens.length);
+      valor: g.querySelector('[data-cat-valor]')?.value?.trim() || '0',
+    })).filter(c => c.categoria);
+  };
+
+  // O que está incluído
+  const incluido = {
+    iva23:       !!document.getElementById('inc-iva23')?.checked,
+    entrega:     !!document.getElementById('inc-entrega')?.checked,
+    loja:        !!document.getElementById('inc-loja')?.checked,
+    instalacao:  !!document.getElementById('inc-instalacao')?.checked,
+    'inst-cliente': !!document.getElementById('inc-inst-cliente')?.checked,
+    iva6:        !!document.getElementById('inc-iva6')?.checked,
   };
 
   const interacoes = Array.from(document.querySelectorAll('#f-interacoes-lista .interacao-item'))
@@ -323,44 +327,35 @@ export async function guardarProjeto() {
   const ocorrencias = Array.from(document.querySelectorAll('#f-ocorrencias-lista .ocorr-item'))
     .map(el => ({ tipo: el.dataset.tipo||'outro', descricao: el.dataset.desc||'', estado: el.dataset.estado||'detectada', data: el.dataset.data||'' }));
 
-  const timeline = Array.from(document.querySelectorAll('#sec-timeline-custom .timeline-row'))
-    .map(r => ({ texto: r.querySelector('.tl-input-texto')?.value?.trim()||'', data: r.querySelector('.tl-input-data')?.value||'' }))
-    .filter(t => t.texto);
-
   const tipo = document.getElementById('f-tipo').value;
+  const gv   = id => document.getElementById(id)?.value || '';
 
   const proj = {
     id:          editId || gerarId(),
     nome, tipo,
     tipoOutro:   tipo === 'outro' ? (document.getElementById('f-tipo-outro')?.value?.trim()||'') : '',
-    contacto:    document.getElementById('f-contacto').value.trim(),
-    localidade:  document.getElementById('f-localidade').value.trim(),
-    fase:        document.getElementById('f-fase').value,
-    prazo:       document.getElementById('f-prazo').value,
-    entrega:     document.getElementById('f-entrega').value.trim(),
-    dataEntregaMat:  document.getElementById('f-data-entrega-mat').value,
-    dataInstalacao:  document.getElementById('f-data-instalacao').value,
-    dataConclusao:   document.getElementById('f-data-conclusao').value,
-    notas:       document.getElementById('f-notas').value.trim(),
-    desconto:    document.getElementById('f-desconto').value || '0',
+    contacto:    gv('f-contacto').trim(),
+    localidade:  gv('f-localidade').trim(),
+    fase:        gv('f-fase'),
+    prazo:       gv('f-prazo'),
+    entrega:     gv('f-entrega').trim(),
+    dataEntregaMat:  gv('f-data-entrega-mat'),
+    dataInstalacao:  gv('f-data-instalacao'),
+    dataConclusao:   gv('f-data-conclusao'),
+    notas:       gv('f-notas').trim(),
     // Elementos (com URL)
-    elem_moveis:        recolherLinhasElem(document.getElementById('sec-elem-moveis')),
     elem_tampos:        recolherLinhasElem(document.getElementById('sec-elem-tampos')),
     elem_eletros:       recolherLinhasElem(document.getElementById('sec-elem-eletros')),
     elem_acessorios:    recolherLinhasElem(document.getElementById('sec-elem-acessorios')),
-    elem_pavimentos:    recolherLinhasElem(document.getElementById('sec-elem-pavimentos')),
-    elem_revestimentos: recolherLinhasElem(document.getElementById('sec-elem-revestimentos')),
-    elem_sanitarios:    recolherLinhasElem(document.getElementById('sec-elem-sanitarios')),
-    elem_iluminacao:    recolherLinhasElem(document.getElementById('sec-elem-iluminacao')),
-    elem_aquecimento:   recolherLinhasElem(document.getElementById('sec-elem-aquecimento')),
     elem_extras:        recolherCatsElem(document.getElementById('sec-elem-extras')),
-    // Orçamento (com preço)
-    tampos:      recolherLinhasOrc(document.getElementById('sec-tampos')),
-    eletros:     recolherLinhasOrc(document.getElementById('sec-eletros')),
-    acessorios:  recolherLinhasOrc(document.getElementById('sec-acessorios')),
-    orcamento:   recolherCatsOrc(document.getElementById('sec-orcamento-cats')),
-    extras:      recolherCatsOrc(document.getElementById('sec-extras-cats')),
-    timeline, interacoes, ocorrencias,
+    // Orçamento — valor único por categoria
+    orc_moveis:    gv('f-orc-moveis')    || '0',
+    orc_tampos:    gv('f-orc-tampos')    || '0',
+    orc_eletros:   gv('f-orc-eletros')   || '0',
+    orc_acessorios:gv('f-orc-acessorios')|| '0',
+    orcamento:     recolherCatsOrc(document.getElementById('sec-orcamento-cats')),
+    incluido,
+    interacoes, ocorrencias,
     imagens:     getState('editImgs'),
     data:        new Date().toLocaleDateString('pt-PT'),
     dataCriacao: editId ? (getProjects().find(p => p.id === editId)?.dataCriacao || dataHoje()) : dataHoje(),
@@ -440,66 +435,31 @@ export function addLinhaOrc(tipo, nome = '', preco = '') {
   sec.appendChild(d);
 }
 
-export function addCatOrcamento(nome = '') {
+// Categoria livre no orçamento — valor único
+export function addCatOrcamento(nome = '', valor = '') {
   const sec = document.getElementById('sec-orcamento-cats');
   const d   = document.createElement('div');
   d.className = 'orc-cat-grupo'; d.dataset.catGrupo = '1';
   d.innerHTML = `
     <div class="cat-header">
-      <input type="text" class="f-input cat-nome" data-cat-nome placeholder="Categoria" value="${nome}">
+      <input type="text"   class="f-input cat-nome"  data-cat-nome  placeholder="Nome da categoria" value="${nome}" style="flex:1">
+      <input type="number" class="f-input cat-valor" data-cat-valor placeholder="0,00" value="${valor}" style="width:120px" oninput="window.atualizarTotalPreview()">
       <button class="prod-line-del" onclick="this.closest('[data-cat-grupo]').remove();window.atualizarTotalPreview()">×</button>
-    </div>
-    <div class="cat-itens" data-cat-itens></div>
-    <button class="btn-add" onclick="window.addLinhaOrcamento(this)">+ item</button>`;
+    </div>`;
   sec.appendChild(d);
-}
-
-export function addCatExtra(nome = '') {
-  const sec = document.getElementById('sec-extras-cats');
-  const d   = document.createElement('div');
-  d.className = 'ext-cat-grupo'; d.dataset.catGrupo = '1';
-  d.innerHTML = `
-    <div class="cat-header">
-      <input type="text" class="f-input cat-nome" data-cat-nome placeholder="Extra" value="${nome}">
-      <button class="prod-line-del" onclick="this.closest('[data-cat-grupo]').remove();window.atualizarTotalPreview()">×</button>
-    </div>
-    <div class="cat-itens" data-cat-itens></div>
-    <button class="btn-add" onclick="window.addLinhaOrcamento(this)">+ item</button>`;
-  sec.appendChild(d);
-}
-
-export function addLinhaOrcamento(btnEl) {
-  const c = btnEl.previousElementSibling;
-  if (c) addLinhaOrcNoCat(c, '', '');
-}
-
-function addLinhaOrcNoCat(c, nome = '', preco = '') {
-  const d = document.createElement('div');
-  d.className = 'prod-line';
-  d.innerHTML = `
-    <input type="text"   class="prod-line-nome"  placeholder="Descrição" value="${nome}" oninput="window.atualizarTotalPreview()">
-    <input type="number" class="prod-line-preco" placeholder="0.00" value="${preco}" oninput="window.atualizarTotalPreview()">
-    <button class="prod-line-del" onclick="this.closest('.prod-line').remove();window.atualizarTotalPreview()">×</button>`;
-  c.appendChild(d);
-}
-
-export function addLinhaTimeline(texto = '', data = '') {
-  const sec = document.getElementById('sec-timeline-custom');
-  const d   = document.createElement('div');
-  d.className = 'timeline-row';
-  d.innerHTML = `
-    <input type="text" class="f-input tl-input-texto" placeholder="Marco personalizado" value="${texto}" style="flex:1">
-    <input type="date" class="f-input tl-input-data"  value="${data}" style="width:160px">
-    <button class="prod-line-del" onclick="this.closest('.timeline-row').remove()">×</button>`;
-  sec.appendChild(d);
+  atualizarTotalPreview();
 }
 
 export function atualizarTotalPreview() {
   let t = 0;
-  document.querySelectorAll('.prod-line-preco').forEach(el => { t += parseFloat(el.value) || 0; });
-  const desc = parseFloat(document.getElementById('f-desconto')?.value) || 0;
-  const el   = document.getElementById('modal-total-preview');
-  if (el) el.textContent = fmt(Math.max(0, t - desc));
+  // Campos fixos
+  ['f-orc-moveis','f-orc-tampos','f-orc-eletros','f-orc-acessorios'].forEach(id => {
+    t += parseFloat(document.getElementById(id)?.value) || 0;
+  });
+  // Categorias livres
+  document.querySelectorAll('[data-cat-valor]').forEach(el => { t += parseFloat(el.value) || 0; });
+  const el = document.getElementById('modal-total-preview');
+  if (el) el.textContent = fmt(Math.max(0, t));
 }
 
 // ── Imagens ────────────────────────────────────────
@@ -646,11 +606,21 @@ export function verCliente(id) {
 }
 
 export function copiarEmail(btnEl) {
-  const v = document.getElementById('cli-email-val')?.textContent?.replace(/\s/g, '') || '';
+  // Usa data-email para garantir que o valor está sempre disponível
+  const el = document.getElementById('cli-email-val');
+  const v  = el?.dataset.email || el?.textContent?.replace(/\s/g,'') || '';
   navigator.clipboard.writeText(v).then(() => {
     const o = btnEl.textContent; btnEl.textContent = '✓ Copiado';
     setTimeout(() => { btnEl.textContent = o; }, 2000);
   });
+}
+
+export function gerarPDF(id) {
+  // Abre a página do cliente num novo separador com ?print=1
+  // O cliente vê a proposta e pode imprimir/guardar como PDF
+  const base = window.location.origin + window.location.pathname;
+  const url  = `${base}?p=${id}&print=1`;
+  window.open(url, '_blank');
 }
 
 export function setFiltro(btnEl, filtro) {

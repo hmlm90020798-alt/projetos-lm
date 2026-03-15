@@ -15,10 +15,9 @@ import { carregar, doLogin, doLogout, onAuth, registarVisita } from './firebase.
 import { setView, mostrarToast } from './ui.js';
 import {
   renderPainel, abrirModalNovo, fecharModal, guardarProjeto,
-  editarProjeto, apagarProjeto, verCliente, partilharCliente,
+  editarProjeto, apagarProjeto, verCliente, partilharCliente, gerarPDF,
   setFiltro, addLinhaElem, addCatElemExtra, addLinhaElemExtra,
-  addLinhaOrc, addCatOrcamento, addCatExtra, addLinhaOrcamento,
-  addLinhaTimeline, processarImagens, removerImagem, renderThumbs,
+  addCatOrcamento, processarImagens, removerImagem, renderThumbs,
   atualizarTotalPreview, reiniciarPrazoForm, atualizarTipoProjeto,
   iniciarPollingAprovacoes, addInteracao, addOcorrencia,
   atualizarEstadoOcorrencia, copiarEmail, TIPOS_PROJETO,
@@ -41,16 +40,13 @@ window.editarProjeto            = editarProjeto;
 window.apagarProjeto            = apagarProjeto;
 window.verCliente               = verCliente;
 window.partilharCliente         = partilharCliente;
+window.gerarPDF                 = gerarPDF;
 window.setView                  = setView;
 window.renderPainel             = renderPainel;
 window.addLinhaElem             = addLinhaElem;
 window.addCatElemExtra          = addCatElemExtra;
 window.addLinhaElemExtra        = addLinhaElemExtra;
-window.addLinhaOrc              = addLinhaOrc;
 window.addCatOrcamento          = addCatOrcamento;
-window.addCatExtra              = addCatExtra;
-window.addLinhaOrcamento        = addLinhaOrcamento;
-window.addLinhaTimeline         = addLinhaTimeline;
 window.processarImagens         = processarImagens;
 window.removerImagem            = removerImagem;
 window.renderThumbs             = renderThumbs;
@@ -87,7 +83,9 @@ async function loginHandler() {
 
 // ── checkUrlParam ─────────────────────────────────
 async function checkUrlParam() {
-  const id = new URLSearchParams(window.location.search).get('p');
+  const params  = new URLSearchParams(window.location.search);
+  const id      = params.get('p');
+  const isPrint = params.get('print') === '1';
   if (!id) return false;
   setState({ isClienteMode: true, projAtualId: id });
   window._LANG = 'pt';
@@ -99,7 +97,11 @@ async function checkUrlParam() {
       setView('cliente');
       const btn = document.getElementById('btn-voltar-painel');
       if (btn) btn.style.display = 'none';
-      registarVisita(id);
+      if (!isPrint) registarVisita(id); // não registar visita quando é PDF
+      // Activar print automaticamente se vier de ?print=1
+      if (isPrint) {
+        setTimeout(() => { window.print(); }, 800);
+      }
     } else {
       setView('expirada');
     }

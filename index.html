@@ -202,11 +202,7 @@
         <div class="form-bloco-titulo">Elementos do Projeto</div>
         <div class="form-note">Para cada artigo, indica o nome e o link do produto (abre num novo separador para o cliente).</div>
 
-        <div class="form-subsec">Móveis</div>
-        <div id="sec-elem-moveis"></div>
-        <button class="btn-add" onclick="window.addLinhaElem('moveis')">+ Artigo</button>
-
-        <div class="form-subsec" style="margin-top:14px">Tampos</div>
+        <div class="form-subsec">Tampos</div>
         <div id="sec-elem-tampos"></div>
         <button class="btn-add" onclick="window.addLinhaElem('tampos')">+ Artigo</button>
 
@@ -218,27 +214,7 @@
         <div id="sec-elem-acessorios"></div>
         <button class="btn-add" onclick="window.addLinhaElem('acessorios')">+ Artigo</button>
 
-        <div class="form-subsec" style="margin-top:14px">Pavimentos</div>
-        <div id="sec-elem-pavimentos"></div>
-        <button class="btn-add" onclick="window.addLinhaElem('pavimentos')">+ Artigo</button>
-
-        <div class="form-subsec" style="margin-top:14px">Revestimentos</div>
-        <div id="sec-elem-revestimentos"></div>
-        <button class="btn-add" onclick="window.addLinhaElem('revestimentos')">+ Artigo</button>
-
-        <div class="form-subsec" style="margin-top:14px">Sanitários</div>
-        <div id="sec-elem-sanitarios"></div>
-        <button class="btn-add" onclick="window.addLinhaElem('sanitarios')">+ Artigo</button>
-
-        <div class="form-subsec" style="margin-top:14px">Iluminação</div>
-        <div id="sec-elem-iluminacao"></div>
-        <button class="btn-add" onclick="window.addLinhaElem('iluminacao')">+ Artigo</button>
-
-        <div class="form-subsec" style="margin-top:14px">Aquecimento</div>
-        <div id="sec-elem-aquecimento"></div>
-        <button class="btn-add" onclick="window.addLinhaElem('aquecimento')">+ Artigo</button>
-
-        <div class="form-subsec" style="margin-top:20px">Categorias Extras</div>
+        <div class="form-subsec" style="margin-top:20px">Outras Categorias</div>
         <div id="sec-elem-extras"></div>
         <button class="btn-add btn-add-cat" onclick="window.addCatElemExtra()">+ Categoria</button>
       </div>
@@ -246,36 +222,63 @@
       <!-- Orçamento -->
       <div class="form-bloco">
         <div class="form-bloco-titulo">Orçamento</div>
-        <div class="form-note">Valores por categoria — apresentados graficamente ao cliente.</div>
+        <div class="form-note">Introduz o valor final de cada categoria. O total é calculado automaticamente.</div>
 
-        <div class="form-subsec">Tampos</div>
-        <div id="sec-tampos"></div>
-        <button class="btn-add" onclick="window.addLinhaOrc('tampos')">+ Item</button>
+        <div class="orc-form-grid">
+          <div class="orc-form-item">
+            <label class="form-label">Móveis (€)</label>
+            <input type="number" id="f-orc-moveis" class="f-input orc-val-input" placeholder="0,00" oninput="window.atualizarTotalPreview()">
+          </div>
+          <div class="orc-form-item">
+            <label class="form-label">Tampos (€)</label>
+            <input type="number" id="f-orc-tampos" class="f-input orc-val-input" placeholder="0,00" oninput="window.atualizarTotalPreview()">
+          </div>
+          <div class="orc-form-item">
+            <label class="form-label">Eletrodomésticos (€)</label>
+            <input type="number" id="f-orc-eletros" class="f-input orc-val-input" placeholder="0,00" oninput="window.atualizarTotalPreview()">
+          </div>
+          <div class="orc-form-item">
+            <label class="form-label">Acessórios (€)</label>
+            <input type="number" id="f-orc-acessorios" class="f-input orc-val-input" placeholder="0,00" oninput="window.atualizarTotalPreview()">
+          </div>
+        </div>
 
-        <div class="form-subsec" style="margin-top:14px">Eletrodomésticos</div>
-        <div id="sec-eletros"></div>
-        <button class="btn-add" onclick="window.addLinhaOrc('eletros')">+ Item</button>
-
-        <div class="form-subsec" style="margin-top:14px">Acessórios</div>
-        <div id="sec-acessorios"></div>
-        <button class="btn-add" onclick="window.addLinhaOrc('acessorios')">+ Item</button>
-
-        <div class="form-subsec" style="margin-top:20px">Categorias Livres</div>
+        <div class="form-subsec" style="margin-top:20px">Outras Categorias</div>
         <div id="sec-orcamento-cats"></div>
         <button class="btn-add btn-add-cat" onclick="window.addCatOrcamento()">+ Categoria</button>
 
-        <div class="form-subsec" style="margin-top:20px">Extras</div>
-        <div id="sec-extras-cats"></div>
-        <button class="btn-add btn-add-cat" onclick="window.addCatExtra()">+ Extra</button>
-
-        <div class="form-campo" style="max-width:180px;margin-top:16px">
-          <label class="form-label">Desconto (€)</label>
-          <input type="number" id="f-desconto" class="f-input" placeholder="0.00"
-                 oninput="window.atualizarTotalPreview()">
-        </div>
         <div class="modal-total">
           <span class="modal-total-lbl">Total previsto</span>
           <span class="modal-total-val" id="modal-total-preview">0,00 €</span>
+        </div>
+
+        <!-- O que está incluído -->
+        <div class="form-subsec" style="margin-top:24px">O que está incluído</div>
+        <div class="incluido-grid">
+          <label class="incluido-item">
+            <input type="checkbox" id="inc-iva23" class="incluido-check" checked>
+            <span class="incluido-label">IVA à taxa legal em vigor (23%)</span>
+          </label>
+          <label class="incluido-item">
+            <input type="checkbox" id="inc-entrega" class="incluido-check" checked>
+            <span class="incluido-label">Entrega na morada do cliente</span>
+          </label>
+          <label class="incluido-item">
+            <input type="checkbox" id="inc-loja" class="incluido-check">
+            <span class="incluido-label">Levantamento em loja (pelo cliente)</span>
+          </label>
+          <label class="incluido-item">
+            <input type="checkbox" id="inc-instalacao" class="incluido-check" checked>
+            <span class="incluido-label">Instalação incluída</span>
+          </label>
+          <label class="incluido-item">
+            <input type="checkbox" id="inc-inst-cliente" class="incluido-check">
+            <span class="incluido-label">Instalação a cargo do cliente</span>
+          </label>
+          <label class="incluido-item">
+            <input type="checkbox" id="inc-iva6" class="incluido-check">
+            <span class="incluido-label">IVA taxa reduzida 6% (mão de obra — renovação)</span>
+          </label>
         </div>
       </div>
 
@@ -284,14 +287,6 @@
         <div class="form-bloco-titulo">Notas Importantes</div>
         <textarea id="f-notas" class="f-textarea"
                   placeholder="Condições especiais, observações técnicas, informações relevantes para o cliente…"></textarea>
-      </div>
-
-      <!-- Timeline personalizada -->
-      <div class="form-bloco">
-        <div class="form-bloco-titulo">Timeline Personalizada</div>
-        <div class="form-note">Marcos adicionais visíveis na evolução do projeto.</div>
-        <div id="sec-timeline-custom"></div>
-        <button class="btn-add" onclick="window.addLinhaTimeline()">+ Marco</button>
       </div>
 
       <!-- Interacções -->
@@ -466,7 +461,7 @@
           <div class="contacto-linha">
             <div class="contacto-dado-label">Email</div>
             <div class="contacto-email-row">
-              <span id="cli-email-val">helder.melo@leroymerlin.pt</span>
+              <span id="cli-email-val" data-email="helder.melo@leroymerlin.pt">helder.melo@leroymerlin.pt</span>
               <button class="btn-copiar-email" onclick="window.copiarEmail(this)">Copiar</button>
             </div>
           </div>
@@ -509,10 +504,4 @@
   <div class="toast-ico">👁</div>
   <div>
     <div class="toast-titulo" id="toast-titulo"></div>
-    <div class="toast-sub"    id="toast-sub"></div>
-  </div>
-</div>
-
-<script type="module" src="main.js"></script>
-</body>
-</html>
+  

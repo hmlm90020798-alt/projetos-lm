@@ -99,15 +99,9 @@ function renderElementos(p) {
     if (validos.length) grupos.push({ label, itens: validos });
   };
 
-  addGrupo(cat.moveis,        p.elem_moveis);
   addGrupo(cat.tampos,        p.elem_tampos);
   addGrupo(cat.eletros,       p.elem_eletros);
   addGrupo(cat.acessorios,    p.elem_acessorios);
-  addGrupo(cat.pavimentos,    p.elem_pavimentos);
-  addGrupo(cat.revestimentos, p.elem_revestimentos);
-  addGrupo(cat.sanitarios,    p.elem_sanitarios);
-  addGrupo(cat.iluminacao,    p.elem_iluminacao);
-  addGrupo(cat.aquecimento,   p.elem_aquecimento);
 
   // Categorias livres de elementos
   (p.elem_extras||[]).forEach(cat => {
@@ -135,33 +129,33 @@ function renderElementos(p) {
 // ── Orçamento — layout gráfico ────────────────────
 
 function renderOrcamento(p) {
-  const tO    = T[getLang()].orcamento;
-  const total = calcTotal(p);
-  const desc  = parseFloat(p.desconto) || 0;
+  const tO   = T[getLang()].orcamento;
+  const lang = getLang();
 
-  // Cores do ramo verde — escala do mais escuro ao mais claro
+  // Cores — escala de verde do mais escuro ao mais claro
   const cores = ['#27500A','#3B6D11','#639922','#97C459','#C0DD97','#D8EABC'];
 
+  // Construir secções com valor único por categoria
   const secoes = [];
-  const addSec = (label, itens) => {
-    const sub = (itens||[]).reduce((a, i) => a + (parseFloat(i.preco)||0), 0);
-    if (sub > 0) secoes.push({ label, sub });
+  const addSec = (label, val) => {
+    const v = parseFloat(val) || 0;
+    if (v > 0) secoes.push({ label, sub: v });
   };
 
-  addSec(tO.tampos    || 'Tampos',           p.tampos);
-  addSec(tO.eletros   || 'Eletrodomésticos', p.eletros);
-  addSec(tO.acessorios|| 'Acessórios',       p.acessorios);
-  (p.orcamento||[]).forEach(c => addSec(c.categoria, c.itens));
-  (p.extras   ||[]).forEach(c => addSec(c.categoria, c.itens));
+  addSec(lang === 'en' ? 'Fitted Furniture' : 'Móveis',           p.orc_moveis);
+  addSec(lang === 'en' ? 'Worktops'         : 'Tampos',           p.orc_tampos);
+  addSec(lang === 'en' ? 'Appliances'       : 'Eletrodomésticos', p.orc_eletros);
+  addSec(lang === 'en' ? 'Accessories'      : 'Acessórios',       p.orc_acessorios);
+  (p.orcamento||[]).forEach(c => addSec(c.categoria, c.valor));
 
   if (!secoes.length) return `<p class="sec-vazio">${tO.semItens}</p>`;
 
-  const maxSub = Math.max(...secoes.map(s => s.sub), 1);
-  const totalSec = secoes.reduce((a, s) => a + s.sub, 0);
+  const total    = secoes.reduce((a, s) => a + s.sub, 0);
+  const maxSub   = Math.max(...secoes.map(s => s.sub), 1);
 
   const rows = secoes.map((s, i) => {
-    const pct    = Math.round((s.sub / totalSec) * 100);
-    const barPct = Math.round((s.sub / maxSub)   * 100);
+    const pct    = Math.round((s.sub / total)  * 100);
+    const barPct = Math.round((s.sub / maxSub) * 100);
     const cor    = cores[Math.min(i, cores.length - 1)];
     return `
       <div class="orc-row">
@@ -181,15 +175,38 @@ function renderOrcamento(p) {
       </div>`;
   }).join('');
 
+  // Bloco "O que está incluído"
+  const inc = p.incluido || {};
+  const opcoes = [
+    { key: 'iva23',        pt: 'IVA à taxa legal em vigor (23%)',              en: 'VAT at legal rate (23%)' },
+    { key: 'entrega',      pt: 'Entrega na morada do cliente',                 en: 'Delivery to client\'s address' },
+    { key: 'loja',         pt: 'Levantamento em loja (pelo cliente)',           en: 'In-store collection (by client)' },
+    { key: 'instalacao',   pt: 'Instalação incluída',                          en: 'Installation included' },
+    { key: 'inst-cliente', pt: 'Instalação a cargo do cliente',                en: 'Installation by client' },
+    { key: 'iva6',         pt: 'IVA taxa reduzida 6% (mão de obra — renovação)', en: 'Reduced VAT 6% (labour — renovation)' },
+  ];
+
+  const ativas = opcoes.filter(o => inc[o.key]);
+  const incluidoHtml = ativas.length ? `
+    <div class="orc-incluido">
+      <div class="orc-incluido-titulo">${lang === 'en' ? 'What\'s included' : 'O que está incluído'}</div>
+      <div class="orc-incluido-lista">
+        ${ativas.map(o => `
+          <div class="orc-incluido-item">
+            <span class="orc-incluido-check">✓</span>
+            <span>${lang === 'en' ? o.en : o.pt}</span>
+          </div>`).join('')}
+      </div>
+    </div>` : '';
+
   return `
     <div class="orc-lista">${rows}</div>
     <div class="orc-total-card">
       <span class="orc-total-lbl">${tO.total}</span>
-      <div class="orc-total-right">
-        ${desc > 0 ? `<span class="orc-total-desc">${tO.desconto}: −${fmt(desc)}</span>` : ''}
-        <span class="orc-total-val">${fmt(total)}</span>
-      </div>
-    </div>`;
+      <span class="orc-total-val">${fmt(total)}</span>
+    </div>
+    ${incluidoHtml}`;
+}
 }
 
 // ── Timeline ──────────────────────────────────────
