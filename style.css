@@ -311,12 +311,25 @@ img   { display: block; max-width: 100%; }
 .nav-lang:hover     { color: #F5F2EC; border-color: rgba(255,255,255,.22); }
 .btn-voltar         { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--champ-light); background: rgba(196,169,106,.1); border: 1px solid rgba(196,169,106,.2); padding: 5px 12px; border-radius: 5px; cursor: pointer; margin-left: 8px; }
 
-.cli-hero           { min-height: 100vh; background: var(--dark); display: flex; align-items: center; position: relative; overflow: hidden; }
-.cli-hero::before   { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 900px 700px at 70% 40%, rgba(44,94,26,.12) 0%, transparent 60%), radial-gradient(ellipse 600px 900px at 10% 70%, rgba(196,169,106,.05) 0%, transparent 55%); z-index: 0; }
-.cli-hero::after    { content: ''; position: absolute; left: 50%; top: 15%; bottom: 15%; width: 1px; background: linear-gradient(to bottom, transparent, rgba(196,169,106,.14) 20%, rgba(196,169,106,.14) 80%, transparent); z-index: 0; }
-.hero-3d            { position: absolute; inset: 0; z-index: 0; }
-.hero-3d-svg        { width: 100%; height: 100%; }
+.cli-hero           { min-height: 100vh; background: #0A0D0A; display: flex; align-items: center; position: relative; overflow: hidden; }
+.cli-hero::before   { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(15,22,16,.0) 0%, rgba(8,10,8,.85) 100%); pointer-events: none; z-index: 0; }
+.cli-hero::after    { content: ''; position: absolute; left: 50%; top: 15%; bottom: 15%; width: 1px; background: linear-gradient(to bottom, transparent, rgba(196,169,106,.12) 20%, rgba(196,169,106,.12) 80%, transparent); z-index: 0; }
+.hero-3d            { display: none; }
 .hero-inner         { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 100px 60px 80px; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+
+/* Efeito 3D no título — camadas de sombra */
+.hero-titulo        { font-family: var(--serif); font-size: clamp(36px,4.5vw,58px); color: #F0EDE6; line-height: 1.04; margin-bottom: 14px;
+  text-shadow:
+    1px  1px  0px rgba(0,0,0,.8),
+    2px  2px  0px rgba(0,0,0,.7),
+    3px  3px  0px rgba(0,0,0,.6),
+    4px  4px  0px rgba(0,0,0,.5),
+    5px  5px  0px rgba(0,0,0,.4),
+    6px  6px  0px rgba(0,0,0,.3),
+    7px  7px  0px rgba(0,0,0,.2),
+    8px  8px  12px rgba(0,0,0,.5),
+    0px  0px  40px rgba(103,171,47,.06);
+}
 .hero-inner         { max-width: 1100px; margin: 0 auto; padding: 100px 60px 80px; width: 100%; position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
 .hero-eyebrow       { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 3px; color: var(--green-light); text-transform: uppercase; margin-bottom: 20px; opacity: .8; }
 .hero-titulo        { font-family: var(--serif); font-size: clamp(32px,4vw,50px); color: #F5F2EC; line-height: 1.05; margin-bottom: 14px; }
@@ -392,11 +405,14 @@ img   { display: block; max-width: 100%; }
 .orc-val            { font-family: var(--mono); font-size: 15px; font-weight: 500; color: #F5F2EC; min-width: 80px; text-align: right; }
 .orc-barra-bg       { height: 3px; background: rgba(245,242,236,.06); border-radius: 99px; overflow: hidden; }
 .orc-barra          { height: 100%; border-radius: 99px; transition: width 1.4s cubic-bezier(.16,1,.3,1); }
-.orc-total-card     { display: flex; justify-content: space-between; align-items: center; padding: 24px 28px; background: linear-gradient(135deg, rgba(44,94,26,.18) 0%, rgba(27,50,16,.25) 100%); border: 1px solid rgba(103,171,47,.25); border-radius: 14px; margin-top: 16px; }
-.orc-total-left     { display: flex; flex-direction: column; gap: 6px; }
-.orc-total-lbl      { font-family: var(--mono); font-size: 11px; letter-spacing: 2px; color: var(--green-light); text-transform: uppercase; font-weight: 600; }
-.orc-total-linha    { width: 40px; height: 2px; background: var(--green-light); border-radius: 99px; opacity: .5; }
-.orc-total-val      { font-family: var(--serif); font-size: 48px; color: #F5F2EC; line-height: 1; }
+.orc-total-card     { display: flex; justify-content: space-between; align-items: center; padding: 28px 32px; background: rgba(44,94,26,.12); border: 1px solid rgba(103,171,47,.2); border-radius: 14px; margin-bottom: 16px; }
+.orc-total-left     { display: flex; flex-direction: column; gap: 8px; }
+.orc-total-lbl      { font-family: var(--mono); font-size: 12px; letter-spacing: 3px; color: var(--green-light); text-transform: uppercase; font-weight: 700; }
+.orc-total-linha    { width: 48px; height: 2px; background: var(--green-light); border-radius: 99px; opacity: .6; }
+.orc-total-val      { font-family: var(--serif); font-size: 52px; color: #F5F2EC; line-height: 1; }
+
+/* Pack separado visualmente */
+.orc-pack-bloco     { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(245,242,236,.07); }
 
 /* Nota form com título */
 .nota-form-item     { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 10px; background: var(--parchment); border: 1px solid var(--border); border-radius: 9px; padding: 10px 12px; }

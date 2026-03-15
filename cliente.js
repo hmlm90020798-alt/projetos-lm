@@ -206,26 +206,28 @@ function renderOrcamento(p) {
   const ativas = opcoes.filter(o => inc[o.key]);
 
   const packHtml = packActivo ? `
-    <div class="orc-pack-badge">
-      <span class="orc-pack-icon">✦</span>
-      ${lang === 'en' ? 'Pack Projeto discount (10%) already applied' : 'Desconto Pack Projeto (10%) já aplicado'}
+    <div class="orc-pack-bloco">
+      <div class="orc-pack-badge">
+        <span class="orc-pack-icon">✦</span>
+        ${lang === 'en' ? 'Pack Projeto discount (10%) already applied' : 'Desconto Pack Projeto (10%) já aplicado'}
+      </div>
     </div>` : '';
 
   const incluidoHtml = (ativas.length || packActivo) ? `
     <div class="orc-incluido">
       ${packHtml}
-      <div class="orc-incluido-titulo">${lang === 'en' ? 'What\'s included' : 'O que está incluído'}</div>
-      <div class="orc-incluido-lista">
-        ${ativas.map(o => `
-          <div class="orc-incluido-item">
-            <span class="orc-incluido-check">✓</span>
-            <span>${lang === 'en' ? o.en : o.pt}</span>
-          </div>`).join('')}
-      </div>
+      ${ativas.length ? `
+        <div class="orc-incluido-titulo">${lang === 'en' ? 'What\'s included' : 'O que está incluído'}</div>
+        <div class="orc-incluido-lista">
+          ${ativas.map(o => `
+            <div class="orc-incluido-item">
+              <span class="orc-incluido-check">✓</span>
+              <span>${lang === 'en' ? o.en : o.pt}</span>
+            </div>`).join('')}
+        </div>` : ''}
     </div>` : '';
 
   return `
-    <div class="orc-lista">${rows}</div>
     <div class="orc-total-card">
       <div class="orc-total-left">
         <span class="orc-total-lbl">${tO.total}</span>
@@ -233,6 +235,7 @@ function renderOrcamento(p) {
       </div>
       <span class="orc-total-val">${fmt(total)}</span>
     </div>
+    <div class="orc-lista">${rows}</div>
     ${incluidoHtml}`;
 }
 
