@@ -552,3 +552,175 @@ img   { display: block; max-width: 100%; }
   .cd-num           { font-size: 28px; }
   .orc-total-val    { font-size: 30px; }
 }
+
+/* ══════════════════════════════════════════════
+   PRINT / PDF — Layout de documento profissional
+   Esconde interface, achata cores, compacta espaços
+══════════════════════════════════════════════ */
+@media print {
+  /* Configuração da página */
+  @page {
+    margin: 16mm 14mm;
+    size: A4 portrait;
+  }
+  @page :first { margin-top: 10mm; }
+
+  /* Reset geral */
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* Esconder tudo o que não é conteúdo da proposta */
+  .cli-nav,
+  .btn-voltar,
+  .countdown-wrap,
+  .hero-cta,
+  .hero-eyebrow,
+  .gal-overlay,
+  .elem-link,
+  #aprovacao,
+  #contacto,
+  .cli-footer,
+  .toast,
+  #view-painel,
+  #view-login,
+  #view-expirada,
+  .lightbox { display: none !important; }
+
+  /* Mostrar só a vista cliente */
+  body { background: #fff !important; color: #1A1814 !important; font-size: 11pt; }
+  #view-cliente { display: block !important; }
+
+  /* Hero — compacto, sem dark background */
+  .cli-hero {
+    min-height: auto !important;
+    background: #fff !important;
+    padding: 0 0 16pt !important;
+    border-bottom: 2pt solid #2C5E1A;
+    margin-bottom: 20pt;
+    page-break-after: avoid;
+  }
+  .cli-hero::before, .cli-hero::after { display: none !important; }
+  .hero-inner {
+    display: block !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    grid-template-columns: 1fr !important;
+  }
+  .hero-titulo  { color: #1A1814 !important; font-size: 22pt !important; margin-bottom: 4pt; }
+  .hero-para    { color: #3D3930 !important; font-size: 13pt !important; margin-bottom: 8pt; font-style: italic; }
+  .hero-meta    { margin-bottom: 0 !important; }
+  .hero-meta-item { color: #706A62 !important; font-size: 10pt; }
+  .hero-meta-dot  { color: #2C5E1A !important; }
+
+  /* Cabeçalho PDF — marca no topo de cada página */
+  .cli-nav-marca {
+    display: block !important;
+    position: running(header);
+    font-size: 9pt;
+    color: #9C968E !important;
+  }
+
+  /* Secções — sem padding excessivo */
+  .cli-sec {
+    padding: 16pt 0 !important;
+    page-break-inside: avoid;
+  }
+  .cli-sec-inner { padding: 0 !important; max-width: 100% !important; }
+  .cli-sec-dark, .cli-sec-soft, .cli-sec-ink { background: #fff !important; }
+  .sec-header { margin-bottom: 14pt !important; }
+  .sec-num    { font-size: 32pt !important; color: #E4DED4 !important; opacity: 1 !important; }
+  .sec-num-light { color: #E4DED4 !important; }
+  .sec-eyebrow, .sec-eyebrow-light { color: #2C5E1A !important; font-size: 7pt !important; }
+  .sec-titulo, .sec-titulo-light   { color: #1A1814 !important; font-size: 18pt !important; }
+
+  /* Galeria — 2 colunas, compacta */
+  .gal-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8pt !important;
+  }
+  .gal-item { border-radius: 4pt !important; page-break-inside: avoid; }
+
+  /* Elementos do projecto */
+  .elem-grupo       { margin-bottom: 12pt !important; page-break-inside: avoid; }
+  .elem-grupo-titulo { font-size: 8pt !important; padding-bottom: 5pt !important; margin-bottom: 6pt !important; }
+  .elem-item        { padding: 6pt 0 !important; }
+  .elem-nome        { font-size: 11pt !important; color: #3D3930 !important; }
+
+  /* Orçamento */
+  .orc-row    { border: 1pt solid #E4DED4 !important; border-radius: 4pt !important; margin-bottom: 6pt !important; page-break-inside: avoid; }
+  .orc-body   { background: #fff !important; padding: 10pt 14pt !important; }
+  .orc-nome   { color: #3D3930 !important; font-size: 11pt !important; }
+  .orc-pct    { background: #EEF5E8 !important; color: #2C5E1A !important; font-size: 8pt !important; }
+  .orc-val    { color: #1A1814 !important; font-size: 11pt !important; }
+  .orc-barra-bg { background: #E4DED4 !important; }
+  .orc-total-card {
+    background: #EEF5E8 !important;
+    border: 1.5pt solid #2C5E1A !important;
+    border-radius: 6pt !important;
+    padding: 12pt 16pt !important;
+    margin-top: 10pt !important;
+    page-break-inside: avoid;
+  }
+  .orc-total-lbl { color: #706A62 !important; }
+  .orc-total-val { color: #1A1814 !important; font-size: 22pt !important; }
+
+  /* Incluído */
+  .orc-incluido       { border-top: 1pt solid #E4DED4 !important; margin-top: 12pt !important; padding-top: 10pt !important; }
+  .orc-incluido-titulo { color: #9C968E !important; }
+  .orc-incluido-item  { color: #3D3930 !important; font-size: 10pt !important; }
+  .orc-incluido-check { color: #2C5E1A !important; }
+
+  /* Notas — cartões em 2 colunas */
+  .notas-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8pt !important;
+  }
+  .nota-card {
+    border: 1pt solid #E4DED4 !important;
+    border-radius: 6pt !important;
+    padding: 10pt 12pt !important;
+    page-break-inside: avoid;
+    background: #fff !important;
+  }
+  .nota-card-titulo { font-size: 10pt !important; color: #1A1814 !important; margin-bottom: 5pt !important; }
+  .nota-card-texto  { font-size: 9.5pt !important; color: #706A62 !important; line-height: 1.5 !important; }
+
+  /* Timeline */
+  .tl-wrap   { max-width: 100% !important; }
+  .tl-item   { padding-bottom: 14pt !important; page-break-inside: avoid; }
+  .tl-item::before { background: #E4DED4 !important; }
+  .tl-dot    { border-color: #C8C0B4 !important; background: #fff !important; }
+  .tl-item.done .tl-dot  { background: #2C5E1A !important; border-color: #2C5E1A !important; }
+  .tl-item.ativo .tl-dot { background: #C4A96A !important; border-color: #C4A96A !important; }
+  .tl-item.retif .tl-dot { background: #BA7517 !important; border-color: #BA7517 !important; }
+  .tl-label  { color: #9C968E !important; font-size: 11pt !important; }
+  .tl-item.done  .tl-label { color: #1A1814 !important; }
+  .tl-item.ativo .tl-label { color: #1A1814 !important; font-weight: 600 !important; }
+  .tl-item.retif .tl-label { color: #BA7517 !important; font-weight: 600 !important; }
+  .tl-data   { color: #2C5E1A !important; font-size: 9pt !important; }
+  .tl-apelo  { background: #EEF5E8 !important; color: #2C5E1A !important; border-color: #C0DD97 !important; font-size: 8pt !important; }
+  .tl-apelo-retif { background: #FAEEDA !important; color: #BA7517 !important; border-color: #EF9F27 !important; }
+
+  /* Ocorrências */
+  .tl-ocorrencia { background: #FAEEDA !important; border-color: #EF9F27 !important; page-break-inside: avoid; }
+  .tl-ocorrencia-tipo   { color: #BA7517 !important; }
+  .tl-ocorrencia-desc   { color: #3D3930 !important; }
+  .tl-ocorrencia-estado { color: #BA7517 !important; }
+
+  /* Quebras de página limpas */
+  .wrap-galeria,
+  #wrap-elementos,
+  #orcamento,
+  #wrap-notas,
+  #timeline { page-break-before: auto; }
+
+  /* Forçar quebra de página antes de secções pesadas */
+  #orcamento  { page-break-before: always; }
+  #timeline   { page-break-before: always; }
+}
