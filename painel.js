@@ -118,7 +118,10 @@ export function renderPainel() {
            : filtro === 'expirado'    ? exp
            : true;
     if (pesquisa && ok)
-      ok = (p.nome||'').toLowerCase().includes(pesquisa) || (p.localidade||'').toLowerCase().includes(pesquisa);
+      ok = (p.nome||'').toLowerCase().includes(pesquisa)
+        || (p.localidade||'').toLowerCase().includes(pesquisa)
+        || (p.refPc||'').toLowerCase().includes(pesquisa)
+        || (p.refOs||'').toLowerCase().includes(pesquisa);
     return ok;
   });
 
@@ -157,7 +160,7 @@ function renderCard(p) {
         </div>
       </div>
       <div class="card-nome">${p.nome || '—'}</div>
-      <div class="card-local">${p.localidade || ''}</div>
+      <div class="card-local">${p.localidade || ''}${(p.refPc||p.refOs) ? `<span class="card-refs">${p.refPc?'PC: '+p.refPc:''}${p.refPc&&p.refOs?' · ':''}${p.refOs?'OS: '+p.refOs:''}</span>` : ''}</div>
       <div class="card-financeiro">
         <div class="card-total">${total > 0 ? fmt(total) : '—'}</div>
         ${p.aprovacao?.data ? `<div class="card-aprovado">✓ ${p.aprovacao.data}</div>` : ''}
@@ -194,7 +197,7 @@ export function fecharModal() {
 function limparForm() {
   ['f-nome','f-contacto','f-localidade','f-prazo','f-entrega',
    'f-data-entrega-mat','f-data-instalacao','f-data-conclusao',
-   'f-notas','f-tipo-outro',
+   'f-notas','f-tipo-outro','f-ref-pc','f-ref-os',
    'f-orc-moveis','f-orc-tampos','f-orc-eletros','f-orc-acessorios'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
@@ -231,7 +234,9 @@ export function editarProjeto(id) {
   sv('f-data-entrega-mat', p.dataEntregaMat);
   sv('f-data-instalacao',  p.dataInstalacao);
   sv('f-data-conclusao',   p.dataConclusao);
-  sv('f-notas', p.notas);         sv('f-desconto', p.desconto);
+  sv('f-notas', p.notas);
+  sv('f-ref-pc', p.refPc);
+  sv('f-ref-os', p.refOs);
 
   if (p.tipo) {
     document.getElementById('f-tipo').value = p.tipo;
@@ -343,6 +348,8 @@ export async function guardarProjeto() {
     dataInstalacao:  gv('f-data-instalacao'),
     dataConclusao:   gv('f-data-conclusao'),
     notas:       gv('f-notas').trim(),
+    refPc:       gv('f-ref-pc').trim(),
+    refOs:       gv('f-ref-os').trim(),
     // Elementos (com URL)
     elem_tampos:        recolherLinhasElem(document.getElementById('sec-elem-tampos')),
     elem_eletros:       recolherLinhasElem(document.getElementById('sec-elem-eletros')),
@@ -664,4 +671,215 @@ export function iniciarPollingAprovacoes() {
   };
   verificarAprovacoes(handler);
   setInterval(() => verificarAprovacoes(handler), 120000);
+}
+
+// ── Separadores (tabs) ────────────────────────────
+
+export function setTab(btnEl, tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btnEl.classList.add('active');
+  document.getElementById('tab-' + tab)?.classList.add('active');
+
+  const btnNovo = document.getElementById('btn-novo-proj');
+  if (btnNovo) btnNovo.style.display = tab === 'projetos' ? '' : 'none';
+
+  if (tab === 'alertas')    renderAlertas();
+  if (tab === 'ocorrencias') renderOcorrenciasTab();
+}
+
+// ── Alertas & Agenda ──────────────────────────────
+
+export function renderAlertas() {
+  const lista  = getProjects();
+  const hoje   = new Date();
+  hoje.setHours(0,0,0,0);
+  const em14   = new Date(hoje.getTime() + 14 * 86400000);
+
+  const alertas = [];
+  const agenda  = [];
+
+  const parseData = iso => {
+    if (!iso) return null;
+    const d = new Date(iso + 'T12:00:00');
+    return isNaN(d) ? null : d;
+  };
+
+  const diasAte = d => Math.round((d - hoje) / 86400000);
+
+  lista.forEach(p => {
+    const nome = p.nome || '—';
+    const tipo = TIPOS_PROJETO.find(t => t.value === p.tipo)?.label || p.tipo || '';
+
+    // Proposta a expirar
+    if (p.prazo && faseOrdem(p.fase) < faseOrdem('aprovado')) {
+      const d = parseData(p.prazo);
+      if (d) {
+        const dias = diasAte(d);
+        if (dias <= 0)
+          alertas.push({ cor: 'urgente', tipo: 'Proposta expirada', nome, sub: 'Necessita renovação', data: d.toLocaleDateString('pt-PT'), ordem: -1 });
+        else if (dias <= 2)
+          alertas.push({ cor: 'urgente', tipo: `Proposta expira ${dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : 'em ' + dias + ' dias'}`, nome, sub: tipo, data: d.toLocaleDateString('pt-PT'), ordem: dias });
+        else if (dias <= 7)
+          alertas.push({ cor: 'aviso', tipo: `Proposta expira em ${dias} dias`, nome, sub: tipo, data: d.toLocaleDateString('pt-PT'), ordem: dias });
+
+        if (d >= hoje && d <= em14)
+          agenda.push({ data: d, label: d.toLocaleDateString('pt-PT', {day:'numeric',month:'short'}), nome, evento: 'Proposta expira', cor: dias <= 2 ? '#E24B4A' : '#BA7517' });
+      }
+    }
+
+    // Entrega de materiais
+    const dEnt = parseData(p.dataEntregaMat);
+    if (dEnt) {
+      const dias = diasAte(dEnt);
+      if (dias >= 0 && dias <= 3)
+        alertas.push({ cor: dias <= 1 ? 'urgente' : 'aviso', tipo: `Entrega ${dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : 'em ' + dias + ' dias'}`, nome, sub: 'Materiais — ' + tipo, data: dEnt.toLocaleDateString('pt-PT'), ordem: dias });
+      if (dEnt >= hoje && dEnt <= em14)
+        agenda.push({ data: dEnt, label: dEnt.toLocaleDateString('pt-PT', {day:'numeric',month:'short'}), nome, evento: 'Entrega de materiais', cor: '#BA7517' });
+    }
+
+    // Instalação a iniciar
+    const dInst = parseData(p.dataInstalacao);
+    if (dInst) {
+      const dias = diasAte(dInst);
+      if (dias >= 0 && dias <= 5)
+        alertas.push({ cor: dias <= 1 ? 'urgente' : 'aviso', tipo: `Instalação ${dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : 'em ' + dias + ' dias'}`, nome, sub: tipo, data: dInst.toLocaleDateString('pt-PT'), ordem: dias });
+      if (dInst >= hoje && dInst <= em14)
+        agenda.push({ data: dInst, label: dInst.toLocaleDateString('pt-PT', {day:'numeric',month:'short'}), nome, evento: 'Início da instalação', cor: '#378ADD' });
+    }
+
+    // Em montagem
+    if (p.fase === 'montagem')
+      alertas.push({ cor: 'ok', tipo: 'Em montagem', nome, sub: tipo + (p.dataInstalacao ? ' · desde ' + new Date(p.dataInstalacao+'T12:00:00').toLocaleDateString('pt-PT') : ''), data: '', ordem: 99 });
+
+    // Conclusão prevista
+    const dConc = parseData(p.dataConclusao);
+    if (dConc && dConc >= hoje && dConc <= em14)
+      agenda.push({ data: dConc, label: dConc.toLocaleDateString('pt-PT', {day:'numeric',month:'short'}), nome, evento: 'Conclusão prevista', cor: '#639922' });
+
+    // Aprovação pendente há mais de 5 dias
+    if (p.fase === 'proposta' && p.dataCriacao) {
+      const criacao = parseData(p.dataCriacao);
+      if (criacao) {
+        const diasCriado = Math.round((hoje - criacao) / 86400000);
+        if (diasCriado >= 5)
+          alertas.push({ cor: 'info', tipo: `Sem resposta há ${diasCriado} dias`, nome, sub: 'Proposta enviada, aguarda aprovação', data: criacao.toLocaleDateString('pt-PT'), ordem: 50 + diasCriado });
+      }
+    }
+  });
+
+  alertas.sort((a, b) => a.ordem - b.ordem);
+  agenda.sort((a, b) => a.data - b.data);
+
+  const corLabel = { urgente: 'Urgente', aviso: 'Atenção', info: 'Info', ok: 'Em curso' };
+
+  const alertasHtml = alertas.length ? alertas.map(a => `
+    <div class="alerta-card alerta-${a.cor}" onclick="window.setFiltro(document.querySelector('.filtro-btn'),a.nome);window.setTab(document.querySelector('[onclick*=projetos]'),'projetos')">
+      <div class="alerta-tipo alerta-tipo-${a.cor}">${a.tipo}</div>
+      <div class="alerta-nome">${a.nome}</div>
+      <div class="alerta-detalhe">${a.sub}</div>
+      ${a.data ? `<div class="alerta-data">${a.data}</div>` : ''}
+    </div>`).join('')
+  : `<p class="tab-vazio">✓ Sem alertas activos — tudo em ordem.</p>`;
+
+  const hoje2 = new Date(); hoje2.setHours(0,0,0,0);
+  const agendaHtml = agenda.length ? agenda.map(a => {
+    const dias = Math.round((a.data - hoje2) / 86400000);
+    const diaLabel = dias === 0 ? 'Hoje' : dias === 1 ? 'Amanhã' : a.label;
+    return `
+      <div class="agenda-item">
+        <div class="agenda-dia">${diaLabel}</div>
+        <div class="agenda-dot" style="background:${a.cor}"></div>
+        <div class="agenda-info">
+          <div class="agenda-proj">${a.nome}</div>
+          <div class="agenda-evento">${a.evento}</div>
+        </div>
+      </div>`;
+  }).join('')
+  : `<p class="tab-vazio">Sem eventos nos próximos 14 dias.</p>`;
+
+  // Atualizar badge
+  const badge = document.getElementById('tab-badge-alertas');
+  if (badge) { badge.textContent = alertas.length || ''; badge.style.display = alertas.length ? '' : 'none'; }
+
+  document.getElementById('alertas-content').innerHTML = `
+    <div class="tab-sec-titulo">Alertas activos</div>
+    <div class="alerta-grid">${alertasHtml}</div>
+    <div class="tab-sec-titulo" style="margin-top:28px">Agenda — próximos 14 dias</div>
+    <div class="agenda-lista">${agendaHtml}</div>`;
+}
+
+// ── Ocorrências (tab dedicado) ────────────────────
+
+export function renderOcorrenciasTab() {
+  const lista  = getProjects();
+  const tipoLabels   = { atraso: 'Atraso na entrega', defeito: 'Defeito de material', instalacao: 'Problema na instalação', falta: 'Material em falta', outro: 'Outro' };
+  const estadoLabels = { detectada: 'Detectada', resolucao: 'Em resolução', resolvida: 'Resolvida' };
+
+  const activas   = [];
+  const resolvidas = [];
+
+  lista.forEach(p => {
+    (p.ocorrencias||[]).forEach(o => {
+      const item = { ...o, projNome: p.nome||'—', projTipo: TIPOS_PROJETO.find(t=>t.value===p.tipo)?.label||p.tipo||'', projId: p.id };
+      if (o.estado === 'resolvida') resolvidas.push(item);
+      else activas.push(item);
+    });
+  });
+
+  // Ordenar activas: detectadas primeiro, depois em resolução
+  activas.sort((a,b) => (a.estado === 'detectada' ? 0 : 1) - (b.estado === 'detectada' ? 0 : 1));
+  resolvidas.sort((a,b) => (b.data||'').localeCompare(a.data||''));
+
+  // Badge
+  const badge = document.getElementById('tab-badge-ocorr');
+  if (badge) { badge.textContent = activas.length || ''; badge.style.display = activas.length ? '' : 'none'; }
+
+  const nDetect = activas.filter(o => o.estado === 'detectada').length;
+  const nResol  = activas.filter(o => o.estado === 'resolucao').length;
+
+  const resumoHtml = activas.length ? `
+    <div class="ocorr-resumo">
+      ${nDetect ? `<span class="oc-pill oc-pill-verm">${nDetect} detectada${nDetect>1?'s':''}</span>` : ''}
+      ${nResol  ? `<span class="oc-pill oc-pill-amb">${nResol} em resolução</span>` : ''}
+    </div>` : '';
+
+  const activasHtml = activas.length ? activas.map(o => {
+    const diasReg = o.data ? Math.round((new Date() - new Date(o.data.split('/').reverse().join('-')+'T12:00:00')) / 86400000) : null;
+    const estadoCls = o.estado === 'detectada' ? 'badge-detect' : 'badge-resol';
+    return `
+      <div class="oc-card" onclick="window.editarProjeto('${o.projId}')">
+        <div class="oc-card-header">
+          <div class="oc-card-proj">${o.projNome} · ${o.projTipo}</div>
+          ${diasReg !== null ? `<div class="oc-card-dias">Há ${diasReg} dia${diasReg!==1?'s':''}</div>` : ''}
+          <span class="oc-estado-badge ${estadoCls}">${estadoLabels[o.estado]||o.estado}</span>
+        </div>
+        <div class="oc-items">
+          <div class="oc-item">
+            <div class="oc-item-tipo oc-tipo-${o.estado==='detectada'?'d':'r'}">${tipoLabels[o.tipo]||o.tipo}</div>
+            <div class="oc-item-desc">${o.descricao||''}</div>
+            <div class="oc-item-data">${o.data||''}</div>
+          </div>
+        </div>
+      </div>`;
+  }).join('')
+  : `<p class="tab-vazio">✓ Sem ocorrências activas.</p>`;
+
+  const resolvidasHtml = resolvidas.slice(0,10).map(o => `
+    <div class="hist-item" onclick="window.editarProjeto('${o.projId}')">
+      <div class="hist-check">✓</div>
+      <div class="hist-proj">${o.projNome}</div>
+      <div class="hist-tipo">${tipoLabels[o.tipo]||o.tipo}</div>
+      <div class="hist-data">Resolvida ${o.data||''}</div>
+    </div>`).join('');
+
+  document.getElementById('ocorrencias-content').innerHTML = `
+    <div class="tab-sec-topo">
+      <div class="tab-sec-titulo">Ocorrências activas</div>
+      ${resumoHtml}
+    </div>
+    <div class="oc-lista">${activasHtml}</div>
+    ${resolvidas.length ? `
+      <div class="tab-sec-titulo" style="margin-top:28px;padding-top:20px;border-top:0.5px solid var(--border)">Resolvidas recentemente</div>
+      <div class="hist-lista">${resolvidasHtml}</div>` : ''}`;
 }

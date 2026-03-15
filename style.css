@@ -724,3 +724,79 @@ img   { display: block; max-width: 100%; }
   #orcamento  { page-break-before: always; }
   #timeline   { page-break-before: always; }
 }
+
+/* ══════════════════════════════════════════════
+   TABS — Separadores do painel
+══════════════════════════════════════════════ */
+.tabs-nav          { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1.5px solid var(--border); padding-bottom: 0; }
+.tab-btn           { padding: 10px 18px; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1.5px; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--ink4); cursor: pointer; transition: all .15s; display: flex; align-items: center; gap: 7px; }
+.tab-btn:hover     { color: var(--ink); }
+.tab-btn.active    { color: var(--green); border-bottom-color: var(--green); }
+.tab-content       { display: none; }
+.tab-content.active{ display: block; }
+.tab-badge         { font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 99px; background: var(--border); color: var(--ink4); min-width: 16px; text-align: center; }
+.tab-badge-warn    { background: rgba(186,117,23,.15); color: var(--amber); }
+.tab-badge-danger  { background: var(--red-pale); color: var(--red); }
+.tab-vazio         { color: var(--ink4); font-style: italic; font-size: 14px; padding: 20px 0; }
+.tab-sec-titulo    { font-family: var(--sans); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--ink4); margin-bottom: 14px; }
+.tab-sec-topo      { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+
+/* ── Alertas ── */
+.alerta-grid       { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 12px; }
+.alerta-card       { background: var(--white); border: 1.5px solid var(--border); border-radius: 10px; padding: 14px 16px; cursor: default; transition: border-color .15s; }
+.alerta-card:hover { border-color: var(--green); }
+.alerta-urgente    { border-left: 3px solid var(--red); border-radius: 0 10px 10px 0; }
+.alerta-aviso      { border-left: 3px solid var(--amber); border-radius: 0 10px 10px 0; }
+.alerta-info       { border-left: 3px solid #378ADD; border-radius: 0 10px 10px 0; }
+.alerta-ok         { border-left: 3px solid var(--green); border-radius: 0 10px 10px 0; }
+.alerta-tipo       { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .8px; margin-bottom: 5px; }
+.alerta-tipo-urgente { color: var(--red); }
+.alerta-tipo-aviso   { color: var(--amber); }
+.alerta-tipo-info    { color: #185FA5; }
+.alerta-tipo-ok      { color: var(--green); }
+.alerta-nome       { font-family: var(--serif); font-size: 16px; color: var(--ink); margin-bottom: 3px; }
+.alerta-detalhe    { font-size: 12px; color: var(--ink4); }
+.alerta-data       { font-family: var(--mono); font-size: 11px; color: var(--ink4); margin-top: 6px; }
+
+/* ── Agenda ── */
+.agenda-lista      { display: flex; flex-direction: column; gap: 8px; }
+.agenda-item       { display: flex; align-items: center; gap: 14px; padding: 11px 16px; background: var(--white); border-radius: 9px; border: 1.5px solid var(--border); }
+.agenda-dia        { font-family: var(--mono); font-size: 11px; font-weight: 500; color: var(--ink4); min-width: 56px; }
+.agenda-dot        { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.agenda-proj       { font-size: 14px; font-weight: 500; color: var(--ink2); }
+.agenda-evento     { font-size: 12px; color: var(--ink4); }
+
+/* ── Ocorrências tab ── */
+.ocorr-resumo      { display: flex; gap: 8px; }
+.oc-pill           { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 99px; }
+.oc-pill-verm      { background: var(--red-pale); color: var(--red); }
+.oc-pill-amb       { background: var(--amber-pale); color: var(--amber); }
+.oc-lista          { display: flex; flex-direction: column; gap: 10px; }
+.oc-card           { background: var(--white); border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; transition: border-color .15s; }
+.oc-card:hover     { border-color: var(--amber); }
+.oc-card-header    { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.oc-card-proj      { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--ink); flex: 1; }
+.oc-card-dias      { font-family: var(--mono); font-size: 11px; color: var(--ink4); }
+.oc-estado-badge   { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
+.badge-detect      { background: var(--red-pale); color: var(--red); }
+.badge-resol       { background: var(--amber-pale); color: var(--amber); }
+.oc-items          { padding: 10px 16px; }
+.oc-item           { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.oc-item:last-child{ border-bottom: none; }
+.oc-item-tipo      { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; min-width: 120px; flex-shrink: 0; padding-top: 2px; }
+.oc-tipo-d         { color: var(--red); }
+.oc-tipo-r         { color: var(--amber); }
+.oc-item-desc      { font-size: 13px; color: var(--ink3); flex: 1; line-height: 1.45; }
+.oc-item-data      { font-family: var(--mono); font-size: 10px; color: var(--ink4); white-space: nowrap; }
+
+/* ── Histórico resolvidas ── */
+.hist-lista        { display: flex; flex-direction: column; gap: 6px; }
+.hist-item         { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--white); border-radius: 8px; border: 1.5px solid var(--border); opacity: .65; cursor: pointer; transition: opacity .15s; }
+.hist-item:hover   { opacity: 1; }
+.hist-check        { color: var(--green); font-size: 14px; flex-shrink: 0; }
+.hist-proj         { font-size: 13px; font-weight: 500; color: var(--ink2); flex: 1; }
+.hist-tipo         { font-size: 12px; color: var(--ink4); }
+.hist-data         { font-family: var(--mono); font-size: 11px; color: var(--ink4); white-space: nowrap; }
+
+/* ── Refs PC/OS no card ── */
+.card-refs         { display: block; font-family: var(--mono); font-size: 10px; color: var(--ink4); margin-top: 3px; letter-spacing: .3px; }

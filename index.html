@@ -43,58 +43,86 @@
 
   <div class="painel-body">
     <div class="painel-top">
-      <h1 class="painel-titulo">Projetos</h1>
-      <button class="btn-novo" onclick="window.abrirModalNovo()">+ Novo Projeto</button>
+      <h1 class="painel-titulo" id="painel-titulo-texto">Projetos</h1>
+      <button class="btn-novo" id="btn-novo-proj" onclick="window.abrirModalNovo()">+ Novo Projeto</button>
     </div>
 
-    <div class="painel-toolbar">
-      <div class="search-wrap">
-        <input type="text" id="painel-pesquisa" class="search-input"
-               placeholder="Pesquisar nome, localidade…"
-               oninput="window.renderPainel()">
-      </div>
-      <div class="filtros">
-        <button class="filtro-btn active" onclick="window.setFiltro(this,'todos')">Todos</button>
-        <button class="filtro-btn" onclick="window.setFiltro(this,'proposta')">Em Análise</button>
-        <button class="filtro-btn" onclick="window.setFiltro(this,'aprovado')">Aprovado</button>
-        <button class="filtro-btn" onclick="window.setFiltro(this,'obra')">Em Obra</button>
-        <button class="filtro-btn" onclick="window.setFiltro(this,'concluido')">Concluído</button>
-        <button class="filtro-btn filtro-exp" onclick="window.setFiltro(this,'expirado')">Expirado</button>
-      </div>
+    <!-- Separadores principais -->
+    <div class="tabs-nav">
+      <button class="tab-btn active" onclick="window.setTab(this,'projetos')">
+        📁 Projetos
+        <span class="tab-badge" id="tab-badge-projetos"></span>
+      </button>
+      <button class="tab-btn" onclick="window.setTab(this,'alertas')">
+        📅 Alertas &amp; Agenda
+        <span class="tab-badge tab-badge-warn" id="tab-badge-alertas"></span>
+      </button>
+      <button class="tab-btn" onclick="window.setTab(this,'ocorrencias')">
+        ⚠️ Ocorrências
+        <span class="tab-badge tab-badge-danger" id="tab-badge-ocorr"></span>
+      </button>
     </div>
 
-    <div class="dashboard">
-      <div class="dash-card">
-        <div class="dash-num" id="stat-total">0</div>
-        <div class="dash-lbl">Projetos</div>
+    <!-- TAB: PROJETOS -->
+    <div id="tab-projetos" class="tab-content active">
+      <div class="painel-toolbar">
+        <div class="search-wrap">
+          <input type="text" id="painel-pesquisa" class="search-input"
+                 placeholder="Pesquisar nome, localidade, PC, OS…"
+                 oninput="window.renderPainel()">
+        </div>
+        <div class="filtros">
+          <button class="filtro-btn active" onclick="window.setFiltro(this,'todos')">Todos</button>
+          <button class="filtro-btn" onclick="window.setFiltro(this,'proposta')">Em Análise</button>
+          <button class="filtro-btn" onclick="window.setFiltro(this,'aprovado')">Aprovado</button>
+          <button class="filtro-btn" onclick="window.setFiltro(this,'obra')">Em Obra</button>
+          <button class="filtro-btn" onclick="window.setFiltro(this,'concluido')">Concluído</button>
+          <button class="filtro-btn filtro-exp" onclick="window.setFiltro(this,'expirado')">Expirado</button>
+        </div>
       </div>
-      <div class="dash-card dash-destaque">
-        <div class="dash-num" id="stat-taxa">0%</div>
-        <div class="dash-lbl">Taxa de Aprovação</div>
+      <div class="dashboard">
+        <div class="dash-card">
+          <div class="dash-num" id="stat-total">0</div>
+          <div class="dash-lbl">Projetos</div>
+        </div>
+        <div class="dash-card dash-destaque">
+          <div class="dash-num" id="stat-taxa">0%</div>
+          <div class="dash-lbl">Taxa de Aprovação</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-num dash-num-sm" id="stat-valor">—</div>
+          <div class="dash-lbl">Valor Médio</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-num" id="stat-tempo">—</div>
+          <div class="dash-lbl">Dias p/ Aprovar</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-num" id="stat-concluidos">0</div>
+          <div class="dash-lbl">Concluídos</div>
+        </div>
+        <div class="dash-card dash-alerta">
+          <div class="dash-num" id="stat-expira">0</div>
+          <div class="dash-lbl">A Expirar (7d)</div>
+        </div>
+        <div class="dash-card dash-ocorr">
+          <div class="dash-num" id="stat-ocorr">0</div>
+          <div class="dash-lbl">Ocorrências</div>
+        </div>
       </div>
-      <div class="dash-card">
-        <div class="dash-num dash-num-sm" id="stat-valor">—</div>
-        <div class="dash-lbl">Valor Médio</div>
-      </div>
-      <div class="dash-card">
-        <div class="dash-num" id="stat-tempo">—</div>
-        <div class="dash-lbl">Dias p/ Aprovar</div>
-      </div>
-      <div class="dash-card">
-        <div class="dash-num" id="stat-concluidos">0</div>
-        <div class="dash-lbl">Concluídos</div>
-      </div>
-      <div class="dash-card dash-alerta">
-        <div class="dash-num" id="stat-expira">0</div>
-        <div class="dash-lbl">A Expirar (7d)</div>
-      </div>
-      <div class="dash-card dash-ocorr">
-        <div class="dash-num" id="stat-ocorr">0</div>
-        <div class="dash-lbl">Ocorrências Abertas</div>
-      </div>
+      <div class="proj-grid" id="proj-grid"></div>
     </div>
 
-    <div class="proj-grid" id="proj-grid"></div>
+    <!-- TAB: ALERTAS & AGENDA -->
+    <div id="tab-alertas" class="tab-content">
+      <div id="alertas-content"></div>
+    </div>
+
+    <!-- TAB: OCORRÊNCIAS -->
+    <div id="tab-ocorrencias" class="tab-content">
+      <div id="ocorrencias-content"></div>
+    </div>
+
   </div>
 </div>
 
@@ -130,6 +158,14 @@
           <div class="form-campo">
             <label class="form-label">Localidade</label>
             <input type="text" id="f-localidade" class="f-input" placeholder="Ex: Peso da Régua">
+          </div>
+          <div class="form-campo">
+            <label class="form-label">Ref. PC <span class="label-hint">(referência do projeto LM)</span></label>
+            <input type="text" id="f-ref-pc" class="f-input" placeholder="Ex: PC-2026-0042">
+          </div>
+          <div class="form-campo">
+            <label class="form-label">Ref. OS <span class="label-hint">(ordem de serviço)</span></label>
+            <input type="text" id="f-ref-os" class="f-input" placeholder="Ex: OS-2026-0018">
           </div>
         </div>
       </div>
@@ -431,7 +467,7 @@
           <div class="contacto-linha">
             <div class="contacto-dado-label">Email</div>
             <div class="contacto-email-row">
-              <a class="contacto-email-link" href="mailto:helder.melo@leroymerlin.pt">
+              <a class="contacto-email-link" href="/cdn-cgi/l/email-protection#d4bcb1b8b0b1a6fab9b1b8bb94b8b1a6bbadb9b1a6b8bdbafaa4a0">
                 <span class="em-u">helder.melo</span><span class="em-a">&#64;</span><span class="em-d">leroymerlin.pt</span>
               </a>
             </div>

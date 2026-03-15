@@ -16,7 +16,8 @@ import { setView, mostrarToast } from './ui.js';
 import {
   renderPainel, abrirModalNovo, fecharModal, guardarProjeto,
   editarProjeto, apagarProjeto, verCliente, partilharCliente, gerarPDF,
-  setFiltro, addLinhaElem, addCatElemExtra, addLinhaElemExtra,
+  setFiltro, setTab, renderAlertas, renderOcorrenciasTab,
+  addLinhaElem, addCatElemExtra, addLinhaElemExtra,
   addCatOrcamento, processarImagens, removerImagem, renderThumbs,
   atualizarTotalPreview, reiniciarPrazoForm, atualizarTipoProjeto,
   iniciarPollingAprovacoes, addInteracao, addOcorrencia,
@@ -33,6 +34,9 @@ window._clienteModule = { renderPaginaCliente };
 window.doLogin                  = () => loginHandler();
 window.doLogout                 = async () => { await doLogout(); setView('login'); };
 window.setFiltro                = setFiltro;
+window.setTab                   = setTab;
+window.renderAlertas            = renderAlertas;
+window.renderOcorrenciasTab     = renderOcorrenciasTab;
 window.abrirModalNovo           = abrirModalNovo;
 window.fecharModal              = fecharModal;
 window.guardarProjeto           = guardarProjeto;
