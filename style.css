@@ -327,30 +327,34 @@ img   { display: block; max-width: 100%; }
   font-family: var(--serif);
   font-size: clamp(80px, 16vw, 180px);
   font-weight: 400;
-  color: #EDEAE2;
+  color: #F0EDE5;
   line-height: .92;
   margin-bottom: 24px;
   letter-spacing: -.02em;
   text-shadow:
-    2px  2px  0   #2a2a22,
-    4px  4px  0   #252520,
-    6px  6px  0   #20201c,
-    8px  8px  0   #1c1c18,
-    10px 10px 0   #181814,
-    12px 12px 0   #141410,
-    14px 14px 0   #10100d,
-    16px 16px 0   #0e0e0b,
-    18px 18px 24px rgba(0,0,0,.8);
+    1px  1px  0   #1a1e18,
+    2px  2px  0   #181c16,
+    3px  3px  0   #161a14,
+    4px  4px  0   #141812,
+    5px  5px  0   #121610,
+    6px  6px  0   #10140e,
+    7px  7px  0   #0e120c,
+    8px  8px  0   #0c100a,
+    9px  9px  0   #0a0e08,
+    10px 10px 0   #080c07,
+    11px 11px 0   #060a05,
+    12px 12px 0   #040803,
+    14px 14px 20px rgba(0,0,0,.9);
 }
 
 /* Countdown — inline e compacto, não bloco separado */
-.countdown-wrap     { display: flex; flex-direction: column; align-items: center; gap: 6px; margin-bottom: 28px; }
-.cd-label           { font-family: var(--mono); font-size: 9px; letter-spacing: 2px; color: rgba(245,242,236,.3); text-transform: uppercase; }
-.cd-grid            { display: flex; gap: 6px; align-items: center; }
-.cd-unit            { text-align: center; background: rgba(245,242,236,.04); border: 1px solid rgba(245,242,236,.07); border-radius: 6px; padding: 6px 10px; min-width: 44px; }
-.cd-num             { font-family: var(--mono); font-size: 20px; font-weight: 500; color: #F5F2EC; line-height: 1; }
-.cd-lbl             { font-family: var(--mono); font-size: 7px; color: rgba(245,242,236,.3); letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; }
-.cd-expirada        { font-family: var(--sans); font-size: 12px; color: rgba(245,242,236,.35); }
+.countdown-wrap     { display: inline-flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 28px; }
+.cd-label           { font-family: var(--mono); font-size: 8px; letter-spacing: 2.5px; color: rgba(245,242,236,.25); text-transform: uppercase; }
+.cd-grid            { display: flex; gap: 5px; align-items: center; }
+.cd-unit            { text-align: center; background: rgba(245,242,236,.05); border: 1px solid rgba(245,242,236,.08); border-radius: 5px; padding: 5px 9px; min-width: 40px; }
+.cd-num             { font-family: var(--mono); font-size: 18px; font-weight: 500; color: rgba(245,242,236,.8); line-height: 1; display: block; }
+.cd-lbl             { font-family: var(--mono); font-size: 7px; color: rgba(245,242,236,.25); letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; display: block; }
+.cd-expirada        { font-family: var(--sans); font-size: 12px; color: rgba(245,242,236,.3); }
 
 .hero-para          { font-family: var(--serif); font-size: clamp(13px,1.3vw,16px); color: rgba(245,242,236,.38); font-style: italic; margin-bottom: 22px; letter-spacing: .03em; }
 .hero-meta          { display: flex; flex-direction: column; gap: 6px; margin-bottom: 40px; align-items: center; }
@@ -594,7 +598,6 @@ img   { display: block; max-width: 100%; }
   .proj-grid        { grid-template-columns: 1fr; }
   .sec-num          { font-size: 48px; }
   .sec-titulo       { font-size: 26px; }
-  .cd-num           { font-size: 28px; }
   .orc-total-val    { font-size: 30px; }
 }
 
