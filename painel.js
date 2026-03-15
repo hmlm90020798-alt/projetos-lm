@@ -168,9 +168,9 @@ function renderCard(p) {
         <button class="btn-card" onclick="event.stopPropagation();window.editarProjeto('${p.id}')">✏️ Editar</button>
         <button class="btn-card primary" onclick="event.stopPropagation();window.verCliente('${p.id}')">👁 Ver</button>
         <button class="btn-card pdf" onclick="event.stopPropagation();window.gerarPDF('${p.id}')" title="Gerar PDF da proposta">📄 PDF</button>
-        <button class="btn-card whatsapp" onclick="event.stopPropagation();window.partilharCliente('${p.id}')">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.68A2 2 0 012 .99h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 8.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
-          Partilhar
+        <button class="btn-card partilhar" onclick="event.stopPropagation();window.partilharCliente('${p.id}')" title="Copiar link para partilhar com o cliente">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
+          Link
         </button>
         <button class="btn-card danger" onclick="event.stopPropagation();window.apagarProjeto('${p.id}')">🗑</button>
       </div>
@@ -591,9 +591,12 @@ function renderOcorrenciasForm(list) {
 export function partilharCliente(id) {
   const base = window.location.origin + window.location.pathname;
   const url  = `${base}?p=${id}`;
-  const p    = getProjects().find(x => x.id === id);
-  const msg  = `Olá${p?.nome ? ' ' + p.nome.split(' ')[0] : ''}! Aqui está a sua proposta:\n${url}`;
-  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  navigator.clipboard.writeText(url).then(() => {
+    mostrarToast('🔗 Link copiado!', 'Cola no email para partilhar com o cliente.');
+  }).catch(() => {
+    // Fallback se clipboard não disponível
+    prompt('Copia este link para partilhar com o cliente:', url);
+  });
 }
 
 export function verCliente(id) {
