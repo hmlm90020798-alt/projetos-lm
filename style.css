@@ -325,21 +325,20 @@ img   { display: block; max-width: 100%; }
 
 .hero-titulo        {
   font-family: var(--serif);
-  font-size: clamp(80px, 16vw, 180px);
+  font-size: clamp(52px, 10vw, 110px);
   font-weight: 400;
   color: #F0EDE5;
-  line-height: .92;
-  margin-bottom: 24px;
+  line-height: .94;
+  margin-bottom: 20px;
   letter-spacing: -.02em;
   text-shadow:
-    2px  2px  0   #c8c4b8,
-    4px  4px  0   #a8a49a,
-    6px  6px  0   #888480,
-    8px  8px  0   #686460,
-    10px 10px 0   #484440,
-    12px 12px 0   #2e2b28,
-    14px 14px 0   #1a1816,
-    16px 16px 28px rgba(0,0,0,.85);
+    1px  1px  0   #d8d4cc,
+    2px  2px  0   #b0aca4,
+    3px  3px  0   #888480,
+    4px  4px  0   #606058,
+    5px  5px  0   #404038,
+    6px  6px  0   #282820,
+    7px  7px  12px rgba(0,0,0,.55);
 }
 
 /* Countdown — inline e compacto, não bloco separado */
@@ -351,7 +350,7 @@ img   { display: block; max-width: 100%; }
 .cd-lbl             { font-family: var(--mono); font-size: 7px; color: rgba(245,242,236,.25); letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; display: block; }
 .cd-expirada        { font-family: var(--sans); font-size: 12px; color: rgba(245,242,236,.3); }
 
-.hero-para          { font-family: var(--serif); font-size: clamp(13px,1.3vw,16px); color: rgba(245,242,236,.38); font-style: italic; margin-bottom: 22px; letter-spacing: .03em; }
+.hero-para          { font-family: var(--serif); font-size: clamp(18px, 2.2vw, 26px); color: rgba(245,242,236,.6); font-style: italic; margin-bottom: 22px; letter-spacing: .01em; }
 .hero-meta          { display: flex; flex-direction: column; gap: 6px; margin-bottom: 40px; align-items: center; }
 .hero-meta-item     { font-family: var(--mono); font-size: 11px; color: rgba(245,242,236,.35); display: flex; align-items: center; gap: 8px; }
 .hero-meta-dot      { color: var(--champ); opacity: .5; }
