@@ -714,6 +714,15 @@ function renderOcorrenciasForm(list) {
 
 // ── Links e partilha ──────────────────────────────
 
+export function abrirProjetoDoAlerta(id) {
+  const p = getProjects().find(x => x.id === id);
+  if (!p) return;
+  // Mudar para separador Projetos e abrir o editor
+  const tabBtn = document.querySelector('[onclick*="projetos"]');
+  if (tabBtn) setTab(tabBtn, 'projetos');
+  setTimeout(() => editarProjeto(id), 80);
+}
+
 export function partilharCliente(id) {
   const base = window.location.origin + window.location.pathname;
   const url  = `${base}?p=${id}`;
@@ -850,11 +859,11 @@ export function renderAlertas() {
       if (d) {
         const dias = diasAte(d);
         if (dias <= 0)
-          alertas.push({ cor: 'urgente', tipo: 'Proposta expirada', nome, sub: 'Necessita renovação', data: d.toLocaleDateString('pt-PT'), ordem: -1 });
+          alertas.push({ id: p.id, cor: 'urgente', tipo: 'Proposta expirada', nome, sub: 'Necessita renovação', data: d.toLocaleDateString('pt-PT'), ordem: -1 });
         else if (dias <= 2)
-          alertas.push({ cor: 'urgente', tipo: `Proposta expira ${dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : 'em ' + dias + ' dias'}`, nome, sub: tipo, data: d.toLocaleDateString('pt-PT'), ordem: dias });
+          alertas.push({ id: p.id, cor: 'urgente', tipo: `Proposta expira ${dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : 'em ' + dias + ' dias'}`, nome, sub: tipo, data: d.toLocaleDateString('pt-PT'), ordem: dias });
         else if (dias <= 7)
-          alertas.push({ cor: 'aviso', tipo: `Proposta expira em ${dias} dias`, nome, sub: tipo, data: d.toLocaleDateString('pt-PT'), ordem: dias });
+          alertas.push({ id: p.id, cor: 'aviso', tipo: `Proposta expira em ${dias} dias`, nome, sub: tipo, data: d.toLocaleDateString('pt-PT'), ordem: dias });
 
         if (d >= hoje && d <= em14)
           agenda.push({ data: d, label: d.toLocaleDateString('pt-PT', {day:'numeric',month:'short'}), nome, evento: 'Proposta expira', cor: dias <= 2 ? '#E24B4A' : '#BA7517' });
@@ -866,7 +875,7 @@ export function renderAlertas() {
     if (dEnt) {
       const dias = diasAte(dEnt);
       if (dias >= 0 && dias <= 3)
-        alertas.push({ cor: dias <= 1 ? 'urgente' : 'aviso', tipo: `Entrega ${dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : 'em ' + dias + ' dias'}`, nome, sub: 'Materiais — ' + tipo, data: dEnt.toLocaleDateString('pt-PT'), ordem: dias });
+        alertas.push({ id: p.id, cor: dias <= 1 ? 'urgente' : 'aviso', tipo: `Entrega ${dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : 'em ' + dias + ' dias'}`, nome, sub: 'Materiais — ' + tipo, data: dEnt.toLocaleDateString('pt-PT'), ordem: dias });
       if (dEnt >= hoje && dEnt <= em14)
         agenda.push({ data: dEnt, label: dEnt.toLocaleDateString('pt-PT', {day:'numeric',month:'short'}), nome, evento: 'Entrega de materiais', cor: '#BA7517' });
     }
@@ -876,14 +885,14 @@ export function renderAlertas() {
     if (dInst) {
       const dias = diasAte(dInst);
       if (dias >= 0 && dias <= 5)
-        alertas.push({ cor: dias <= 1 ? 'urgente' : 'aviso', tipo: `Instalação ${dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : 'em ' + dias + ' dias'}`, nome, sub: tipo, data: dInst.toLocaleDateString('pt-PT'), ordem: dias });
+        alertas.push({ id: p.id, cor: dias <= 1 ? 'urgente' : 'aviso', tipo: `Instalação ${dias === 0 ? 'hoje' : dias === 1 ? 'amanhã' : 'em ' + dias + ' dias'}`, nome, sub: tipo, data: dInst.toLocaleDateString('pt-PT'), ordem: dias });
       if (dInst >= hoje && dInst <= em14)
         agenda.push({ data: dInst, label: dInst.toLocaleDateString('pt-PT', {day:'numeric',month:'short'}), nome, evento: 'Início da instalação', cor: '#378ADD' });
     }
 
     // Em montagem
     if (p.fase === 'montagem')
-      alertas.push({ cor: 'ok', tipo: 'Em montagem', nome, sub: tipo + (p.dataInstalacao ? ' · desde ' + new Date(p.dataInstalacao+'T12:00:00').toLocaleDateString('pt-PT') : ''), data: '', ordem: 99 });
+      alertas.push({ id: p.id, cor: 'ok', tipo: 'Em montagem', nome, sub: tipo + (p.dataInstalacao ? ' · desde ' + new Date(p.dataInstalacao+'T12:00:00').toLocaleDateString('pt-PT') : ''), data: '', ordem: 99 });
 
     // Conclusão prevista
     const dConc = parseData(p.dataConclusao);
@@ -896,7 +905,7 @@ export function renderAlertas() {
       if (criacao) {
         const diasCriado = Math.round((hoje - criacao) / 86400000);
         if (diasCriado >= 5)
-          alertas.push({ cor: 'info', tipo: `Sem resposta há ${diasCriado} dias`, nome, sub: 'Proposta enviada, aguarda aprovação', data: criacao.toLocaleDateString('pt-PT'), ordem: 50 + diasCriado });
+          alertas.push({ id: p.id, cor: 'info', tipo: `Sem resposta há ${diasCriado} dias`, nome, sub: 'Proposta enviada, aguarda aprovação', data: criacao.toLocaleDateString('pt-PT'), ordem: 50 + diasCriado });
       }
     }
   });
@@ -907,7 +916,7 @@ export function renderAlertas() {
   const corLabel = { urgente: 'Urgente', aviso: 'Atenção', info: 'Info', ok: 'Em curso' };
 
   const alertasHtml = alertas.length ? alertas.map(a => `
-    <div class="alerta-card alerta-${a.cor}" onclick="window.setFiltro(document.querySelector('.filtro-btn'),a.nome);window.setTab(document.querySelector('[onclick*=projetos]'),'projetos')">
+    <div class="alerta-card alerta-${a.cor}" onclick="window.abrirProjetoDoAlerta('${a.id}')" style="cursor:pointer">
       <div class="alerta-tipo alerta-tipo-${a.cor}">${a.tipo}</div>
       <div class="alerta-nome">${a.nome}</div>
       <div class="alerta-detalhe">${a.sub}</div>
