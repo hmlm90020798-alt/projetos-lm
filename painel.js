@@ -198,10 +198,23 @@ function renderCard(p) {
 
 // ── Modal ──────────────────────────────────────────
 
+// Colapsar todos os blocos do accordion excepto o primeiro
+function colapsarBlocos() {
+  const blocos = document.querySelectorAll('#modal-projeto .form-bloco');
+  blocos.forEach((bloco, i) => {
+    if (i === 0) {
+      bloco.classList.remove('collapsed'); // Cliente — aberto por defeito
+    } else {
+      bloco.classList.add('collapsed');
+    }
+  });
+}
+
 export function abrirModalNovo() {
   setState({ editId: null, editImgs: [] });
   document.getElementById('modal-proj-titulo').textContent = 'Novo Projeto';
   limparForm();
+  colapsarBlocos();
   document.getElementById('modal-projeto').classList.add('open');
 }
 
@@ -303,6 +316,7 @@ export function editarProjeto(id) {
   renderDocsForm(p.docs || []);
   renderThumbs();
   atualizarTotalPreview();
+  colapsarBlocos();
   document.getElementById('modal-projeto').classList.add('open');
 }
 
