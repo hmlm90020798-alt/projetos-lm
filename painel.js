@@ -230,7 +230,7 @@ function limparForm() {
   document.getElementById('img-thumbs-preview').innerHTML = '';
 
   ['sec-elem-tampos','sec-elem-eletros','sec-elem-acessorios','sec-elem-extras',
-   'sec-orcamento-cats','f-interacoes-lista','f-ocorrencias-lista','f-notas-lista'].forEach(id => {
+   'sec-orcamento-cats','f-interacoes-lista','f-ocorrencias-lista','f-notas-lista','f-docs-lista'].forEach(id => {
     const el = document.getElementById(id); if (el) el.innerHTML = '';
   });
   atualizarTotalPreview();
@@ -300,6 +300,7 @@ export function editarProjeto(id) {
   renderInteracoes(p.interacoes || []);
   renderOcorrenciasForm(p.ocorrencias || []);
   renderNotasForm(p.notas || []);
+  renderDocsForm(p.docs || []);
   renderThumbs();
   atualizarTotalPreview();
   document.getElementById('modal-projeto').classList.add('open');
@@ -354,6 +355,14 @@ export async function guardarProjeto() {
     }))
     .filter(n => n.titulo || n.texto);
 
+  // Documentos (links externos)
+  const docs = Array.from(document.querySelectorAll('#f-docs-lista .doc-form-item'))
+    .map(el => ({
+      nome: el.querySelector('.doc-form-nome')?.value?.trim() || '',
+      url:  el.querySelector('.doc-form-url')?.value?.trim()  || '',
+    }))
+    .filter(d => d.nome && d.url);
+
   const interacoes = Array.from(document.querySelectorAll('#f-interacoes-lista .interacao-item'))
     .map(el => ({ tipo: el.dataset.tipo||'nota', texto: el.dataset.texto||'', data: el.dataset.data||'', hora: el.dataset.hora||'' }));
 
@@ -378,6 +387,7 @@ export async function guardarProjeto() {
     notas:       notas,
     refPc:       gv('f-ref-pc').trim(),
     refOs:       gv('f-ref-os').trim(),
+    docs,
     // Elementos (com URL)
     elem_tampos:        recolherLinhasElem(document.getElementById('sec-elem-tampos')),
     elem_eletros:       recolherLinhasElem(document.getElementById('sec-elem-eletros')),
@@ -601,6 +611,27 @@ export function addOcorrencia(tipo, descricao, estado) {
 }
 
 // ── Notas múltiplas ───────────────────────────────
+
+export function addDoc(nome = '', url = '') {
+  const lista = document.getElementById('f-docs-lista');
+  if (!lista) return;
+  const d = document.createElement('div');
+  d.className = 'doc-form-item';
+  d.innerHTML = `
+    <div class="doc-form-fields">
+      <input type="text" class="f-input doc-form-nome" placeholder="Nome do documento (ex: Planta Cozinha)" value="${nome}">
+      <input type="url"  class="f-input doc-form-url"  placeholder="https://drive.google.com/..." value="${url}">
+    </div>
+    <button class="prod-line-del" onclick="this.closest('.doc-form-item').remove()">×</button>`;
+  lista.appendChild(d);
+}
+
+function renderDocsForm(docs) {
+  const lista = document.getElementById('f-docs-lista');
+  if (!lista) return;
+  lista.innerHTML = '';
+  (docs || []).forEach(d => addDoc(d.nome || '', d.url || ''));
+}
 
 export function addNota(titulo = '', texto = '') {
   const lista = document.getElementById('f-notas-lista');

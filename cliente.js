@@ -464,6 +464,28 @@ function renderNotasCartoes(p) {
     </div>`;
 }
 
+// ── Documentos ────────────────────────────────────
+
+function renderDocumentos(docs, lang) {
+  if (!docs.length) return '';
+  return `
+    <div class="docs-grid">
+      ${docs.map(d => `
+        <a href="${d.url}" target="_blank" rel="noopener noreferrer" class="doc-card">
+          <div class="doc-card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+            </svg>
+          </div>
+          <div class="doc-card-info">
+            <div class="doc-card-nome">${d.nome}</div>
+            <div class="doc-card-hint">${lang === 'en' ? '↗ Open document' : '↗ Abrir documento'}</div>
+          </div>
+        </a>`).join('')}
+    </div>`;
+}
+
 // ── Render principal ──────────────────────────────
 
 export function renderPaginaCliente(p) {
@@ -496,6 +518,7 @@ export function renderPaginaCliente(p) {
     <a href="#orcamento"      class="nav-link">${t.nav.orcamento}</a>
     <a href="#wrap-notas"     class="nav-link">${t.nav.notas}</a>
     <a href="#timeline"       class="nav-link">${t.nav.timeline}</a>
+    <a href="#wrap-docs"      class="nav-link">${lang==='pt'?'Documentos':'Documents'}</a>
     <a href="#contacto"       class="nav-link">${t.nav.contacto}</a>
     <button class="nav-lang" onclick="window.setLang(window._LANG==='pt'?'en':'pt')">${lang==='pt'?'EN':'PT'}</button>`;
 
@@ -557,6 +580,7 @@ export function renderPaginaCliente(p) {
     'sec-header-orcamento': { num: '03', eyebrow: t.orcamento.eyebrow, titulo: t.orcamento.titulo, light: true  },
     'sec-header-notas':     { num: '04', eyebrow: t.notas.eyebrow,     titulo: t.notas.titulo,     light: false },
     'sec-header-timeline':  { num: '05', eyebrow: t.timeline.eyebrow,  titulo: t.timeline.titulo,  light: true  },
+    'sec-header-docs':      { num: '06', eyebrow: lang==='pt'?'Documentos':'Documents', titulo: lang==='pt'?'Plantas & Documentos':'Plans & Documents', light: false },
   };
   Object.entries(secTitulos).forEach(([id, s]) => {
     const el = document.getElementById(id);
@@ -594,6 +618,18 @@ export function renderPaginaCliente(p) {
 
   // ── 05 Timeline
   document.getElementById('sec-timeline').innerHTML = renderTimeline(p);
+
+  // ── 06 Documentos
+  const wrapDocs = document.getElementById('wrap-docs');
+  if (wrapDocs) {
+    const docs = p.docs || [];
+    if (docs.length) {
+      wrapDocs.style.display = '';
+      document.getElementById('sec-docs').innerHTML = renderDocumentos(docs, lang);
+    } else {
+      wrapDocs.style.display = 'none';
+    }
+  }
 
   // ── Aprovação
   renderEstadoAprovacao(getState('projAtualId'), p.aprovacao);

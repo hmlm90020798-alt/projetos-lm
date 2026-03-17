@@ -18,7 +18,7 @@ import {
   editarProjeto, apagarProjeto, verCliente, partilharCliente, gerarPDF,
   setFiltro, setTab, renderAlertas, renderOcorrenciasTab,
   addLinhaElem, addCatElemExtra, addLinhaElemExtra,
-  addCatOrcamento, addNota, processarImagens, removerImagem, renderThumbs,
+  addCatOrcamento, addNota, addDoc, processarImagens, removerImagem, renderThumbs,
   atualizarTotalPreview, reiniciarPrazoForm, atualizarTipoProjeto,
   iniciarPollingAprovacoes, addInteracao, addOcorrencia,
   atualizarEstadoOcorrencia, copiarEmail, TIPOS_PROJETO,
@@ -52,6 +52,7 @@ window.addCatElemExtra          = addCatElemExtra;
 window.addLinhaElemExtra        = addLinhaElemExtra;
 window.addCatOrcamento          = addCatOrcamento;
 window.addNota                  = addNota;
+window.addDoc                   = addDoc;
 window.processarImagens         = processarImagens;
 window.removerImagem            = removerImagem;
 window.renderThumbs             = renderThumbs;

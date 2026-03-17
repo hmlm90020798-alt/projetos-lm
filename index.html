@@ -377,6 +377,14 @@
         <div id="f-ocorrencias-lista"></div>
       </div>
 
+      <!-- Documentos -->
+      <div class="form-bloco">
+        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>📎 Documentos</span><span class="accordion-arrow">&#9662;</span></div>
+        <div class="form-note">Adiciona links para plantas, medidas ou outros documentos (Google Drive, Dropbox, etc.).</div>
+        <div id="f-docs-lista"></div>
+        <button class="btn-add" onclick="window.addDoc()">+ Documento</button>
+      </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn-cancelar" onclick="window.fecharModal()">Cancelar</button>
@@ -446,6 +454,16 @@
       <div id="sec-timeline" class="tl-wrap"></div>
     </div>
   </section>
+
+  <!-- 06 · Documentos -->
+  <div id="wrap-docs">
+    <section class="cli-sec cli-sec-soft">
+      <div class="cli-sec-inner">
+        <div class="sec-header" id="sec-header-docs"></div>
+        <div id="sec-docs"></div>
+      </div>
+    </section>
+  </div>
 
   <!-- Aprovação -->
   <section id="aprovacao" class="cli-sec cli-sec-dark">
