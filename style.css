@@ -853,6 +853,7 @@ img   { display: block; max-width: 100%; }
 .accordion-arrow  { font-size: 14px; transition: transform .2s; color: var(--ink4); font-style: normal; }
 .form-bloco.collapsed .accordion-arrow { transform: rotate(-90deg); }
 .form-bloco.collapsed > *:not(.form-bloco-titulo) { display: none !important; }
+.form-bloco.collapsed > .form-bloco-titulo { display: flex !important; }
 
 /* ── Notas múltiplas no formulário ── */
 .nota-form-item   { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }

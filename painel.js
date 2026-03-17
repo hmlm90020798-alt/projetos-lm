@@ -200,13 +200,16 @@ function renderCard(p) {
 
 // Colapsar todos os blocos do accordion excepto o primeiro
 function colapsarBlocos() {
-  const blocos = document.querySelectorAll('#modal-projeto .form-bloco');
-  blocos.forEach((bloco, i) => {
-    if (i === 0) {
-      bloco.classList.remove('collapsed'); // Cliente — aberto por defeito
-    } else {
-      bloco.classList.add('collapsed');
-    }
+  // requestAnimationFrame garante que corre após o browser renderizar o modal
+  requestAnimationFrame(() => {
+    const blocos = document.querySelectorAll('#modal-projeto .modal-body .form-bloco');
+    blocos.forEach((bloco, i) => {
+      if (i === 0) {
+        bloco.classList.remove('collapsed');
+      } else {
+        bloco.classList.add('collapsed');
+      }
+    });
   });
 }
 
