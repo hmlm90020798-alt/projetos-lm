@@ -901,3 +901,91 @@ img   { display: block; max-width: 100%; }
 .doc-card-info      { flex: 1; min-width: 0; }
 .doc-card-nome      { font-family: var(--sans); font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .doc-card-hint      { font-family: var(--sans); font-size: 12px; color: var(--green); font-weight: 500; }
+
+/* ══════════════════════════════════════════════
+   MÓDULO COMUNICAÇÕES / OCORRÊNCIAS
+══════════════════════════════════════════════ */
+.oc-modulo          { padding: 4px 0; }
+.oc-painel-grid     { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+.oc-card-bloco      { background: var(--white); border: 1.5px solid var(--border); border-radius: 14px; padding: 24px; }
+.oc-lateral         { background: var(--white); border: 1.5px solid var(--border); border-radius: 14px; padding: 20px; }
+.oc-bloco-titulo    { font-family: var(--sans); font-size: 13px; font-weight: 700; color: var(--ink); margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; }
+.oc-campo           { margin-bottom: 16px; }
+.oc-label           { font-family: var(--sans); font-size: 10px; font-weight: 600; color: var(--ink4); text-transform: uppercase; letter-spacing: .7px; display: block; margin-bottom: 7px; }
+.oc-grid-2          { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Tipos de ocorrência */
+.oc-tipos-grid      { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.oc-tipo-btn        { display: flex; flex-direction: column; align-items: center; gap: 5px; padding: 12px 8px; border: 1.5px solid var(--border); border-radius: 10px; background: transparent; cursor: pointer; transition: all .15s; font-family: var(--sans); }
+.oc-tipo-btn:hover  { border-color: var(--color, var(--green)); background: var(--green-pale); }
+.oc-tipo-btn.active { border-color: var(--oc-cor); background: rgba(0,0,0,.04); box-shadow: 0 0 0 3px color-mix(in srgb, var(--oc-cor) 15%, transparent); }
+.oc-tipo-icon       { font-size: 20px; }
+.oc-tipo-label      { font-size: 11px; font-weight: 500; color: var(--ink3); text-align: center; line-height: 1.3; }
+.oc-tipo-btn.active .oc-tipo-label { color: var(--ink); font-weight: 600; }
+
+/* Destinatários */
+.oc-contactos-lista { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+.oc-dest-item       { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--parchment); border: 1px solid var(--border); border-radius: 8px; cursor: pointer; }
+.oc-dest-check      { accent-color: var(--green); width: 15px; height: 15px; flex-shrink: 0; }
+.oc-dest-info       { display: flex; flex-direction: column; gap: 2px; }
+.oc-dest-nome       { font-size: 13px; font-weight: 600; color: var(--ink); }
+.oc-dest-email      { font-family: var(--mono); font-size: 11px; color: var(--ink4); }
+
+/* Botão gerar */
+.btn-oc-gerar       { width: 100%; padding: 13px; background: var(--green); border: none; border-radius: 9px; color: #fff; font-family: var(--sans); font-size: 14px; font-weight: 600; cursor: pointer; transition: all .2s; margin-top: 4px; }
+.btn-oc-gerar:hover { background: var(--green-mid); }
+
+/* Preview do email */
+.oc-preview         { margin-top: 16px; background: var(--parchment); border: 1.5px solid var(--border); border-radius: 10px; overflow: hidden; }
+.oc-preview-header  { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.oc-preview-titulo  { font-size: 11px; font-weight: 700; color: var(--ink4); text-transform: uppercase; letter-spacing: .7px; }
+.oc-preview-copiar  { padding: 5px 12px; background: var(--green); border: none; border-radius: 6px; color: #fff; font-family: var(--sans); font-size: 12px; font-weight: 600; cursor: pointer; }
+.oc-preview-assunto { padding: 10px 14px; font-family: var(--mono); font-size: 11px; color: var(--ink3); border-bottom: 1px solid var(--border); white-space: pre-wrap; background: rgba(196,169,106,.06); }
+.oc-preview-corpo   { padding: 14px; font-family: var(--sans); font-size: 13px; color: var(--ink2); white-space: pre-wrap; line-height: 1.65; max-height: 300px; overflow-y: auto; }
+
+/* Lista de contactos lateral */
+.oc-lista-contactos { display: flex; flex-direction: column; gap: 8px; }
+.oc-contacto-item   { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; background: var(--parchment); border: 1px solid var(--border); border-radius: 9px; }
+.oc-contacto-info   { flex: 1; }
+.oc-contacto-nome   { font-size: 13px; font-weight: 600; color: var(--ink); }
+.oc-contacto-dept   { font-size: 11px; color: var(--ink4); margin-top: 1px; }
+.oc-contacto-email  { font-family: var(--mono); font-size: 11px; color: var(--green); margin-top: 2px; }
+.oc-contacto-tipos  { display: flex; gap: 4px; margin-top: 5px; }
+.oc-tag             { font-size: 13px; }
+.oc-contacto-acoes  { display: flex; gap: 4px; }
+.oc-btn-sm          { padding: 4px 8px; border: 1px solid var(--border); border-radius: 5px; background: transparent; cursor: pointer; font-size: 12px; }
+.oc-btn-sm.danger:hover { border-color: var(--red); color: var(--red); }
+.oc-btn-add-sm      { font-size: 11px; font-weight: 600; padding: 3px 10px; background: var(--green); border: none; border-radius: 5px; color: #fff; cursor: pointer; }
+
+/* Lista de templates */
+.oc-lista-templates { display: flex; flex-direction: column; gap: 4px; }
+.oc-template-item   { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--parchment); border: 1px solid var(--border); border-radius: 7px; cursor: pointer; transition: border-color .15s; }
+.oc-template-item:hover { border-color: var(--green); }
+.oc-template-nome   { flex: 1; font-size: 12px; font-weight: 500; color: var(--ink2); }
+.oc-template-estado { font-size: 11px; font-weight: 700; }
+.oc-template-estado.ok    { color: var(--green); }
+.oc-template-estado.vazio { color: var(--amber); }
+
+/* Variáveis no template */
+.oc-variaveis       { font-size: 11px; color: var(--ink4); margin-bottom: 6px; }
+.oc-variaveis code  { background: var(--parchment); padding: 1px 5px; border-radius: 3px; font-family: var(--mono); font-size: 10px; color: var(--green); }
+
+/* Tipos checkbox no modal contacto */
+.oc-tipos-check     { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 4px; }
+.oc-check-item      { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ink3); cursor: pointer; }
+.oc-check-item input { accent-color: var(--green); }
+
+/* Modais de ocorrências */
+.oc-modal-overlay   { display: none; position: fixed; inset: 0; background: rgba(26,24,20,.55); backdrop-filter: blur(8px); z-index: 600; align-items: center; justify-content: center; padding: 20px; }
+.oc-modal-overlay.open { display: flex; }
+.oc-modal           { background: var(--white); border-radius: 14px; width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); }
+.oc-modal-lg        { max-width: 680px; }
+.oc-modal-header    { padding: 18px 22px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.oc-modal-titulo    { font-family: var(--serif); font-size: 20px; color: var(--ink); }
+.oc-modal-body      { padding: 20px 22px; max-height: 70vh; overflow-y: auto; }
+.oc-modal-footer    { padding: 12px 22px 18px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--border); }
+
+@media (max-width: 900px) {
+  .oc-painel-grid   { grid-template-columns: 1fr; }
+  .oc-tipos-grid    { grid-template-columns: repeat(2, 1fr); }
+}

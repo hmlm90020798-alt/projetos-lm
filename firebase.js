@@ -145,3 +145,23 @@ export async function verificarAprovacoes(onNova) {
 export const doLogin  = (e, p) => signInWithEmailAndPassword(_auth, e, p);
 export const doLogout = ()     => signOut(_auth);
 export const onAuth   = cb     => onAuthStateChanged(_auth, cb);
+
+// ── Contactos e Templates de Ocorrências ─────────
+export async function guardarContactos(lista) {
+  try { await setDoc(doc(_db, 'config', 'contactos'), { lista }); } catch (e) { console.error(e); }
+}
+export async function carregarContactos() {
+  try {
+    const snap = await getDoc(doc(_db, 'config', 'contactos'));
+    return snap.exists() ? snap.data().lista : [];
+  } catch (_) { return []; }
+}
+export async function guardarTemplates(lista) {
+  try { await setDoc(doc(_db, 'config', 'templates'), { lista }); } catch (e) { console.error(e); }
+}
+export async function carregarTemplates() {
+  try {
+    const snap = await getDoc(doc(_db, 'config', 'templates'));
+    return snap.exists() ? snap.data().lista : [];
+  } catch (_) { return []; }
+}

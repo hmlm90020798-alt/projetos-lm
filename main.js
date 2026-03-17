@@ -27,8 +27,15 @@ import {
   renderPaginaCliente, renderEstadoAprovacao, aprovarProposta,
   abrirLightbox, fecharLightbox, lightboxNav, setLang,
 } from './cliente.js';
+import {
+  initOcorrencias, renderOcorrenciasModulo,
+  ocSelecionarProjeto, ocToggleTipo, ocGerarEmail, ocCopiarEmail,
+  ocNovoContacto, ocEditarContacto, ocGuardarContacto, ocFecharModalContacto, ocApagarContacto,
+  ocEditarTemplate, ocCarregarTemplate, ocGuardarTemplate, ocFecharModalTemplate,
+} from './ocorrencias.js';
 
-window._clienteModule = { renderPaginaCliente };
+window._clienteModule    = { renderPaginaCliente };
+window._ocorrenciasModule = { renderOcorrenciasModulo };
 
 // ── Exposição global ──────────────────────────────
 window.doLogin                  = () => loginHandler();
@@ -68,6 +75,19 @@ window.addInteracao             = addInteracao;
 window.addOcorrencia            = addOcorrencia;
 window.atualizarEstadoOcorrencia= atualizarEstadoOcorrencia;
 window.copiarEmail              = copiarEmail;
+window.ocSelecionarProjeto      = ocSelecionarProjeto;
+window.ocToggleTipo             = ocToggleTipo;
+window.ocGerarEmail             = ocGerarEmail;
+window.ocCopiarEmail            = ocCopiarEmail;
+window.ocNovoContacto           = ocNovoContacto;
+window.ocEditarContacto         = ocEditarContacto;
+window.ocGuardarContacto        = ocGuardarContacto;
+window.ocFecharModalContacto    = ocFecharModalContacto;
+window.ocApagarContacto         = ocApagarContacto;
+window.ocEditarTemplate         = ocEditarTemplate;
+window.ocCarregarTemplate       = ocCarregarTemplate;
+window.ocGuardarTemplate        = ocGuardarTemplate;
+window.ocFecharModalTemplate    = ocFecharModalTemplate;
 window.mostrarToast             = mostrarToast;
 
 // ── Login ─────────────────────────────────────────
@@ -168,6 +188,7 @@ function popularTiposSelect() {
     const o = document.getElementById('loading-overlay');
     if (user) {
       await carregar();
+      await initOcorrencias();
       window._LANG = 'pt';
       renderPainel();
       setView('painel');

@@ -800,8 +800,9 @@ export function setTab(btnEl, tab) {
   const btnNovo = document.getElementById('btn-novo-proj');
   if (btnNovo) btnNovo.style.display = tab === 'projetos' ? '' : 'none';
 
-  if (tab === 'alertas')    renderAlertas();
-  if (tab === 'ocorrencias') renderOcorrenciasTab();
+  if (tab === 'alertas')      renderAlertas();
+  if (tab === 'ocorrencias')  renderOcorrenciasTab();
+  if (tab === 'comunicacoes') window._ocorrenciasModule?.renderOcorrenciasModulo();
 }
 
 // ── Alertas & Agenda ──────────────────────────────
