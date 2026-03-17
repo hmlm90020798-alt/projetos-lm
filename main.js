@@ -29,7 +29,7 @@ import {
 } from './cliente.js';
 import {
   initOcorrencias, renderOcorrenciasModulo,
-  ocSelecionarProjeto, ocPesquisarProjeto, ocEscolherProjeto, ocFecharSugestoes,
+  ocSelecionarProjeto, ocFiltrarProjetos, ocEscolherProjeto, ocFecharSugestoes,
   ocToggleTipo, ocAddArtigo, ocGerarEmail, ocCopiarEmail,
   ocNovoContacto, ocEditarContacto, ocGuardarContacto, ocFecharModalContacto, ocApagarContacto,
   ocEditarTemplate, ocCarregarTemplate, ocGuardarTemplate, ocFecharModalTemplate,
@@ -78,7 +78,7 @@ window.atualizarEstadoOcorrencia= atualizarEstadoOcorrencia;
 window.copiarEmail              = copiarEmail;
 window.copiarRef                = copiarRef;
 window.ocSelecionarProjeto      = ocSelecionarProjeto;
-window.ocPesquisarProjeto       = ocPesquisarProjeto;
+window.ocFiltrarProjetos        = ocFiltrarProjetos;
 window.ocEscolherProjeto        = ocEscolherProjeto;
 window.ocFecharSugestoes        = ocFecharSugestoes;
 window.ocToggleTipo             = ocToggleTipo;
