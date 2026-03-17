@@ -426,20 +426,30 @@ export function ocToggleTipo(id, btn) {
 function renderArtigosPorTipo() {
   const wrap = document.getElementById('oc-artigos-por-tipo');
   if (!wrap) return;
-  wrap.innerHTML = _tiposSel.map(tid => {
+
+  // Remover blocos de tipos que já não estão seleccionados
+  wrap.querySelectorAll('.oc-artigos-bloco').forEach(bloco => {
+    if (!_tiposSel.includes(bloco.dataset.tipo)) bloco.remove();
+  });
+
+  // Adicionar blocos para tipos novos (sem destruir os existentes)
+  _tiposSel.forEach(tid => {
+    if (document.getElementById('oc-artigos-' + tid)) return; // já existe
     const tipo = TIPOS_OCORRENCIA.find(t => t.id === tid);
-    if (!tipo) return '';
-    return `
-      <div class="oc-artigos-bloco" data-tipo="${tid}">
-        <div class="oc-artigos-titulo">
-          <span>${tipo.icon} ${tipo.label}</span>
-          <button class="oc-btn-add-sm" onclick="window.ocAddArtigo('${tid}')">+ Artigo</button>
-        </div>
-        <div class="oc-artigos-lista" id="oc-artigos-${tid}">
-          ${artigoLinhaHtml(tid, 0)}
-        </div>
+    if (!tipo) return;
+    const div = document.createElement('div');
+    div.className = 'oc-artigos-bloco';
+    div.dataset.tipo = tid;
+    div.innerHTML = `
+      <div class="oc-artigos-titulo">
+        <span>${tipo.icon} ${tipo.label}</span>
+        <button class="oc-btn-add-sm" onclick="window.ocAddArtigo('${tid}')">+ Artigo</button>
+      </div>
+      <div class="oc-artigos-lista" id="oc-artigos-${tid}">
+        ${artigoLinhaHtml(tid, 0)}
       </div>`;
-  }).join('');
+    wrap.appendChild(div);
+  });
 }
 
 function artigoLinhaHtml(tid, idx) {

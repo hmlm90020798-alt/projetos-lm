@@ -814,7 +814,11 @@ export function setTab(btnEl, tab) {
 
   if (tab === 'alertas')      renderAlertas();
   if (tab === 'ocorrencias')  renderOcorrenciasTab();
-  if (tab === 'comunicacoes') window._ocorrenciasModule?.renderOcorrenciasModulo();
+  if (tab === 'comunicacoes') {
+    if (typeof window.renderOcorrenciasModulo === 'function') {
+      window.renderOcorrenciasModulo();
+    }
+  }
 }
 
 // ── Alertas & Agenda ──────────────────────────────

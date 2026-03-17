@@ -35,8 +35,8 @@ import {
   ocEditarTemplate, ocCarregarTemplate, ocGuardarTemplate, ocFecharModalTemplate,
 } from './ocorrencias.js';
 
-window._clienteModule    = { renderPaginaCliente };
-window._ocorrenciasModule = { renderOcorrenciasModulo };
+window._clienteModule            = { renderPaginaCliente };
+window.renderOcorrenciasModulo   = renderOcorrenciasModulo;
 
 // ── Exposição global ──────────────────────────────
 window.doLogin                  = () => loginHandler();
