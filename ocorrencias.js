@@ -155,14 +155,13 @@ export function renderOcorrenciasModulo() {
 
           <div class="oc-campo">
             <label class="oc-label">Projeto</label>
-            <input type="text" id="oc-proj-filtro" class="f-input"
-                   placeholder="Filtrar por nome, localidade, PC ou OS…"
-                   oninput="window.ocFiltrarProjetos(this.value)"
-                   style="margin-bottom:6px">
-            <select id="oc-proj-sel" class="f-select" size="5"
-                    onchange="window.ocEscolherProjeto(this.value)">
-              ${projetos.map(p => `<option value="${p.id}">${p.nome || p.id}${p.localidade ? ' · ' + p.localidade : ''}${p.refPc ? ' · PC:'+p.refPc : ''}${p.refOs ? ' · OS:'+p.refOs : ''}</option>`).join('')}
-            </select>
+            <div class="oc-proj-sel-wrap">
+              <input type="text" id="oc-proj-filtro" class="f-input"
+                     placeholder="Escreve para pesquisar…"
+                     oninput="window.ocFiltrarProjetos(this.value)"
+                     autocomplete="off">
+              <div id="oc-proj-resultados" class="oc-proj-resultados" style="display:none"></div>
+            </div>
             <div class="oc-proj-sel-info" id="oc-proj-sel-info"></div>
           </div>
 
@@ -343,30 +342,62 @@ function renderTemplatesLista() {
 // ── Lógica de disparo ─────────────────────────────
 
 export function ocFiltrarProjetos(query) {
-  const sel = document.getElementById('oc-proj-sel');
-  if (!sel) return;
-  const q = query.toLowerCase().trim();
+  const res = document.getElementById('oc-proj-resultados');
+  if (!res) return;
+  const q = query.trim();
+  if (!q) { res.style.display = 'none'; return; }
+
   const projetos = getState('projetos');
-  const filtrados = q
-    ? projetos.filter(p =>
-        (p.nome       ||'').toLowerCase().includes(q) ||
-        (p.localidade ||'').toLowerCase().includes(q) ||
-        (p.refPc      ||'').toLowerCase().includes(q) ||
-        (p.refOs      ||'').toLowerCase().includes(q))
-    : projetos;
-  sel.innerHTML = filtrados.map(p =>
-    `<option value="${p.id}">${p.nome || p.id}${p.localidade ? ' · '+p.localidade : ''}${p.refPc ? ' · PC:'+p.refPc : ''}${p.refOs ? ' · OS:'+p.refOs : ''}</option>`
-  ).join('');
+  const ql = q.toLowerCase();
+  const filtrados = projetos.filter(p =>
+    (p.nome       ||'').toLowerCase().includes(ql) ||
+    (p.localidade ||'').toLowerCase().includes(ql) ||
+    (p.refPc      ||'').toLowerCase().includes(ql) ||
+    (p.refOs      ||'').toLowerCase().includes(ql)
+  ).slice(0, 10);
+
+  if (!filtrados.length) {
+    res.innerHTML = `<div class="oc-res-vazio">Nenhum projeto encontrado</div>`;
+  } else {
+    res.innerHTML = filtrados.map(p => `
+      <div class="oc-res-item" onclick="window.ocEscolherProjeto('${p.id}')">
+        <span class="oc-res-nome">${p.nome || '—'}</span>
+        <span class="oc-res-meta">
+          ${p.localidade ? `<span>${p.localidade}</span>` : ''}
+          ${p.refPc ? `<span>PC: ${p.refPc}</span>` : ''}
+          ${p.refOs ? `<span>OS: ${p.refOs}</span>`  : ''}
+        </span>
+      </div>`).join('');
+  }
+  res.style.display = '';
 }
 
 export function ocEscolherProjeto(id) {
   const p = getState('projetos').find(x => x.id === id);
   if (!p) return;
   _projSel = p;
+  // Limpar input e esconder resultados
+  const inp = document.getElementById('oc-proj-filtro');
+  if (inp) inp.value = '';
+  const res = document.getElementById('oc-proj-resultados');
+  if (res) res.style.display = 'none';
+  // Mostrar badge de confirmação
   const info = document.getElementById('oc-proj-sel-info');
-  if (info) {
-    info.innerHTML = `<span class="oc-proj-badge">✓ ${p.nome}${p.localidade ? ' · '+p.localidade : ''}${p.refPc ? ' <em>PC: '+p.refPc+'</em>' : ''}${p.refOs ? ' <em>OS: '+p.refOs+'</em>' : ''}</span>`;
-  }
+  if (info) info.innerHTML = `
+    <div class="oc-proj-badge">
+      <span class="oc-proj-badge-nome">✓ ${p.nome}</span>
+      ${p.localidade ? `<span class="oc-proj-badge-sep">·</span><span>${p.localidade}</span>` : ''}
+      ${p.refPc ? `<span class="oc-proj-badge-ref">PC: ${p.refPc}</span>` : ''}
+      ${p.refOs ? `<span class="oc-proj-badge-ref">OS: ${p.refOs}</span>` : ''}
+      <button class="oc-proj-badge-clear" onclick="window.ocLimparProjeto()">×</button>
+    </div>`;
+  actualizarContactosSugeridos();
+}
+
+export function ocLimparProjeto() {
+  _projSel = null;
+  const info = document.getElementById('oc-proj-sel-info');
+  if (info) info.innerHTML = '';
   actualizarContactosSugeridos();
 }
 
