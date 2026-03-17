@@ -21,7 +21,7 @@ import {
   addCatOrcamento, addNota, addDoc, processarImagens, removerImagem, renderThumbs,
   atualizarTotalPreview, reiniciarPrazoForm, atualizarTipoProjeto,
   iniciarPollingAprovacoes, addInteracao, addOcorrencia,
-  atualizarEstadoOcorrencia, copiarEmail, TIPOS_PROJETO,
+  atualizarEstadoOcorrencia, copiarEmail, copiarRef, TIPOS_PROJETO,
 } from './painel.js';
 import {
   renderPaginaCliente, renderEstadoAprovacao, aprovarProposta,
@@ -75,6 +75,7 @@ window.addInteracao             = addInteracao;
 window.addOcorrencia            = addOcorrencia;
 window.atualizarEstadoOcorrencia= atualizarEstadoOcorrencia;
 window.copiarEmail              = copiarEmail;
+window.copiarRef                = copiarRef;
 window.ocSelecionarProjeto      = ocSelecionarProjeto;
 window.ocToggleTipo             = ocToggleTipo;
 window.ocGerarEmail             = ocGerarEmail;

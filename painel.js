@@ -173,7 +173,10 @@ function renderCard(p) {
         </div>
       </div>
       <div class="card-nome">${p.nome || '—'}</div>
-      <div class="card-local">${p.localidade || ''}${(p.refPc||p.refOs) ? `<span class="card-refs">${p.refPc?'PC: '+p.refPc:''}${p.refPc&&p.refOs?' · ':''}${p.refOs?'OS: '+p.refOs:''}</span>` : ''}</div>
+      <div class="card-local">${p.localidade || ''}${(p.refPc||p.refOs) ? `<span class="card-refs">
+        ${p.refPc ? `<span class="card-ref-badge" onclick="event.stopPropagation();window.copiarRef(this,'${p.refPc}')" title="Clica para copiar">PC: ${p.refPc}</span>` : ''}
+        ${p.refOs  ? `<span class="card-ref-badge" onclick="event.stopPropagation();window.copiarRef(this,'${p.refOs}')"  title="Clica para copiar">OS: ${p.refOs}</span>`  : ''}
+      </span>` : ''}</div>
       <div class="card-financeiro">
         <div class="card-total">${total > 0 ? fmt(total) : '—'}</div>
         <div class="card-meta-right">
@@ -729,6 +732,15 @@ export function verCliente(id) {
   setView('cliente');
   const btn = document.getElementById('btn-voltar-painel');
   if (btn) btn.style.display = '';
+}
+
+export function copiarRef(el, valor) {
+  navigator.clipboard.writeText(valor).then(() => {
+    const orig = el.textContent;
+    el.textContent = '✓ Copiado';
+    el.classList.add('copiado');
+    setTimeout(() => { el.textContent = orig; el.classList.remove('copiado'); }, 1800);
+  });
 }
 
 export function copiarEmail(btnEl) {

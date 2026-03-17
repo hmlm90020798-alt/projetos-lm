@@ -841,7 +841,10 @@ img   { display: block; max-width: 100%; }
 .hist-data         { font-family: var(--mono); font-size: 11px; color: var(--ink4); white-space: nowrap; }
 
 /* ── Refs PC/OS no card ── */
-.card-refs         { display: block; font-family: var(--mono); font-size: 10px; color: var(--ink4); margin-top: 3px; letter-spacing: .3px; }
+.card-refs          { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+.card-ref-badge     { font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--ink4); background: var(--parchment2); border: 1px solid var(--border); border-radius: 4px; padding: 2px 7px; cursor: pointer; transition: all .15s; user-select: none; }
+.card-ref-badge:hover  { background: var(--green-pale); color: var(--green); border-color: var(--green); }
+.card-ref-badge.copiado { background: var(--green); color: #fff; border-color: var(--green); }
 
 /* ══════════════════════════════════════════════
    NOVOS COMPONENTES — v3
