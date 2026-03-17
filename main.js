@@ -29,7 +29,8 @@ import {
 } from './cliente.js';
 import {
   initOcorrencias, renderOcorrenciasModulo,
-  ocSelecionarProjeto, ocToggleTipo, ocGerarEmail, ocCopiarEmail,
+  ocSelecionarProjeto, ocPesquisarProjeto, ocEscolherProjeto, ocFecharSugestoes,
+  ocToggleTipo, ocAddArtigo, ocGerarEmail, ocCopiarEmail,
   ocNovoContacto, ocEditarContacto, ocGuardarContacto, ocFecharModalContacto, ocApagarContacto,
   ocEditarTemplate, ocCarregarTemplate, ocGuardarTemplate, ocFecharModalTemplate,
 } from './ocorrencias.js';
@@ -77,7 +78,11 @@ window.atualizarEstadoOcorrencia= atualizarEstadoOcorrencia;
 window.copiarEmail              = copiarEmail;
 window.copiarRef                = copiarRef;
 window.ocSelecionarProjeto      = ocSelecionarProjeto;
+window.ocPesquisarProjeto       = ocPesquisarProjeto;
+window.ocEscolherProjeto        = ocEscolherProjeto;
+window.ocFecharSugestoes        = ocFecharSugestoes;
 window.ocToggleTipo             = ocToggleTipo;
+window.ocAddArtigo              = ocAddArtigo;
 window.ocGerarEmail             = ocGerarEmail;
 window.ocCopiarEmail            = ocCopiarEmail;
 window.ocNovoContacto           = ocNovoContacto;

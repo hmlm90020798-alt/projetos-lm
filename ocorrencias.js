@@ -155,10 +155,15 @@ export function renderOcorrenciasModulo() {
 
           <div class="oc-campo">
             <label class="oc-label">Projeto</label>
-            <select id="oc-proj-sel" class="f-select" onchange="window.ocSelecionarProjeto(this.value)">
-              <option value="">— Seleccionar projeto —</option>
-              ${projetos.map(p => `<option value="${p.id}">${p.nome || p.id}${p.localidade ? ' · ' + p.localidade : ''}</option>`).join('')}
-            </select>
+            <div class="oc-proj-search-wrap">
+              <input type="text" id="oc-proj-input" class="f-input" 
+                     placeholder="Pesquisar por nome, localidade, PC ou OS…"
+                     oninput="window.ocPesquisarProjeto(this.value)"
+                     onblur="setTimeout(()=>window.ocFecharSugestoes(),200)"
+                     autocomplete="off">
+              <div class="oc-proj-sugestoes" id="oc-proj-sugestoes"></div>
+            </div>
+            <div class="oc-proj-sel-info" id="oc-proj-sel-info"></div>
           </div>
 
           <div class="oc-campo">
@@ -175,16 +180,8 @@ export function renderOcorrenciasModulo() {
           </div>
 
           <div class="oc-campo" id="oc-campos-extra" style="display:none">
-            <div class="oc-grid-2">
-              <div>
-                <label class="oc-label">Ref. artigo / descrição</label>
-                <input type="text" id="oc-ref-artigo" class="f-input" placeholder="Ex: Tampo Dekton 301">
-              </div>
-              <div>
-                <label class="oc-label">Descrição adicional</label>
-                <input type="text" id="oc-descricao" class="f-input" placeholder="Detalhe relevante…">
-              </div>
-            </div>
+            <label class="oc-label">Artigos por tipo de ocorrência</label>
+            <div id="oc-artigos-por-tipo"></div>
           </div>
 
           <div class="oc-campo" id="oc-contactos-wrap" style="display:none">
@@ -345,6 +342,65 @@ function renderTemplatesLista() {
 
 // ── Lógica de disparo ─────────────────────────────
 
+export function ocPesquisarProjeto(query) {
+  const sug = document.getElementById('oc-proj-sugestoes');
+  if (!sug) return;
+  const q = query.toLowerCase().trim();
+  if (!q) { sug.style.display = 'none'; return; }
+
+  const projetos = getState('projetos');
+  const filtrados = projetos.filter(p =>
+    (p.nome       ||'').toLowerCase().includes(q) ||
+    (p.localidade ||'').toLowerCase().includes(q) ||
+    (p.refPc      ||'').toLowerCase().includes(q) ||
+    (p.refOs      ||'').toLowerCase().includes(q)
+  ).slice(0, 8);
+
+  if (!filtrados.length) {
+    sug.innerHTML = `<div class="oc-sug-vazio">Nenhum projeto encontrado</div>`;
+    sug.style.display = '';
+    return;
+  }
+
+  sug.innerHTML = filtrados.map(p => `
+    <div class="oc-sug-item" onmousedown="window.ocEscolherProjeto('${p.id}')">
+      <div class="oc-sug-nome">${p.nome || '—'}</div>
+      <div class="oc-sug-meta">
+        ${p.localidade ? `<span>${p.localidade}</span>` : ''}
+        ${p.refPc ? `<span class="oc-sug-ref">PC: ${p.refPc}</span>` : ''}
+        ${p.refOs ? `<span class="oc-sug-ref">OS: ${p.refOs}</span>`  : ''}
+      </div>
+    </div>`).join('');
+  sug.style.display = '';
+}
+
+export function ocEscolherProjeto(id) {
+  const p = getState('projetos').find(x => x.id === id);
+  if (!p) return;
+  _projSel = p;
+  // Preencher input com o nome
+  const inp = document.getElementById('oc-proj-input');
+  if (inp) inp.value = p.nome || id;
+  // Esconder sugestões
+  ocFecharSugestoes();
+  // Mostrar info do projecto seleccionado
+  const info = document.getElementById('oc-proj-sel-info');
+  if (info) {
+    info.innerHTML = `
+      <span class="oc-proj-badge">
+        ✓ ${p.nome}${p.localidade ? ' · ' + p.localidade : ''}
+        ${p.refPc ? `<em>PC: ${p.refPc}</em>` : ''}
+        ${p.refOs ? `<em>OS: ${p.refOs}</em>`  : ''}
+      </span>`;
+  }
+  actualizarContactosSugeridos();
+}
+
+export function ocFecharSugestoes() {
+  const sug = document.getElementById('oc-proj-sugestoes');
+  if (sug) sug.style.display = 'none';
+}
+
 export function ocSelecionarProjeto(id) {
   _projSel = getState('projetos').find(p => p.id === id) || null;
   actualizarContactosSugeridos();
@@ -358,13 +414,63 @@ export function ocToggleTipo(id, btn) {
     _tiposSel.push(id);
     btn.classList.add('active');
   }
-  // Mostrar campos extra e contactos se há tipos seleccionados
   const temTipos = _tiposSel.length > 0;
-  document.getElementById('oc-campos-extra').style.display  = temTipos ? '' : 'none';
+  document.getElementById('oc-campos-extra').style.display   = temTipos ? '' : 'none';
   document.getElementById('oc-contactos-wrap').style.display = temTipos ? '' : 'none';
   document.getElementById('btn-oc-gerar').style.display      = temTipos ? '' : 'none';
   document.getElementById('oc-preview').style.display        = 'none';
+  renderArtigosPorTipo();
   actualizarContactosSugeridos();
+}
+
+function renderArtigosPorTipo() {
+  const wrap = document.getElementById('oc-artigos-por-tipo');
+  if (!wrap) return;
+  wrap.innerHTML = _tiposSel.map(tid => {
+    const tipo = TIPOS_OCORRENCIA.find(t => t.id === tid);
+    if (!tipo) return '';
+    return `
+      <div class="oc-artigos-bloco" data-tipo="${tid}">
+        <div class="oc-artigos-titulo">
+          <span>${tipo.icon} ${tipo.label}</span>
+          <button class="oc-btn-add-sm" onclick="window.ocAddArtigo('${tid}')">+ Artigo</button>
+        </div>
+        <div class="oc-artigos-lista" id="oc-artigos-${tid}">
+          ${artigoLinhaHtml(tid, 0)}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function artigoLinhaHtml(tid, idx) {
+  return `
+    <div class="oc-artigo-linha" data-idx="${idx}">
+      <input type="text"   class="f-input oc-art-ref"  placeholder="Referência / nome do artigo" style="flex:2">
+      <input type="text"   class="f-input oc-art-desc" placeholder="Descrição (dano, motivo…)"  style="flex:2">
+      <input type="number" class="f-input oc-art-qty"  placeholder="Qtd" min="1" value="1"        style="width:64px;text-align:center">
+      <button class="prod-line-del" onclick="this.closest('.oc-artigo-linha').remove()">×</button>
+    </div>`;
+}
+
+export function ocAddArtigo(tid) {
+  const lista = document.getElementById('oc-artigos-' + tid);
+  if (!lista) return;
+  const idx = lista.querySelectorAll('.oc-artigo-linha').length;
+  lista.insertAdjacentHTML('beforeend', artigoLinhaHtml(tid, idx));
+}
+
+function recolherArtigosPorTipo() {
+  const resultado = {};
+  _tiposSel.forEach(tid => {
+    const lista = document.getElementById('oc-artigos-' + tid);
+    if (!lista) return;
+    resultado[tid] = Array.from(lista.querySelectorAll('.oc-artigo-linha')).map(linha => ({
+      ref:  linha.querySelector('.oc-art-ref')?.value?.trim()  || '',
+      desc: linha.querySelector('.oc-art-desc')?.value?.trim() || '',
+      qty:  linha.querySelector('.oc-art-qty')?.value?.trim()  || '1',
+    })).filter(a => a.ref);
+  });
+  return resultado;
 }
 
 function actualizarContactosSugeridos() {
@@ -391,46 +497,83 @@ function actualizarContactosSugeridos() {
 export function ocGerarEmail() {
   if (!_tiposSel.length) { mostrarToast('Selecciona pelo menos um tipo', ''); return; }
 
-  const p = _projSel;
+  const p    = _projSel;
   const hoje = new Date().toLocaleDateString('pt-PT');
-  const vars = {
-    cliente:         p?.nome              || '—',
-    refPc:           p?.refPc             || '—',
-    localidade:      p?.localidade        || '—',
-    data:            hoje,
-    dataInstalacao:  p?.dataInstalacao ? new Date(p.dataInstalacao+'T12:00:00').toLocaleDateString('pt-PT') : '—',
-    refArtigo:       document.getElementById('oc-ref-artigo')?.value?.trim() || '—',
-    descricao:       document.getElementById('oc-descricao')?.value?.trim()  || '—',
+  const artigosPorTipo = recolherArtigosPorTipo();
+
+  const substituir = (txt, artigos) => {
+    // Lista de artigos formatada
+    const listaArtigos = artigos?.length
+      ? artigos.map(a => `  • ${a.ref}${a.desc ? ' — ' + a.desc : ''}${a.qty && a.qty !== '1' ? ' (Qtd: ' + a.qty + ')' : ''}`).join('\n')
+      : '  • —';
+    return txt.replace(/\{\{(\w+)\}\}/g, (_, k) => {
+      if (k === 'refArtigo') return listaArtigos;
+      if (k === 'descricao')  return artigos?.[0]?.desc || '—';
+      const vars = {
+        cliente:        p?.nome        || '—',
+        refPc:          p?.refPc       || '—',
+        localidade:     p?.localidade  || '—',
+        data:           hoje,
+        dataInstalacao: p?.dataInstalacao
+          ? new Date(p.dataInstalacao+'T12:00:00').toLocaleDateString('pt-PT') : '—',
+      };
+      return vars[k] || `{{${k}}}`;
+    });
   };
 
-  const substituir = txt => txt.replace(/\{\{(\w+)\}\}/g, (_, k) => vars[k] || `{{${k}}}`);
-
-  // Gerar um email por tipo seleccionado (ou combinar)
-  const partes = _tiposSel.map(tid => {
-    const tmpl = _templates.find(t => t.tipo === tid) || TEMPLATES_DEFAULT.find(t => t.tipo === tid);
-    if (!tmpl) return null;
-    return { assunto: substituir(tmpl.assunto), corpo: substituir(tmpl.corpo) };
-  }).filter(Boolean);
-
-  if (!partes.length) { mostrarToast('Sem template para este tipo', ''); return; }
-
-  // Destinatários seleccionados
+  // Destinatários
   const destIds = Array.from(document.querySelectorAll('.oc-dest-check:checked')).map(el => el.value);
   const dests   = _contactos.filter(c => destIds.includes(c.id));
   const emails  = dests.map(c => c.email).join('; ');
 
-  // Combinar assuntos e corpos
-  const assunto = partes.map(p => p.assunto).join(' | ');
-  const corpo   = partes.map(p => p.corpo).join('\n\n---\n\n');
+  // Email único com secções por tipo
+  const tiposLabel = _tiposSel.map(tid => {
+    const tipo = TIPOS_OCORRENCIA.find(t => t.id === tid);
+    return tipo ? tipo.label : tid;
+  }).join(' | ');
 
-  // Mostrar preview
-  const prevAssunto = document.getElementById('oc-preview-assunto');
-  const prevCorpo   = document.getElementById('oc-preview-corpo');
-  if (prevAssunto) prevAssunto.textContent = `Para: ${emails || '(sem destinatários)'}\nAssunto: ${assunto}`;
-  if (prevCorpo)   prevCorpo.textContent   = corpo;
+  const assunto = `${tiposLabel} — Projeto ${p?.refPc || '—'} · ${p?.nome || '—'}`;
+
+  // Cabeçalho comum
+  let corpo = `Bom dia,\n\nVenho por este meio comunicar ocorrência(s) no âmbito do projeto ${p?.refPc || '—'} (cliente: ${p?.nome || '—'}, localidade: ${p?.localidade || '—'}).\n`;
+
+  // Secção por tipo
+  _tiposSel.forEach(tid => {
+    const tipo    = TIPOS_OCORRENCIA.find(t => t.id === tid);
+    const tmpl    = _templates.find(t => t.tipo === tid) || TEMPLATES_DEFAULT.find(t => t.tipo === tid);
+    const artigos = artigosPorTipo[tid] || [];
+
+    corpo += `\n${'─'.repeat(48)}\n${tipo?.icon || ''} ${tipo?.label?.toUpperCase() || tid}\n${'─'.repeat(48)}\n`;
+
+    if (artigos.length) {
+      corpo += `\nArtigos em causa:\n`;
+      artigos.forEach(a => {
+        corpo += `  • ${a.ref}`;
+        if (a.desc) corpo += ` — ${a.desc}`;
+        if (a.qty && a.qty !== '1') corpo += ` (Qtd: ${a.qty})`;
+        corpo += '\n';
+      });
+    }
+
+    // Adicionar contexto do template (sem cabeçalho/rodapé — só a parte do meio)
+    if (tmpl) {
+      const linhas = substituir(tmpl.corpo, artigos).split('\n');
+      // Remover saudação inicial, rodapé e linhas de artigo já incluídas
+      const meio = linhas
+        .filter(l => !l.startsWith('Bom dia') && !l.startsWith('Hélder') && !l.startsWith('Agradeço') && !l.includes('{{refArtigo'))
+        .join('\n').trim();
+      if (meio) corpo += '\n' + meio + '\n';
+    }
+  });
+
+  // Rodapé comum
+  corpo += `\n${'─'.repeat(48)}\nData da ocorrência: ${hoje}\nInstalação prevista: ${p?.dataInstalacao ? new Date(p.dataInstalacao+'T12:00:00').toLocaleDateString('pt-PT') : '—'}\n\nAgradeço a vossa resposta com a maior brevidade possível.\n\nHélder Melo | VPR · Leroy Merlin\n917 880 364`;
+
+  // Preview
+  document.getElementById('oc-preview-assunto').textContent = `Para: ${emails || '(sem destinatários)'}\nAssunto: ${assunto}`;
+  document.getElementById('oc-preview-corpo').textContent   = corpo;
   document.getElementById('oc-preview').style.display = '';
 
-  // Guardar para copiar
   setState({ ocEmailGerado: { emails, assunto, corpo } });
 }
 
