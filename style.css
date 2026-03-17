@@ -1021,3 +1021,40 @@ img   { display: block; max-width: 100%; }
 .oc-proj-badge-ref  { font-family: var(--mono); font-size: 11px; background: rgba(74,140,42,.1); border-radius: 4px; padding: 1px 6px; color: var(--green); }
 .oc-proj-badge-clear { margin-left: 4px; background: none; border: none; color: var(--ink4); cursor: pointer; font-size: 16px; line-height: 1; padding: 0 2px; }
 .oc-proj-badge-clear:hover { color: var(--red); }
+
+/* ══════════════════════════════════════════════
+   RESUMO IA
+══════════════════════════════════════════════ */
+.btn-card.ia        { background: linear-gradient(135deg, #1a2f10, #2a4a1a); color: #A8D878; border-color: rgba(168,216,120,.3); font-weight: 700; letter-spacing: .3px; }
+.btn-card.ia:hover  { background: linear-gradient(135deg, #2a4a1a, #3a6020); color: #C8F098; border-color: rgba(168,216,120,.6); }
+
+.resumo-overlay     { display: none; position: fixed; inset: 0; background: rgba(15,22,16,.7); backdrop-filter: blur(12px); z-index: 800; align-items: center; justify-content: center; padding: 24px; }
+.resumo-overlay.open { display: flex; }
+
+.resumo-modal       { background: var(--white); border-radius: 18px; width: 100%; max-width: 640px; box-shadow: 0 32px 80px rgba(0,0,0,.25); display: flex; flex-direction: column; max-height: 85vh; }
+
+.resumo-header      { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.resumo-header-left { display: flex; align-items: center; gap: 14px; }
+.resumo-icon        { font-size: 22px; color: var(--green); }
+.resumo-titulo      { font-family: var(--serif); font-size: 20px; color: var(--ink); line-height: 1; }
+.resumo-sub         { font-family: var(--mono); font-size: 11px; color: var(--ink4); margin-top: 3px; }
+.resumo-header-actions { display: flex; align-items: center; gap: 8px; }
+.resumo-btn-regen   { padding: 5px 12px; background: var(--parchment); border: 1px solid var(--border); border-radius: 6px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--ink3); cursor: pointer; transition: all .15s; }
+.resumo-btn-regen:hover { border-color: var(--green); color: var(--green); }
+.resumo-btn-regen:disabled { opacity: .4; cursor: not-allowed; }
+
+.resumo-body        { flex: 1; overflow-y: auto; padding: 24px; }
+.resumo-paragrafo   { font-family: var(--sans); font-size: 14px; color: var(--ink2); line-height: 1.75; margin-bottom: 14px; }
+.resumo-paragrafo:last-child { margin-bottom: 0; }
+
+.resumo-loading     { display: flex; align-items: center; gap: 14px; padding: 40px 0; color: var(--ink4); font-family: var(--sans); font-size: 14px; justify-content: center; }
+.resumo-spinner     { width: 20px; height: 20px; border: 2px solid rgba(74,140,42,.15); border-top-color: var(--green); border-radius: 50%; animation: spin .8s linear infinite; flex-shrink: 0; }
+
+.resumo-erro        { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 40px 0; color: var(--ink4); font-family: var(--sans); font-size: 14px; text-align: center; }
+.resumo-erro-icon   { font-size: 28px; }
+.resumo-erro-detalhe { font-size: 12px; color: var(--red); font-family: var(--mono); }
+
+.resumo-footer      { padding: 14px 24px 18px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.resumo-btn-copiar  { padding: 8px 16px; background: var(--green); border: none; border-radius: 8px; color: #fff; font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s; }
+.resumo-btn-copiar:hover { background: var(--green-mid); }
+.resumo-disclaimer  { font-family: var(--mono); font-size: 10px; color: var(--ink4); }

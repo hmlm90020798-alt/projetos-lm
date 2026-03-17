@@ -28,6 +28,9 @@ import {
   abrirLightbox, fecharLightbox, lightboxNav, setLang,
 } from './cliente.js';
 import {
+  abrirResumoIA, fecharResumoIA, regenerarResumoIA, copiarResumoIA,
+} from './resumo-ia.js';
+import {
   initOcorrencias, renderOcorrenciasModulo,
   ocSelecionarProjeto, ocFiltrarProjetos, ocEscolherProjeto, ocLimparProjeto, ocFecharSugestoes,
   ocToggleTipo, ocAddArtigo, ocGerarEmail, ocCopiarEmail,
@@ -41,6 +44,10 @@ window.renderOcorrenciasModulo   = renderOcorrenciasModulo;
 // ── Exposição global ──────────────────────────────
 window.doLogin                  = () => loginHandler();
 window.doLogout                 = async () => { await doLogout(); setView('login'); };
+window.abrirResumoIA            = abrirResumoIA;
+window.fecharResumoIA           = fecharResumoIA;
+window.regenerarResumoIA        = regenerarResumoIA;
+window.copiarResumoIA           = copiarResumoIA;
 window.abrirProjetoDoAlerta     = abrirProjetoDoAlerta;
 window.setFiltro                = setFiltro;
 window.setTab                   = setTab;
