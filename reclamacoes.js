@@ -47,7 +47,7 @@ function obterGroqKey() {
 export function renderReclamacoes() {
   const lista = carregarReclamacoes();
 
-  const secao = document.getElementById('view-reclamacoes');
+  const secao = document.getElementById('reclamacoes-content');
   if (!secao) return;
 
   secao.innerHTML = `
