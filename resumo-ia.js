@@ -18,6 +18,8 @@ function obterApiKey() {
 
 function guardarApiKey(key) {
   localStorage.setItem(LS_KEY, key.trim());
+  // Guardar também no Firebase para sincronizar entre dispositivos
+  if (window.guardarGroqKey) window.guardarGroqKey(key.trim());
 }
 
 function mostrarConfigKey() {

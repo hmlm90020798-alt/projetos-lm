@@ -165,3 +165,23 @@ export async function carregarTemplates() {
     return snap.exists() ? snap.data().lista : [];
   } catch (_) { return []; }
 }
+
+// ── Chave Groq (guardada no Firebase, disponível em qualquer dispositivo) ──
+export async function guardarGroqKey(key) {
+  try {
+    await setDoc(doc(_db, 'config', 'groq'), { key });
+    localStorage.setItem('projetos_lm_groq_key', key);
+  } catch (e) { console.error('Erro ao guardar chave Groq:', e); }
+}
+
+export async function carregarGroqKey() {
+  try {
+    const snap = await getDoc(doc(_db, 'config', 'groq'));
+    if (snap.exists() && snap.data().key) {
+      const key = snap.data().key;
+      localStorage.setItem('projetos_lm_groq_key', key);
+      return key;
+    }
+  } catch (_) {}
+  return localStorage.getItem('projetos_lm_groq_key') || '';
+}

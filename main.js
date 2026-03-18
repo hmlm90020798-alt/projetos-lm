@@ -11,7 +11,7 @@
 // ════════════════════════════════════════════════
 
 import { getState, setState }    from './state.js';
-import { carregar, doLogin, doLogout, onAuth, registarVisita } from './firebase.js';
+import { carregar, doLogin, doLogout, onAuth, registarVisita, carregarGroqKey, guardarGroqKey } from './firebase.js';
 import { setView, mostrarToast } from './ui.js';
 import {
   renderPainel, abrirModalNovo, fecharModal, guardarProjeto,
@@ -82,6 +82,7 @@ window.copiarEmail              = copiarEmail;
 window.copiarRef                = copiarRef;
 window.mostrarToast             = mostrarToast;
 window.renderReclamacoes        = renderReclamacoes;
+window.guardarGroqKey           = guardarGroqKey;
 
 // ── Login ─────────────────────────────────────────
 async function loginHandler() {
@@ -181,6 +182,7 @@ function popularTiposSelect() {
     const o = document.getElementById('loading-overlay');
     if (user) {
       await carregar();
+      await carregarGroqKey(); // carrega chave Groq do Firebase para localStorage
       window._LANG = 'pt';
       renderPainel();
       setView('painel');
