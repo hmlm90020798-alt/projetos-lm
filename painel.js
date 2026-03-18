@@ -829,6 +829,11 @@ export function setTab(btnEl, tab) {
       window.renderOcorrenciasModulo();
     }
   }
+  if (tab === 'reclamacoes') {
+    if (typeof window.renderReclamacoes === 'function') {
+      window.renderReclamacoes();
+    }
+  }
 }
 
 // ── Alertas & Agenda ──────────────────────────────

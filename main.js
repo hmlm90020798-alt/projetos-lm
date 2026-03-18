@@ -31,6 +31,9 @@ import {
   abrirResumoIA, fecharResumoIA, regenerarResumoIA, copiarResumoIA,
 } from './resumo-ia.js';
 import {
+  renderReclamacoes,
+} from './reclamacoes.js';
+import {
   initOcorrencias, renderOcorrenciasModulo,
   ocSelecionarProjeto, ocFiltrarProjetos, ocEscolherProjeto, ocLimparProjeto, ocFecharSugestoes,
   ocToggleTipo, ocAddArtigo, ocGerarEmail, ocCopiarEmail,
@@ -104,6 +107,7 @@ window.ocCarregarTemplate       = ocCarregarTemplate;
 window.ocGuardarTemplate        = ocGuardarTemplate;
 window.ocFecharModalTemplate    = ocFecharModalTemplate;
 window.mostrarToast             = mostrarToast;
+window.renderReclamacoes        = renderReclamacoes;
 
 // ── Login ─────────────────────────────────────────
 async function loginHandler() {
