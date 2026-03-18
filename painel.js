@@ -153,50 +153,66 @@ export function renderPainel() {
   }).catch(() => {});
 }
 
+// Paleta cromática por estado — inspirada em tons Pantone
+const CARD_COR = {
+  proposta:    { accent: '#C9A96E', bg: '#F5EDD8', txt: '#8A6A2A', brd: '#D4B87A', ia_bg: 'linear-gradient(135deg,#3d2e10,#5a431a)', ia_txt: '#E8C878' },
+  retificacao: { accent: '#C9A96E', bg: '#F5EDD8', txt: '#8A6A2A', brd: '#D4B87A', ia_bg: 'linear-gradient(135deg,#3d2e10,#5a431a)', ia_txt: '#E8C878' },
+  aprovado:    { accent: '#4E7B4B', bg: '#DFF0DC', txt: '#2E5E2B', brd: '#7AB87A', ia_bg: 'linear-gradient(135deg,#1a2f10,#2d4d1f)', ia_txt: '#B4E678' },
+  encomenda:   { accent: '#3B5998', bg: '#D8E4F5', txt: '#2A3D70', brd: '#7A9AD4', ia_bg: 'linear-gradient(135deg,#101d36,#1e2f5a)', ia_txt: '#90B8F0' },
+  entrega:     { accent: '#3B5998', bg: '#D8E4F5', txt: '#2A3D70', brd: '#7A9AD4', ia_bg: 'linear-gradient(135deg,#101d36,#1e2f5a)', ia_txt: '#90B8F0' },
+  montagem:    { accent: '#3B5998', bg: '#D8E4F5', txt: '#2A3D70', brd: '#7A9AD4', ia_bg: 'linear-gradient(135deg,#101d36,#1e2f5a)', ia_txt: '#90B8F0' },
+  concluido:   { accent: '#8C7B6B', bg: '#EDE8E3', txt: '#6B5E52', brd: '#B0A090', ia_bg: 'linear-gradient(135deg,#2e2820,#463c30)', ia_txt: '#C8B898' },
+  expirado:    { accent: '#C0392B', bg: '#FADADD', txt: '#8B1A1A', brd: '#D47A7A', ia_bg: 'linear-gradient(135deg,#3d1010,#5a1a1a)', ia_txt: '#F0A0A0' },
+};
+
 function renderCard(p) {
-  const hoje   = new Date();
-  const pd     = p.prazo ? new Date(p.prazo + 'T23:59:59') : null;
-  const exp    = pd && pd < hoje && faseOrdem(p.fase) < faseOrdem('aprovado');
-  const urg    = pd && !exp && faseOrdem(p.fase) < faseOrdem('aprovado') && (pd - hoje) < 7 * 86400000;
-  const label  = exp ? 'Expirado' : (FASE_LABEL[p.fase] || p.fase);
-  const classe = exp ? 'badge-expirado' : (FASE_CLASSE[p.fase] || '');
-  const total  = calcTotalProjeto(p);
-  const tipo   = TIPOS_PROJETO.find(t => t.value === p.tipo)?.label || p.tipoOutro || p.tipo || '';
+  const hoje     = new Date();
+  const pd       = p.prazo ? new Date(p.prazo + 'T23:59:59') : null;
+  const exp      = pd && pd < hoje && faseOrdem(p.fase) < faseOrdem('aprovado');
+  const urg      = pd && !exp && faseOrdem(p.fase) < faseOrdem('aprovado') && (pd - hoje) < 7 * 86400000;
+  const faseKey  = exp ? 'expirado' : p.fase;
+  const label    = exp ? 'Expirado' : (FASE_LABEL[p.fase] || p.fase);
+  const total    = calcTotalProjeto(p);
+  const tipo     = TIPOS_PROJETO.find(t => t.value === p.tipo)?.label || p.tipoOutro || p.tipo || '';
   const temOcorr = (p.ocorrencias||[]).some(o => o.estado !== 'resolvida');
+  const cor      = CARD_COR[faseKey] || CARD_COR.proposta;
 
   return `
-    <div class="proj-card${temOcorr ? ' card-ocorrencia' : ''}" onclick="window.editarProjeto('${p.id}')">
+    <div class="proj-card" onclick="window.editarProjeto('${p.id}')" style="border-color:${cor.brd}40">
+      <div class="card-accent-bar" style="background:${cor.accent}"></div>
       <div class="card-top">
         <div class="card-tipo-badge">${tipo}</div>
         <div style="display:flex;gap:6px;align-items:center">
-          ${temOcorr ? `<span class="badge-ocorr">⚠️ Ocorrência</span>` : ''}
-          <span class="proj-badge ${classe}">${label}</span>
+          ${temOcorr ? `<span class="badge-ocorr">⚠️</span>` : ''}
+          <span class="proj-badge" style="background:${cor.bg};color:${cor.txt};border:1px solid ${cor.brd}">${label}</span>
         </div>
       </div>
       <div class="card-nome">${p.nome || '—'}</div>
-      <div class="card-local">${p.localidade || ''}${(p.refPc||p.refOs) ? `<span class="card-refs">
-        ${p.refPc ? `<span class="card-ref-badge" onclick="event.stopPropagation();window.copiarRef(this,'${p.refPc}')" title="Clica para copiar">PC: ${p.refPc}</span>` : ''}
-        ${p.refOs  ? `<span class="card-ref-badge" onclick="event.stopPropagation();window.copiarRef(this,'${p.refOs}')"  title="Clica para copiar">OS: ${p.refOs}</span>`  : ''}
-      </span>` : ''}</div>
+      <div class="card-local">${p.localidade || ''}</div>
+      ${(p.refPc||p.refOs) ? `
+      <div class="card-refs-row">
+        ${p.refPc ? `<span class="card-ref-pill" onclick="event.stopPropagation();window.copiarRef(this,'${p.refPc}')" title="Copiar">PC: ${p.refPc}</span>` : ''}
+        ${p.refOs  ? `<span class="card-ref-pill" onclick="event.stopPropagation();window.copiarRef(this,'${p.refOs}')"  title="Copiar">OS: ${p.refOs}</span>`  : ''}
+      </div>` : ''}
+      <div class="card-divider"></div>
       <div class="card-financeiro">
-        <div class="card-total">${total > 0 ? fmt(total) : '—'}</div>
+        <div class="card-total" style="color:${cor.accent}">${total > 0 ? fmt(total) : '—'}</div>
         <div class="card-meta-right">
-          ${p.aprovacao?.data ? `<div class="card-aprovado">✓ ${p.aprovacao.data}</div>` : ''}
+          ${p.aprovacao?.data ? `<div class="card-aprovado" style="color:${cor.txt}">✓ ${p.aprovacao.data}</div>` : ''}
           <div class="card-visitas" id="visitas-${p.id}">👁 —</div>
         </div>
       </div>
-      ${p.prazo ? `<div class="card-prazo${urg ? ' urgente' : ''}">
-        ${urg ? '⚠️ ' : ''}Válido até ${formatarData(p.prazo)}</div>` : ''}
+      ${p.prazo ? `<div class="card-prazo${urg?' urgente':''}${exp?' expirado':''}">${urg?'⚠️ ':''}Válido até ${formatarData(p.prazo)}</div>` : ''}
+      ${temOcorr ? `<div class="card-ocorr-bar"><span class="ocorr-dot"></span>Ocorrência activa</div>` : ''}
       <div class="card-actions">
-        <button class="btn-card" onclick="event.stopPropagation();window.editarProjeto('${p.id}')">✏️ Editar</button>
-        <button class="btn-card primary" onclick="event.stopPropagation();window.verCliente('${p.id}')">👁 Ver</button>
-        <button class="btn-card ia" onclick="event.stopPropagation();window.abrirResumoIA('${p.id}')" title="Resumo gerado por IA">✦ IA</button>
-        <button class="btn-card pdf" onclick="event.stopPropagation();window.gerarPDF('${p.id}')" title="Gerar PDF da proposta">📄 PDF</button>
-        <button class="btn-card partilhar" onclick="event.stopPropagation();window.partilharCliente('${p.id}')" title="Copiar link para partilhar com o cliente">
+        <button class="btn-card" style="background:${cor.bg};color:${cor.txt};border:1px solid ${cor.brd}" onclick="event.stopPropagation();window.editarProjeto('${p.id}')">✏️ Editar</button>
+        <button class="btn-card" style="background:${cor.accent};color:#fff;border:none" onclick="event.stopPropagation();window.verCliente('${p.id}')">👁 Ver</button>
+        <button class="btn-card" style="background:${cor.ia_bg};color:${cor.ia_txt};border:none;font-weight:700;letter-spacing:.3px" onclick="event.stopPropagation();window.abrirResumoIA('${p.id}')">✦ IA</button>
+        <button class="btn-card" style="background:${cor.bg};color:${cor.txt};border:1px solid ${cor.brd}" onclick="event.stopPropagation();window.gerarPDF('${p.id}')" title="PDF">📄</button>
+        <button class="btn-card" style="background:${cor.bg};color:${cor.txt};border:1px solid ${cor.brd}" onclick="event.stopPropagation();window.partilharCliente('${p.id}')" title="Partilhar">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
-          Link
         </button>
-        <button class="btn-card danger" onclick="event.stopPropagation();window.apagarProjeto('${p.id}')">🗑</button>
+        <button class="btn-card" style="background:#FADADD;color:#8B1A1A;border:1px solid #D47A7A" onclick="event.stopPropagation();window.apagarProjeto('${p.id}')">🗑</button>
       </div>
     </div>`;
 }

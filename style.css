@@ -156,36 +156,31 @@ img   { display: block; max-width: 100%; }
 
 /* Cards */
 .proj-grid          { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 16px; }
-.proj-card          { background: var(--white); border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; cursor: pointer; transition: all .2s; }
-.proj-card:hover    { border-color: var(--green); box-shadow: var(--shadow); transform: translateY(-2px); }
-.card-ocorrencia    { border-color: rgba(186,117,23,.4); }
-.card-top           { padding: 16px 18px 0; display: flex; align-items: center; justify-content: space-between; }
-.card-tipo-badge    { font-family: var(--mono); font-size: 11px; color: var(--ink3); }
-.proj-badge         { font-family: var(--sans); font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 99px; letter-spacing: .3px; }
-.badge-proposta     { background: rgba(196,169,106,.15); color: #8A7040; border: 1px solid rgba(196,169,106,.35); }
-.badge-retif        { background: var(--amber-pale); color: var(--amber); border: 1px solid rgba(186,117,23,.3); }
-.badge-aprovado     { background: var(--green-pale); color: var(--green); border: 1px solid rgba(74,140,42,.3); }
-.badge-obra         { background: rgba(42,74,140,.08); color: #2A4A8C; border: 1px solid rgba(42,74,140,.2); }
-.badge-concluido    { background: rgba(120,120,120,.08); color: var(--ink4); border: 1px solid rgba(120,120,120,.2); }
-.badge-expirado     { background: var(--red-pale); color: var(--red); border: 1px solid rgba(184,48,48,.2); }
-.badge-ocorr        { font-family: var(--sans); font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 99px; background: var(--amber-pale); color: var(--amber); border: 1px solid rgba(186,117,23,.3); }
+.proj-card          { background: #FAFAF7; border: 0.5px solid var(--border); border-radius: 16px; overflow: hidden; cursor: pointer; transition: all .2s; }
+.proj-card:hover    { box-shadow: 0 16px 40px rgba(0,0,0,.12); transform: translateY(-3px); }
+
+.card-accent-bar    { height: 5px; width: 100%; }
+.card-top           { padding: 14px 18px 0; display: flex; align-items: center; justify-content: space-between; }
+.card-tipo-badge    { font-family: var(--mono); font-size: 10px; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; }
+.proj-badge         { font-family: var(--sans); font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 99px; letter-spacing: .4px; }
 .card-nome          { font-family: var(--serif); font-size: 20px; color: var(--ink); padding: 10px 18px 2px; }
-.card-local         { font-family: var(--mono); font-size: 11px; color: var(--ink4); padding: 0 18px 12px; }
-.card-financeiro    { padding: 10px 18px; display: flex; align-items: baseline; gap: 12px; border-top: 1px solid var(--border); }
-.card-total         { font-family: var(--serif); font-size: 22px; color: var(--green); }
-.card-aprovado      { font-family: var(--mono); font-size: 11px; color: var(--green-mid); }
-.card-prazo         { padding: 6px 18px; font-family: var(--mono); font-size: 11px; color: var(--ink4); }
-.card-prazo.urgente { color: var(--red); }
-.card-actions       { padding: 10px 18px 14px; display: flex; gap: 6px; border-top: 1px solid var(--border); }
-.btn-card           { flex: 1; padding: 7px 8px; border: 1.5px solid var(--border); border-radius: 6px; background: transparent; color: var(--ink3); font-family: var(--sans); font-size: 11px; font-weight: 500; cursor: pointer; transition: all .15s; }
-.btn-card:hover     { border-color: var(--green); color: var(--green); }
-.btn-card.danger:hover { border-color: var(--red); color: var(--red); }
-.btn-card.primary   { background: var(--green); border-color: var(--green); color: #fff; }
-.btn-card.primary:hover { background: var(--green-mid); }
-.btn-card.partilhar { border-color: rgba(44,94,26,.4); color: var(--green); }
-.btn-card.partilhar:hover { background: var(--green); border-color: var(--green); color: #fff; }
-.btn-card.pdf       { border-color: rgba(196,169,106,.4); color: var(--champ); }
-.btn-card.pdf:hover { background: var(--champ); border-color: var(--champ); color: var(--dark); }
+.card-local         { font-family: var(--mono); font-size: 11px; color: var(--ink4); padding: 0 18px 10px; }
+.card-refs-row      { display: flex; gap: 6px; padding: 0 18px 12px; flex-wrap: wrap; }
+.card-ref-pill      { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 99px; background: var(--parchment2); color: var(--ink3); border: 0.5px solid var(--border-mid); cursor: pointer; transition: opacity .15s; }
+.card-ref-pill:hover { opacity: .75; }
+.card-divider       { height: 0.5px; background: var(--border); margin: 0; }
+.card-financeiro    { padding: 10px 18px; display: flex; align-items: baseline; gap: 12px; }
+.card-total         { font-family: var(--serif); font-size: 22px; }
+.card-meta-right    { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.card-aprovado      { font-family: var(--mono); font-size: 10px; }
+.card-visitas       { font-family: var(--mono); font-size: 10px; color: var(--ink4); }
+.card-prazo         { padding: 4px 18px 8px; font-family: var(--mono); font-size: 11px; color: var(--ink4); }
+.card-prazo.urgente { color: var(--red); font-weight: 700; }
+.card-prazo.expirado { color: var(--red); }
+.card-ocorr-bar     { display: flex; align-items: center; gap: 6px; padding: 6px 18px; background: rgba(193,139,44,.08); border-top: 0.5px solid rgba(193,139,44,.2); font-family: var(--mono); font-size: 10px; color: #9A6B1A; }
+.ocorr-dot          { width: 6px; height: 6px; border-radius: 50%; background: #C18B2C; flex-shrink: 0; }
+.card-actions       { padding: 10px 18px 14px; display: flex; gap: 6px; border-top: 0.5px solid var(--border); }
+.btn-card           { flex: 1; padding: 7px 8px; border-radius: 7px; font-family: var(--sans); font-size: 11px; font-weight: 500; cursor: pointer; transition: all .15s; text-align: center; }
 .empty-state        { text-align: center; padding: 80px 20px; color: var(--ink4); }
 .empty-icon         { font-size: 48px; margin-bottom: 16px; }
 .empty-titulo       { font-family: var(--serif); font-size: 22px; color: var(--ink3); margin-bottom: 8px; }
