@@ -2,6 +2,7 @@
 // resumo-ia.js — Resumo IA por projecto · Projetos LM
 // Usa a API Groq (llama-3.3-70b-versatile) — gratuito
 // API key guardada em localStorage (nunca vai para o GitHub)
+// Output estruturado em 4 blocos: Resumo · Próximo Passo · Mensagem · Conselho
 // ════════════════════════════════════════════════
 
 import { getState } from './state.js';
@@ -86,13 +87,12 @@ window._guardarGroqKey = function () {
   document.getElementById('modal-groq-key').classList.remove('open');
   mostrarToast('✓ Chave guardada', 'A IA está pronta a usar');
 
-  // Se havia um projecto pendente, gerar resumo agora
   const id = window._resumoIAProjId;
   if (id) {
     const p = getState('projetos').find(x => x.id === id);
     if (p) {
-      let modal = document.getElementById('modal-resumo-ia');
-      if (modal) modal.classList.add('open');
+      let m = document.getElementById('modal-resumo-ia');
+      if (m) m.classList.add('open');
       gerarResumo(p);
     }
   }
@@ -111,11 +111,11 @@ function construirContexto(p) {
     concluido:   'Concluído',
   };
   const tipoLabels = {
-    cozinha:            'Cozinha',
-    'casa-de-banho':    'Casa de Banho',
-    roupeiro:           'Roupeiro',
-    'renovacao-parcial':'Renovação Parcial',
-    aquecimento:        'Aquecimento',
+    cozinha:             'Cozinha',
+    'casa-de-banho':     'Casa de Banho',
+    roupeiro:            'Roupeiro',
+    'renovacao-parcial': 'Renovação Parcial',
+    aquecimento:         'Aquecimento',
   };
 
   const hoje = new Date();
@@ -126,6 +126,26 @@ function construirContexto(p) {
     const [d, m, y] = p.dataCriacao.split('/');
     const dc = new Date(y, m - 1, d);
     diasCriado = Math.round((hoje - dc) / 86400000);
+  }
+
+  // Dias sem interacção
+  let diasSemContacto = null;
+  if (p.interacoes?.length) {
+    const ultima = p.interacoes[p.interacoes.length - 1];
+    if (ultima.data) {
+      const partes = ultima.data.split('/');
+      if (partes.length === 3) {
+        const di = new Date(partes[2], partes[1] - 1, partes[0]);
+        diasSemContacto = Math.round((hoje - di) / 86400000);
+      }
+    }
+  }
+
+  // Dias até expirar proposta
+  let diasAteExpirar = null;
+  if (p.prazo) {
+    const exp = new Date(p.prazo + 'T12:00:00');
+    diasAteExpirar = Math.round((exp - hoje) / 86400000);
   }
 
   const cats = [
@@ -156,16 +176,18 @@ function construirContexto(p) {
   ].filter(Boolean);
 
   return {
-    nome:           p.nome || '—',
-    tipo:           tipoLabels[p.tipo] || p.tipoOutro || p.tipo || '—',
-    localidade:     p.localidade || '—',
-    refPc:          p.refPc || null,
-    refOs:          p.refOs || null,
-    fase:           faseLabels[p.fase] || p.fase || '—',
+    nome:              p.nome || '—',
+    tipo:              tipoLabels[p.tipo] || p.tipoOutro || p.tipo || '—',
+    localidade:        p.localidade || '—',
+    refPc:             p.refPc || null,
+    refOs:             p.refOs || null,
+    fase:              faseLabels[p.fase] || p.fase || '—',
     diasCriado,
-    aprovacao:      p.aprovacao || null,
-    prazo:          fmt(p.prazo),
-    dataInstalacao: fmt(p.dataInstalacao),
+    diasSemContacto,
+    diasAteExpirar,
+    aprovacao:         p.aprovacao || null,
+    prazo:             fmt(p.prazo),
+    dataInstalacao:    fmt(p.dataInstalacao),
     total,
     cats,
     incluidos,
@@ -191,7 +213,14 @@ function gerarPrompt(ctx) {
   if (ctx.refOs) linhas.push(`Ordem de Serviço: ${ctx.refOs}`);
   linhas.push(`Fase actual: ${ctx.fase}`);
   if (ctx.diasCriado !== null) linhas.push(`Projecto criado há ${ctx.diasCriado} dias`);
-  if (ctx.prazo) linhas.push(`Prazo da proposta: ${ctx.prazo}`);
+  if (ctx.diasSemContacto !== null) linhas.push(`Dias sem contacto com o cliente: ${ctx.diasSemContacto}`);
+  if (ctx.diasAteExpirar !== null) {
+    if (ctx.diasAteExpirar < 0) {
+      linhas.push(`Proposta EXPIRADA há ${Math.abs(ctx.diasAteExpirar)} dias`);
+    } else {
+      linhas.push(`Proposta expira em ${ctx.diasAteExpirar} dias (${ctx.prazo})`);
+    }
+  }
   if (ctx.aprovacao?.data) linhas.push(`Aprovado pelo cliente em: ${ctx.aprovacao.data} às ${ctx.aprovacao.hora || '--'} (via ${ctx.aprovacao.origem === 'cliente' ? 'página do cliente' : 'painel'})`);
   if (ctx.dataInstalacao) linhas.push(`Data de instalação prevista: ${ctx.dataInstalacao}`);
 
@@ -236,19 +265,33 @@ function gerarPrompt(ctx) {
   return linhas.join('\n');
 }
 
-// ── Chamar API Groq ───────────────────────────────
+// ── System Prompt especializado ───────────────────
 
-const SYSTEM_PROMPT = `És um assistente de gestão de projetos de interiores para Hélder Melo, VPR da Leroy Merlin Portugal.
-Recebes os dados completos de um projeto e deves gerar um resumo narrativo profissional e directo em português europeu.
-O resumo deve:
-- Começar com uma frase de síntese do estado actual
-- Descrever o que já aconteceu (aprovação, encomendas, interacções)
-- Referir o que está em curso e eventuais alertas (ocorrências activas, prazos)
-- Antecipar os próximos passos esperados
-- Mencionar aspectos financeiros relevantes se pertinente
-- Ser conciso (máximo 5 parágrafos), narrativo e orientado para acção
-- Nunca usar listas com bullets — texto corrido e natural
-Não inventes dados que não estejam nos dados fornecidos.`;
+const SYSTEM_PROMPT = `És um copiloto de vendas especializado em projetos de interiores para Hélder Melo, Vendedor de Projetos de Renovação (VPR) da Leroy Merlin Portugal, loja de Viseu.
+
+O Hélder gere projetos de cozinhas, casas de banho, roupeiros e renovações. Os seus maiores desafios são: clientes que não respondem, propostas a expirar sem decisão, atrasos na entrega de materiais e problemas na instalação.
+
+Recebes os dados completos de um projeto e deves responder SEMPRE em português europeu, com um tom próximo e humano — profissional mas sem ser frio ou distante. Como se fosses um colega experiente a dar conselhos práticos.
+
+Responde OBRIGATORIAMENTE neste formato JSON, sem mais nada antes ou depois:
+
+{
+  "resumo": "Parágrafo narrativo com o estado atual do projeto. Máximo 4 frases. Texto corrido, sem bullets.",
+  "proximoPasso": "Uma única ação concreta e urgente que o Hélder deve tomar HOJE ou nos próximos dias. Direta e específica.",
+  "mensagem": "Mensagem pronta a enviar ao cliente (WhatsApp ou email), com o tom próximo e humano característico do Hélder. Deve ser natural, sem parecer gerada por IA. Máximo 5 linhas.",
+  "conselho": "Análise estratégica ou padrão detetado. Pode ser um alerta (ex: cliente sem contacto há X dias é sinal de hesitação), uma oportunidade (ex: cliente visitou a proposta 3x — está quase a decidir) ou uma recomendação baseada na fase do projeto."
+}
+
+Regras importantes:
+- Nunca uses bullets ou listas — sempre texto corrido
+- Nunca inventes dados que não estejam nos dados fornecidos
+- A mensagem ao cliente deve mencionar o nome do cliente de forma natural
+- Se houver ocorrências activas, o próximo passo deve endereçá-las
+- Se a proposta expira em menos de 5 dias, isso é URGENTE e deve ser o foco
+- Se o cliente não tem contacto há mais de 7 dias, sugere uma mensagem de acompanhamento
+- Se o cliente visitou a proposta recentemente, menciona isso como sinal positivo`;
+
+// ── Chamar API Groq ───────────────────────────────
 
 async function chamarAPI(prompt) {
   const apiKey = obterApiKey();
@@ -262,8 +305,9 @@ async function chamarAPI(prompt) {
     },
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
-      max_tokens: 1000,
-      temperature: 0.7,
+      max_tokens: 1200,
+      temperature: 0.65,
+      response_format: { type: 'json_object' },
       messages: [
         { role: 'system', content: SYSTEM_PROMPT },
         { role: 'user',   content: prompt },
@@ -282,8 +326,66 @@ async function chamarAPI(prompt) {
   }
 
   const data = await response.json();
-  return data.choices?.[0]?.message?.content || '';
+  const texto = data.choices?.[0]?.message?.content || '{}';
+  return JSON.parse(texto);
 }
+
+// ── Renderizar blocos ─────────────────────────────
+
+function renderizarBlocos(resultado) {
+  const blocos = [
+    {
+      icon: '✦',
+      label: 'Estado atual',
+      cor: 'var(--accent, #4f8ef7)',
+      conteudo: resultado.resumo,
+      copiar: false,
+    },
+    {
+      icon: '⚡',
+      label: 'Próximo passo',
+      cor: '#f59e0b',
+      conteudo: resultado.proximoPasso,
+      copiar: false,
+    },
+    {
+      icon: '💬',
+      label: 'Mensagem sugerida',
+      cor: '#10b981',
+      conteudo: resultado.mensagem,
+      copiar: true,
+    },
+    {
+      icon: '💡',
+      label: 'Conselho',
+      cor: '#8b5cf6',
+      conteudo: resultado.conselho,
+      copiar: false,
+    },
+  ];
+
+  return blocos.map((b, i) => `
+    <div class="resumo-bloco" style="border-left: 3px solid ${b.cor}; padding: .9rem 1rem; margin-bottom: .9rem; background: var(--bg-alt, #f9f9f9); border-radius: 0 8px 8px 0;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
+        <div style="display:flex;align-items:center;gap:.4rem">
+          <span style="font-size:1rem">${b.icon}</span>
+          <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${b.cor}">${b.label}</span>
+        </div>
+        ${b.copiar ? `<button onclick="window._copiarMensagemIA(${i})" style="font-size:.75rem;padding:.2rem .6rem;border:1px solid ${b.cor};color:${b.cor};background:transparent;border-radius:5px;cursor:pointer">📋 Copiar</button>` : ''}
+      </div>
+      <p style="margin:0;font-size:.88rem;line-height:1.65;color:var(--text,#222);white-space:pre-line" data-bloco="${i}">${b.conteudo}</p>
+    </div>
+  `).join('');
+}
+
+// Copiar mensagem específica
+window._copiarMensagemIA = function(idx) {
+  const el = document.querySelector(`[data-bloco="${idx}"]`);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent).then(() => {
+    mostrarToast('✓ Mensagem copiada', '');
+  });
+};
 
 // ── Modal de resumo ───────────────────────────────
 
@@ -294,13 +396,11 @@ export function abrirResumoIA(projetoId) {
 
   window._resumoIAProjId = projetoId;
 
-  // Se não tem key, mostrar configuração primeiro
   if (!obterApiKey()) {
     mostrarConfigKey();
     return;
   }
 
-  // Criar modal se não existir
   let modal = document.getElementById('modal-resumo-ia');
   if (!modal) {
     modal = document.createElement('div');
@@ -312,7 +412,7 @@ export function abrirResumoIA(projetoId) {
           <div class="resumo-header-left">
             <span class="resumo-icon">✦</span>
             <div>
-              <div class="resumo-titulo">Resumo IA</div>
+              <div class="resumo-titulo">Copiloto IA</div>
               <div class="resumo-sub" id="resumo-sub"></div>
             </div>
           </div>
@@ -329,7 +429,7 @@ export function abrirResumoIA(projetoId) {
           </div>
         </div>
         <div class="resumo-footer">
-          <button class="resumo-btn-copiar" onclick="window.copiarResumoIA()">📋 Copiar resumo</button>
+          <button class="resumo-btn-copiar" onclick="window.copiarResumoIA()">📋 Copiar tudo</button>
           <span class="resumo-disclaimer">Gerado por IA — verificar sempre os dados</span>
         </div>
       </div>`;
@@ -359,16 +459,19 @@ async function gerarResumo(p) {
   if (btnReg) btnReg.disabled = true;
 
   try {
-    const ctx    = construirContexto(p);
-    const prompt = gerarPrompt(ctx);
-    const texto  = await chamarAPI(prompt);
+    const ctx       = construirContexto(p);
+    const prompt    = gerarPrompt(ctx);
+    const resultado = await chamarAPI(prompt);
 
-    window._resumoIATexto = texto;
+    // Guardar texto completo para "Copiar tudo"
+    window._resumoIATexto = [
+      `ESTADO ATUAL\n${resultado.resumo}`,
+      `PRÓXIMO PASSO\n${resultado.proximoPasso}`,
+      `MENSAGEM SUGERIDA\n${resultado.mensagem}`,
+      `CONSELHO\n${resultado.conselho}`,
+    ].join('\n\n');
 
-    const paragrafos = texto.split('\n').filter(l => l.trim());
-    body.innerHTML = paragrafos.map(l =>
-      `<p class="resumo-paragrafo">${l}</p>`
-    ).join('');
+    body.innerHTML = renderizarBlocos(resultado);
 
   } catch (e) {
     if (e.message === 'SEM_KEY' || e.message === 'CHAVE_INVALIDA') {
@@ -382,10 +485,10 @@ async function gerarResumo(p) {
       body.innerHTML = `
         <div class="resumo-erro">
           <div class="resumo-erro-icon">⚠️</div>
-          <div>Não foi possível gerar o resumo.</div>
+          <div>Não foi possível gerar a análise.</div>
           <div class="resumo-erro-detalhe">${e.message}</div>
         </div>`;
-      mostrarToast('Erro ao gerar resumo', e.message);
+      mostrarToast('Erro ao gerar análise', e.message);
     }
   } finally {
     if (btnReg) btnReg.disabled = false;
@@ -408,6 +511,6 @@ export function copiarResumoIA() {
   const texto = window._resumoIATexto;
   if (!texto) return;
   navigator.clipboard.writeText(texto).then(() => {
-    mostrarToast('✓ Resumo copiado', '');
+    mostrarToast('✓ Análise copiada', '');
   });
 }
