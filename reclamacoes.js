@@ -217,7 +217,7 @@ function _criarModalChat() {
           <span class="resumo-icon">🚨</span>
           <div>
             <div class="resumo-titulo">Nova Reclamação</div>
-            <div class="resumo-sub" id="rec-chat-sub">A preparar…</div>
+            <div class="resumo-sub" id="rec-chat-sub">Diagnóstico em curso…</div>
           </div>
         </div>
         <button class="modal-close" onclick="window._fecharDiagnostico()">×</button>
@@ -228,7 +228,8 @@ function _criarModalChat() {
       <div class="rec-chat-footer">
         <div class="rec-chat-input-wrap">
           <textarea id="rec-chat-input" class="rec-chat-input"
-            placeholder="Descreve o problema livremente…" rows="2"
+            placeholder="Escreve aqui…" rows="2"
+            autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();window._enviarMensagem()}"></textarea>
           <button class="rec-chat-send" onclick="window._enviarMensagem()">→</button>
         </div>
