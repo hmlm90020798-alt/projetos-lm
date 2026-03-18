@@ -583,7 +583,7 @@ window._gerarEmail = function (recId) {
     .map((p,i)=>`${i+1}. ${p.tipo}: ${p.descricao}${p.refLm?'\n   Ref. LM: '+p.refLm:''}`).join('\n\n');
 
   const assunto = `Reclamação Pós-Venda${rec.refPc?' · PC '+rec.refPc:''}${rec.refOs?' · OS '+rec.refOs:''} · ${nome}`;
-  const corpo   = `Exmo(a) Sr(a),\n\nVenho formalizar uma reclamação pós-venda do cliente ${nome}${proj?.localidade?' ('+proj.localidade+')':''}.\n\nIDENTIFICAÇÃO\n${rec.refPc?'• Ref. PC: '+rec.refPc+'\n':''}${rec.refOs?'• Ref. OS: '+rec.refOs+'\n':''}\nPROBLEMAS REPORTADOS\n${probs||'(ver diagnóstico)'}\n\nSolicito análise e resposta com brevidade.\n\nCom os melhores cumprimentos,\nHélder Melo\nVPR · Leroy Merlin Viseu · 917 880 364`;
+  const corpo   = `Bom dia,\n\nTenho uma situação pós-venda do cliente ${nome}${proj?.localidade?' ('+proj.localidade+')':''} que precisa de acompanhamento.\n${rec.refPc?'\nPC: '+rec.refPc:''}${rec.refOs?'\nOS: '+rec.refOs:''}\n\nPROBLEMAS REPORTADOS\n${probs||'(ver diagnóstico)'}\n\nPreciso de resposta com brevidade para dar retorno ao cliente. Obrigado!\n\nHélder Melo\n917 880 364`;
   window.open(`mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`,'_blank');
 };
 
