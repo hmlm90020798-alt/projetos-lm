@@ -190,9 +190,119 @@ window._abrirDiagnostico = function () {
   _recId    = gerarId();
   _dadosRec = { id: _recId, dataCriacao: dataHoje(), estado: 'pendente', problemas: [], prazoAcompanhamento: calcPrazo(3) };
   _conversa = [];
-  _criarModalChat();
-  _enviarSistema();
+  _criarModalPesquisa();
 };
+
+function _criarModalPesquisa() {
+  document.getElementById('modal-rec-pesquisa')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'modal-rec-pesquisa';
+  modal.className = 'resumo-overlay open';
+  modal.innerHTML = `
+    <div class="resumo-modal" style="max-width:520px">
+      <div class="resumo-header">
+        <div class="resumo-header-left">
+          <span class="resumo-icon">🚨</span>
+          <div>
+            <div class="resumo-titulo">Nova Reclamação</div>
+            <div class="resumo-sub">Qual o cliente?</div>
+          </div>
+        </div>
+        <button class="modal-close" onclick="document.getElementById('modal-rec-pesquisa').remove()">×</button>
+      </div>
+      <div class="resumo-body" style="padding:1.25rem">
+        <input
+          id="rec-pesquisa-input"
+          type="text"
+          class="rec-chat-input"
+          placeholder="Nome, PC ou OS…"
+          autocomplete="off" autocorrect="off" spellcheck="false"
+          style="width:100%;box-sizing:border-box;font-size:1rem;padding:.75rem 1rem;border-radius:10px;border:1.5px solid var(--border);outline:none"
+          oninput="window._filtrarClientes(this.value)"
+          onkeydown="if(event.key==='Enter'){const f=document.querySelector('.rec-cliente-btn');if(f)f.click()}"
+        />
+        <div id="rec-clientes-lista" style="margin-top:.75rem;display:flex;flex-direction:column;gap:.4rem"></div>
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)">
+          <p style="font-size:.82rem;color:var(--ink3);margin:0 0 .5rem">Projeto não está na lista?</p>
+          <div style="display:flex;gap:.5rem">
+            <input id="rec-pc-manual" class="f-input" placeholder="Ref. PC" style="flex:1" autocomplete="off">
+            <input id="rec-os-manual" class="f-input" placeholder="Ref. OS" style="flex:1" autocomplete="off">
+            <button class="rec-btn rec-btn-ia" onclick="window._selecionarManual()" style="white-space:nowrap">Usar estes →</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  setTimeout(() => document.getElementById('rec-pesquisa-input')?.focus(), 150);
+}
+
+window._filtrarClientes = function (termo) {
+  const lista   = document.getElementById('rec-clientes-lista');
+  if (!lista) return;
+  const projetos = getState('projetos') || [];
+  const t = termo.toLowerCase().trim();
+
+  if (!t) { lista.innerHTML = ''; return; }
+
+  const filtrados = projetos.filter(p =>
+    (p.nome||'').toLowerCase().includes(t) ||
+    (p.refPc||'').toLowerCase().includes(t) ||
+    (p.refOs||'').toLowerCase().includes(t) ||
+    (p.localidade||'').toLowerCase().includes(t)
+  ).slice(0, 5);
+
+  if (!filtrados.length) {
+    lista.innerHTML = `<p style="font-size:.85rem;color:var(--ink4);padding:.5rem 0">Nenhum projeto encontrado</p>`;
+    return;
+  }
+
+  lista.innerHTML = filtrados.map(p => `
+    <button class="rec-cliente-btn" onclick="window._selecionarCliente('${p.id}')"
+      style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:.65rem .9rem;background:var(--parchment);border:1px solid var(--border);border-radius:8px;cursor:pointer;text-align:left;transition:border-color .15s"
+      onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div>
+        <div style="font-weight:600;font-size:.9rem;color:var(--ink)">${p.nome||'—'}</div>
+        <div style="font-size:.78rem;color:var(--ink3);font-family:var(--mono)">${p.localidade||''}${p.refPc?' · PC: '+p.refPc:''}${p.refOs?' · OS: '+p.refOs:''}</div>
+      </div>
+      <span style="color:var(--green);font-size:1.1rem">→</span>
+    </button>`).join('');
+};
+
+window._selecionarCliente = function (projetoId) {
+  const proj = (getState('projetos')||[]).find(p => p.id === projetoId);
+  if (!proj) return;
+  _dadosRec.projetoId = projetoId;
+  _dadosRec.cliente   = proj.nome || '';
+  _dadosRec.refPc     = proj.refPc || '';
+  _dadosRec.refOs     = proj.refOs || '';
+  document.getElementById('modal-rec-pesquisa')?.remove();
+  _criarModalChat();
+  _iniciarDiagnosticoComCliente(proj);
+};
+
+window._selecionarManual = function () {
+  const pc = document.getElementById('rec-pc-manual')?.value.trim();
+  const os = document.getElementById('rec-os-manual')?.value.trim();
+  if (!pc && !os) { mostrarToast('⚠️ Indica pelo menos o PC ou OS', ''); return; }
+  _dadosRec.refPc   = pc;
+  _dadosRec.refOs   = os;
+  _dadosRec.cliente = pc || os;
+  document.getElementById('modal-rec-pesquisa')?.remove();
+  _criarModalChat();
+  _iniciarDiagnosticoSemCliente(pc, os);
+};
+
+function _iniciarDiagnosticoComCliente(proj) {
+  const sub = document.getElementById('rec-chat-sub');
+  if (sub) sub.textContent = `${proj.nome} · ${proj.localidade||''}`;
+  _adicionarMensagemIA(`✓ ${proj.nome}${proj.localidade?' ('+proj.localidade+')':''}${proj.refPc?' — PC: '+proj.refPc:''}. Qual o problema?`);
+}
+
+function _iniciarDiagnosticoSemCliente(pc, os) {
+  const sub = document.getElementById('rec-chat-sub');
+  if (sub) sub.textContent = `${pc||''}${os?' · OS: '+os:''}`;
+  _adicionarMensagemIA(`✓ Registado${pc?' PC: '+pc:''}${os?' OS: '+os:''}. Qual o problema?`);
+}
 
 window._continuarDiagnostico = function (id) {
   if (!obterGroqKey()) { mostrarToast('⚠️ Chave IA não configurada', 'Configura a chave Groq no Resumo IA'); return; }
@@ -319,10 +429,17 @@ async function _chamarIA() {
   _mostrarTyping();
   try {
     const r = await _chamarGroq(_construirSystemPrompt(), _conversa);
+    console.log('RESPOSTA IA:', r); // DEBUG
     _removerTyping();
     _processarResposta(r);
-  } catch { _removerTyping(); _adicionarMensagemIA('Ocorreu um erro. Tenta de novo.'); }
-  finally { _aguardando = false; document.getElementById('rec-chat-input')?.focus(); }
+  } catch (e) {
+    console.error('ERRO IA:', e);
+    _removerTyping();
+    _adicionarMensagemIA('Ocorreu um erro. Tenta de novo.');
+  } finally {
+    _aguardando = false;
+    document.getElementById('rec-chat-input')?.focus();
+  }
 }
 
 // ── Processar resposta ────────────────────────────
@@ -367,58 +484,41 @@ function _processarResposta(raw) {
 // ── System prompt ─────────────────────────────────
 
 function _construirSystemPrompt() {
-  const projetos = getState('projetos') || [];
-  const memoria  = carregarMemoria();
-
-  const listaProj = projetos.map(p =>
-    `{"id":"${p.id}","nome":"${p.nome||''}","localidade":"${p.localidade||''}","refPc":"${p.refPc||''}","refOs":"${p.refOs||''}"}`
-  ).join('\n');
+  const memoria = carregarMemoria();
 
   const memoriaTexto = memoria.length
     ? `\nPADRÕES APRENDIDOS:\n${memoria.map(m=>`- ${m.padrao}`).join('\n')}`
     : '';
 
-  const dadosAtuais = Object.keys(_dadosRec).length > 3
-    ? `\nDADOS JÁ RECOLHIDOS:\n${JSON.stringify(_dadosRec,null,2)}`
-    : '';
+  const dadosAtuais = `\nCLIENTE IDENTIFICADO:\n${JSON.stringify({
+    cliente:    _dadosRec.cliente || '',
+    projetoId:  _dadosRec.projetoId || '',
+    refPc:      _dadosRec.refPc || '',
+    refOs:      _dadosRec.refOs || '',
+  }, null, 2)}`;
 
   return `És um assistente de registo de reclamações pós-venda para Hélder Melo, VPR da Leroy Merlin Viseu.
 
-A app é de uso exclusivo do Hélder — nunca perguntes o seu nome ou contacto.
+O cliente já foi identificado — não perguntes quem é.
+${dadosAtuais}${memoriaTexto}
 
-PROJETOS NA APP:
-${listaProj || 'nenhum'}${dadosAtuais}${memoriaTexto}
+FLUXO — 2 PASSOS APENAS:
 
-FLUXO SEQUENCIAL OBRIGATÓRIO — segue SEMPRE esta ordem:
-
-═══ PASSO 1 — IDENTIFICAR CLIENTE ═══
-- Pergunta: "Qual o cliente, PC ou OS?"
-- Quando o Hélder responder:
-  → Pesquisa na lista de projetos por nome, PC ou OS
-  → Se encontrares UMA correspondência clara: a tua "pergunta" deve ser "Encontrei — [Nome], [Localidade] (PC: [refPc]). É este?" e NÃO coloques nada em dados.cliente ainda
-  → Se encontrares várias: mostra as 2 mais prováveis como "opcoes" e pergunta qual é
-  → Se não encontrares: pergunta "Não encontrei na lista. Indica o PC e OS para registar manualmente."
-  → Só colocas dados.cliente e dados.projetoId DEPOIS de o Hélder confirmar com "sim" ou equivalente
-- NUNCA avances para PASSO 2 sem confirmação explícita do cliente
-
-═══ PASSO 2 — DESCREVER O PROBLEMA ═══
-- Só chegas aqui depois do cliente estar confirmado
-- Pergunta: "Qual o problema?"
-- O Hélder pode escrever tudo de uma vez em linguagem completamente livre
-- Interpreta e classifica em:
-  🏗️ INSTALAÇÃO — trabalho por concluir, má qualidade, adiamentos, conduta do técnico
-  📦 ENTREGA — danos no transporte, atrasos, má conduta dos entregadores
-  🔧 MATERIAL — artigos danificados, em falta, não conformes
+PASSO 1 — O Hélder descreve o(s) problema(s) em linguagem livre.
+Interpreta e classifica:
+  🏗️ INSTALAÇÃO — trabalho por concluir, má qualidade, adiamento, conduta do técnico
+  📦 ENTREGA — danos no transporte, atraso, má conduta dos entregadores
+  🔧 MATERIAL — artigo danificado, em falta, não conforme
   😤 OUTRO — insatisfação geral, atendimento
-- Apresenta resumo formatado por categoria e pergunta: "Está correto ou falta algo?"
+Apresenta resumo formatado e pergunta apenas: "Correto?"
 
-═══ PASSO 3 — CONFIRMAR E FECHAR ═══
-- Se confirmar: verifica se há material danificado SEM ref. LM → se sim, pede só essa ref.
-- Depois fecha com completo=true e prazoAcompanhamento: "${calcPrazo(3)}"
+PASSO 2 — Se confirmar: fecha com completo=true.
+Se houver material danificado sem ref. LM: pede só essa referência antes de fechar.
+Define sempre prazoAcompanhamento: "${calcPrazo(3)}"
 
 REGRAS:
-- Segue SEMPRE a ordem dos passos — nunca saltes nem mistures
-- UMA coisa de cada vez
+- Processa tudo de uma vez — não faças perguntas desnecessárias
+- UMA interação para registar, UMA para confirmar
 - Só JSON. Português europeu.
 
 RESPONDE SEMPRE EM JSON:
@@ -426,12 +526,8 @@ RESPONDE SEMPRE EM JSON:
   "pergunta": "texto (vazio se completo=true)",
   "opcoes": [],
   "dados": {
-    "cliente": "",
-    "projetoId": "",
-    "refPc": "",
-    "refOs": "",
-    "prazoAcompanhamento": "",
-    "problemas": [{"tipo":"","descricao":"","refLm":"","estado":"pendente"}]
+    "problemas": [{"tipo":"","descricao":"","refLm":"","estado":"pendente"}],
+    "prazoAcompanhamento": ""
   },
   "completo": false,
   "resumo": "",
