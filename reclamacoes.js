@@ -331,21 +331,37 @@ function _processarResposta(raw) {
   try {
     const json = JSON.parse(raw);
 
+    // Atualizar dados acumulados
     if (json.dados) {
-      // Merge inteligente — não sobrescrever arrays vazios
       if (json.dados.problemas?.length) _dadosRec.problemas = json.dados.problemas;
       const { problemas, ...resto } = json.dados;
-      _dadosRec = { ..._dadosRec, ...resto };
-      if (json.dados.prazoAcompanhamento) _dadosRec.prazoAcompanhamento = json.dados.prazoAcompanhamento;
+      Object.keys(resto).forEach(k => { if (resto[k]) _dadosRec[k] = resto[k]; });
+      // Atualizar subtítulo só quando cliente identificado
       const sub = document.getElementById('rec-chat-sub');
       if (sub && _dadosRec.cliente) sub.textContent = _dadosRec.cliente;
     }
 
-    if (json.pergunta) _adicionarMensagemIA(json.pergunta, json.opcoes || []);
-    if (json.completo) { _guardarRascunho(); _mostrarResumoFinal(json.resumo, json.proximosPassos); }
-    if (json.padrao)   { const m = carregarMemoria(); m.push({ data: dataHoje(), padrao: json.padrao }); guardarMemoria(m); }
+    // Mostrar pergunta — se vier vazia mas não estiver completo, é um bug da IA — pede para repetir
+    if (json.completo) {
+      _guardarRascunho();
+      _mostrarResumoFinal(json.resumo, json.proximosPassos);
+    } else if (json.pergunta && json.pergunta.trim()) {
+      _adicionarMensagemIA(json.pergunta, json.opcoes || []);
+    } else {
+      // Fallback — IA respondeu sem pergunta nem completo
+      _adicionarMensagemIA('Não percebi bem. Podes repetir?');
+    }
 
-  } catch { _adicionarMensagemIA(raw); }
+    if (json.padrao) {
+      const m = carregarMemoria();
+      m.push({ data: dataHoje(), padrao: json.padrao });
+      guardarMemoria(m);
+    }
+
+  } catch (e) {
+    // JSON inválido — mostrar como texto
+    _adicionarMensagemIA(raw || 'Ocorreu um erro inesperado.');
+  }
 }
 
 // ── System prompt ─────────────────────────────────
@@ -377,13 +393,13 @@ FLUXO SEQUENCIAL OBRIGATÓRIO — segue SEMPRE esta ordem:
 
 ═══ PASSO 1 — IDENTIFICAR CLIENTE ═══
 - Pergunta: "Qual o cliente, PC ou OS?"
-- Quando o Hélder responder com um nome/PC/OS:
-  → Pesquisa na lista de projetos
-  → Se encontrares correspondência: responde "Encontrei — [Nome], [Localidade] (PC: [refPc]). É este?"
-  → Se não encontrares: responde "Não encontrei na lista. Indica o PC e OS para registar."
-  → Se o Hélder confirmar com "sim" ou equivalente: guarda o projetoId e avança para PASSO 2
-  → Se negar: pede para clarificar
-- NÃO avances para o PASSO 2 sem o cliente estar confirmado
+- Quando o Hélder responder:
+  → Pesquisa na lista de projetos por nome, PC ou OS
+  → Se encontrares UMA correspondência clara: a tua "pergunta" deve ser "Encontrei — [Nome], [Localidade] (PC: [refPc]). É este?" e NÃO coloques nada em dados.cliente ainda
+  → Se encontrares várias: mostra as 2 mais prováveis como "opcoes" e pergunta qual é
+  → Se não encontrares: pergunta "Não encontrei na lista. Indica o PC e OS para registar manualmente."
+  → Só colocas dados.cliente e dados.projetoId DEPOIS de o Hélder confirmar com "sim" ou equivalente
+- NUNCA avances para PASSO 2 sem confirmação explícita do cliente
 
 ═══ PASSO 2 — DESCREVER O PROBLEMA ═══
 - Só chegas aqui depois do cliente estar confirmado
