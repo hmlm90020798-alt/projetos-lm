@@ -257,7 +257,7 @@ async function chamarAPI(prompt) {
   const apiKey = obterApiKey();
   if (!apiKey) throw new Error('SEM_KEY');
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
   const response = await fetch(url, {
     method: 'POST',
