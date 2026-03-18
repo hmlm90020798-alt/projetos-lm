@@ -33,6 +33,9 @@ import {
 import {
   renderReclamacoes,
 } from './reclamacoes.js';
+import {
+  ativarModoApresentacao, sairModoApresentacao,
+} from './modo-apresentacao.js';
 
 window._clienteModule            = { renderPaginaCliente };
 
@@ -83,6 +86,8 @@ window.copiarRef                = copiarRef;
 window.mostrarToast             = mostrarToast;
 window.renderReclamacoes        = renderReclamacoes;
 window.guardarGroqKey           = guardarGroqKey;
+window.ativarModoApresentacao   = ativarModoApresentacao;
+window.sairModoApresentacao     = sairModoApresentacao;
 
 // ── Login ─────────────────────────────────────────
 async function loginHandler() {

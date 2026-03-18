@@ -190,6 +190,7 @@ function renderCard(p) {
       <div class="card-actions">
         <button class="btn-card" onclick="event.stopPropagation();window.editarProjeto('${p.id}')">✏️ Editar</button>
         <button class="btn-card primary" onclick="event.stopPropagation();window.verCliente('${p.id}')">👁 Ver</button>
+        <button class="btn-card" style="background:linear-gradient(135deg,#1a2f10,#2a4a1a);color:#A8D878;border:none;font-weight:700" onclick="event.stopPropagation();window.ativarModoApresentacao('${p.id}')" title="Modo Apresentação">⛶ Apresentar</button>
         <button class="btn-card ia" onclick="event.stopPropagation();window.abrirResumoIA('${p.id}')" title="Resumo gerado por IA">✦ IA</button>
         <button class="btn-card pdf" onclick="event.stopPropagation();window.gerarPDF('${p.id}')" title="Gerar PDF da proposta">📄 PDF</button>
         <button class="btn-card partilhar" onclick="event.stopPropagation();window.partilharCliente('${p.id}')" title="Copiar link para partilhar com o cliente">
