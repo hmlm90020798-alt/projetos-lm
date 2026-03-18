@@ -1,358 +1,488 @@
 // ════════════════════════════════════════════════
-// reclamacoes.js — Gestão de Reclamações Pós-Venda
+// reclamacoes.js — Diagnóstico Conversacional de Reclamações
 // Projetos LM · Hélder Melo
+// A IA conduz o diagnóstico como um colega experiente
 // ════════════════════════════════════════════════
 
-import { getState, setState } from './state.js';
+import { getState } from './state.js';
 import { mostrarToast, gerarId, dataHoje } from './ui.js';
 
-// ── Constantes ────────────────────────────────────
+// ── Storage ───────────────────────────────────────
 
-const LS_KEY_GROQ   = 'projetos_lm_groq_key';
-const LS_KEY_REC    = 'projetos_lm_reclamacoes';
-
-const TIPOS_PROBLEMA = [
-  'Artigo danificado',
-  'Artigo em falta',
-  'Instalação por concluir',
-  'Defeito de funcionamento',
-  'Problema estético',
-  'Atraso na entrega',
-  'Outro',
-];
-
-const ESTADO_LABEL = {
-  pendente:   { txt: 'Pendente',    cor: '#f59e0b' },
-  em_curso:   { txt: 'Em curso',    cor: '#3b82f6' },
-  resolvido:  { txt: 'Resolvido',   cor: '#10b981' },
-};
-
-// ── Storage de reclamações (localStorage) ─────────
+const LS_KEY_GROQ = 'projetos_lm_groq_key';
+const LS_KEY_REC  = 'projetos_lm_reclamacoes';
+const LS_KEY_MEM  = 'projetos_lm_rec_memoria'; // memória de padrões aprendidos
 
 function carregarReclamacoes() {
-  try { return JSON.parse(localStorage.getItem(LS_KEY_REC) || '[]'); }
-  catch { return []; }
+  try { return JSON.parse(localStorage.getItem(LS_KEY_REC) || '[]'); } catch { return []; }
 }
-
 function guardarReclamacoes(lista) {
   localStorage.setItem(LS_KEY_REC, JSON.stringify(lista));
 }
-
 function obterGroqKey() {
   return localStorage.getItem(LS_KEY_GROQ) || '';
 }
+function carregarMemoria() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY_MEM) || '[]'); } catch { return []; }
+}
+function guardarMemoria(lista) {
+  localStorage.setItem(LS_KEY_MEM, JSON.stringify(lista.slice(-20))); // guardar últimos 20 padrões
+}
 
-// ── Página principal de reclamações ──────────────
+// ── Estado da conversa ────────────────────────────
+
+let _conversa    = [];   // histórico de mensagens { role, content }
+let _dadosRec    = {};   // dados estruturados recolhidos
+let _recId       = null; // id da reclamação em curso
+let _aguardando  = false;
+
+// ── Render página principal ───────────────────────
 
 export function renderReclamacoes() {
-  const lista = carregarReclamacoes();
-
   const secao = document.getElementById('reclamacoes-content');
   if (!secao) return;
 
+  const lista = carregarReclamacoes();
+  const pendentes  = lista.filter(r => r.estado === 'pendente').length;
+  const emCurso    = lista.filter(r => r.estado === 'em_curso').length;
+  const resolvidas = lista.filter(r => r.estado === 'resolvido').length;
+
   secao.innerHTML = `
-    <div class="rec-header">
-      <div class="rec-header-left">
-        <h2 class="rec-titulo">⚠️ Reclamações Pós-Venda</h2>
-        <p class="rec-sub">Regista, acompanha e resolve problemas com apoio da IA</p>
+    <div class="rec-page">
+      <div class="rec-header">
+        <div>
+          <h2 class="rec-titulo">🚨 Reclamações Pós-Venda</h2>
+          <p class="rec-sub">Diagnóstico guiado por IA · Regista, acompanha e resolve</p>
+        </div>
+        <button class="btn-novo rec-btn-nova" onclick="window._abrirDiagnostico()">
+          + Nova Reclamação
+        </button>
       </div>
-      <button class="btn-primary" onclick="window._abrirNovaReclamacao()">+ Nova Reclamação</button>
-    </div>
 
-    <div class="rec-stats">
-      <div class="rec-stat">
-        <span class="rec-stat-num" style="color:#f59e0b">${lista.filter(r => r.estado === 'pendente').length}</span>
-        <span class="rec-stat-label">Pendentes</span>
+      <div class="rec-stats">
+        <div class="rec-stat"><span class="rec-stat-num" style="color:#f59e0b">${pendentes}</span><span class="rec-stat-label">Pendentes</span></div>
+        <div class="rec-stat"><span class="rec-stat-num" style="color:#3b82f6">${emCurso}</span><span class="rec-stat-label">Em Curso</span></div>
+        <div class="rec-stat"><span class="rec-stat-num" style="color:#10b981">${resolvidas}</span><span class="rec-stat-label">Resolvidas</span></div>
       </div>
-      <div class="rec-stat">
-        <span class="rec-stat-num" style="color:#3b82f6">${lista.filter(r => r.estado === 'em_curso').length}</span>
-        <span class="rec-stat-label">Em Curso</span>
-      </div>
-      <div class="rec-stat">
-        <span class="rec-stat-num" style="color:#10b981">${lista.filter(r => r.estado === 'resolvido').length}</span>
-        <span class="rec-stat-label">Resolvidas</span>
-      </div>
-    </div>
 
-    <div class="rec-lista" id="rec-lista">
-      ${lista.length === 0
-        ? `<div class="empty-state">
-             <div class="empty-icon">✅</div>
-             <div class="empty-titulo">Sem reclamações registadas</div>
-             <div class="empty-sub">Quando surgir uma situação pós-venda, regista aqui para acompanhar e resolver com o apoio da IA.</div>
-           </div>`
-        : lista.slice().reverse().map(r => renderCardReclamacao(r)).join('')
-      }
+      <div class="rec-lista">
+        ${lista.length === 0
+          ? `<div class="empty-state">
+               <div class="empty-icon">✅</div>
+               <div class="empty-titulo">Sem reclamações registadas</div>
+               <div class="empty-sub">Clica em "+ Nova Reclamação" para iniciar um diagnóstico guiado.</div>
+             </div>`
+          : lista.slice().reverse().map(r => _renderCard(r)).join('')
+        }
+      </div>
     </div>
   `;
 }
 
-function renderCardReclamacao(r) {
-  const est  = ESTADO_LABEL[r.estado] || ESTADO_LABEL.pendente;
+function _renderCard(r) {
+  const cores = { pendente: '#f59e0b', em_curso: '#3b82f6', resolvido: '#10b981' };
+  const textos = { pendente: 'Pendente', em_curso: 'Em Curso', resolvido: 'Resolvido' };
+  const cor  = cores[r.estado]  || '#f59e0b';
+  const txt  = textos[r.estado] || 'Pendente';
   const proj = getState('projetos')?.find(p => p.id === r.projetoId);
-  const nomeProj = proj ? `${proj.nome} · ${proj.localidade || ''}` : (r.nomeCliente || '—');
-  const pendentes = (r.problemas || []).filter(p => p.estado !== 'resolvido').length;
+  const nome = proj?.nome || r.cliente || '—';
+  const pendProb = (r.problemas || []).filter(p => p.estado !== 'resolvido').length;
 
   return `
-    <div class="rec-card" id="rec-card-${r.id}">
+    <div class="rec-card">
       <div class="rec-card-header">
         <div class="rec-card-info">
-          <div class="rec-card-nome">${nomeProj}</div>
+          <div class="rec-card-nome">${nome}</div>
           <div class="rec-card-meta">
             ${r.refPc ? `<span>PC: ${r.refPc}</span>` : ''}
             ${r.refOs ? `<span>OS: ${r.refOs}</span>` : ''}
+            ${r.contacto ? `<span>📞 ${r.contacto}</span>` : ''}
             <span>${r.dataCriacao || ''}</span>
           </div>
         </div>
         <div class="rec-card-badges">
-          <span class="rec-badge" style="background:${est.cor}20;color:${est.cor};border:1px solid ${est.cor}40">${est.txt}</span>
-          ${pendentes > 0 ? `<span class="rec-badge" style="background:#fee2e2;color:#ef4444;border:1px solid #fca5a5">${pendentes} por resolver</span>` : ''}
+          <span class="rec-badge" style="background:${cor}20;color:${cor};border:1px solid ${cor}40">${txt}</span>
+          ${pendProb > 0 ? `<span class="rec-badge" style="background:#fee2e2;color:#ef4444;border:1px solid #fca5a5">${pendProb} por resolver</span>` : ''}
         </div>
       </div>
 
-      <div class="rec-problemas">
-        ${(r.problemas || []).map((p, i) => `
-          <div class="rec-problema ${p.estado === 'resolvido' ? 'resolvido' : ''}">
-            <div class="rec-problema-check">
-              <input type="checkbox" ${p.estado === 'resolvido' ? 'checked' : ''}
-                onchange="window._toggleProblema('${r.id}', ${i}, this.checked)"
-              />
+      ${(r.problemas||[]).length > 0 ? `
+        <div class="rec-problemas">
+          ${r.problemas.map((p,i) => `
+            <div class="rec-problema ${p.estado==='resolvido'?'resolvido':''}">
+              <div class="rec-problema-check">
+                <input type="checkbox" ${p.estado==='resolvido'?'checked':''}
+                  onchange="window._toggleProblema('${r.id}',${i},this.checked)">
+              </div>
+              <div class="rec-problema-body">
+                <div class="rec-problema-tipo">${p.tipo || ''}</div>
+                <div class="rec-problema-desc">${p.descricao || ''}</div>
+                ${p.refLm ? `<div class="rec-problema-ref">Ref. LM: <code>${p.refLm}</code></div>` : ''}
+              </div>
             </div>
-            <div class="rec-problema-body">
-              <div class="rec-problema-tipo">${p.tipo}</div>
-              <div class="rec-problema-desc">${p.descricao || '—'}</div>
-              ${p.refLm ? `<div class="rec-problema-ref">Ref. LM: <code>${p.refLm}</code></div>` : ''}
-              ${p.temFoto ? `<div class="rec-problema-foto">📎 Foto anexa</div>` : ''}
-            </div>
-          </div>
-        `).join('')}
-      </div>
+          `).join('')}
+        </div>` : ''
+      }
 
       <div class="rec-card-acoes">
-        <button class="rec-btn rec-btn-ia" onclick="window._abrirAnaliseIA('${r.id}')">✦ Analisar com IA</button>
-        <button class="rec-btn rec-btn-email" onclick="window._abrirEmail('${r.id}')">✉️ Gerar Email</button>
-        <button class="rec-btn rec-btn-edit" onclick="window._editarReclamacao('${r.id}')">✏️ Editar</button>
-        <button class="rec-btn rec-btn-del" onclick="window._apagarReclamacao('${r.id}')">🗑</button>
+        <button class="rec-btn rec-btn-ia"    onclick="window._abrirAnaliseIA('${r.id}')">✦ Análise IA</button>
+        <button class="rec-btn rec-btn-email" onclick="window._gerarEmail('${r.id}')">✉️ Email</button>
+        <button class="rec-btn rec-btn-edit"  onclick="window._continuarDiagnostico('${r.id}')">💬 Continuar</button>
+        <button class="rec-btn rec-btn-del"   onclick="window._apagarReclamacao('${r.id}')">🗑</button>
       </div>
     </div>
   `;
 }
 
-// ── Modal Nova / Editar Reclamação ────────────────
+// ── Modal de diagnóstico conversacional ───────────
 
-window._abrirNovaReclamacao = function () {
-  _abrirModalReclamacao(null);
-};
-
-window._editarReclamacao = function (id) {
-  _abrirModalReclamacao(id);
-};
-
-function _abrirModalReclamacao(id) {
-  const lista = carregarReclamacoes();
-  const rec   = id ? lista.find(r => r.id === id) : null;
-  const projetos = getState('projetos') || [];
-
-  let modal = document.getElementById('modal-rec-form');
-  if (modal) modal.remove();
-
-  modal = document.createElement('div');
-  modal.id = 'modal-rec-form';
-  modal.className = 'resumo-overlay open';
-
-  const opcoesProj = projetos.map(p =>
-    `<option value="${p.id}" ${rec?.projetoId === p.id ? 'selected' : ''}>${p.nome} · ${p.localidade || ''}</option>`
-  ).join('');
-
-  const problemasHtml = (rec?.problemas || [{ tipo: '', descricao: '', refLm: '', estado: 'pendente', temFoto: false }])
-    .map((p, i) => renderFormProblema(p, i)).join('');
-
-  modal.innerHTML = `
-    <div class="resumo-modal" style="max-width:600px;max-height:90vh;overflow-y:auto">
-      <div class="resumo-header">
-        <div class="resumo-header-left">
-          <span class="resumo-icon">⚠️</span>
-          <div>
-            <div class="resumo-titulo">${rec ? 'Editar Reclamação' : 'Nova Reclamação'}</div>
-            <div class="resumo-sub">Regista os problemas reportados pelo cliente</div>
-          </div>
-        </div>
-        <button class="modal-close" onclick="document.getElementById('modal-rec-form').remove()">×</button>
-      </div>
-
-      <div class="resumo-body" style="padding:1.25rem">
-
-        <!-- Projeto -->
-        <div class="form-group">
-          <label class="form-label">Projeto associado</label>
-          <select id="rec-projeto" class="form-control">
-            <option value="">— Selecionar projeto —</option>
-            ${opcoesProj}
-          </select>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
-          <div class="form-group">
-            <label class="form-label">Ref. PC</label>
-            <input id="rec-refPc" class="form-control" placeholder="PC-XXXXX" value="${rec?.refPc || ''}">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Ref. OS</label>
-            <input id="rec-refOs" class="form-control" placeholder="OS-XXXXX" value="${rec?.refOs || ''}">
-          </div>
-        </div>
-
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
-          <div class="form-group">
-            <label class="form-label">Email equipa de serviços</label>
-            <input id="rec-emailServicos" class="form-control" type="email" placeholder="servicos@leroymerlin.pt" value="${rec?.emailServicos || ''}">
-          </div>
-          <div class="form-group">
-            <label class="form-label">CC: Chefe direto</label>
-            <input id="rec-emailChefe" class="form-control" type="email" placeholder="chefe@leroymerlin.pt" value="${rec?.emailChefe || ''}">
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Estado geral</label>
-          <select id="rec-estado" class="form-control">
-            <option value="pendente"  ${(!rec || rec.estado === 'pendente')  ? 'selected' : ''}>🟡 Pendente</option>
-            <option value="em_curso"  ${rec?.estado === 'em_curso'  ? 'selected' : ''}>🔵 Em curso</option>
-            <option value="resolvido" ${rec?.estado === 'resolvido' ? 'selected' : ''}>🟢 Resolvido</option>
-          </select>
-        </div>
-
-        <!-- Problemas -->
-        <div style="margin-top:1rem">
-          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
-            <label class="form-label" style="margin:0">Problemas reportados</label>
-            <button class="rec-btn rec-btn-ia" style="font-size:.8rem;padding:.3rem .7rem" onclick="window._adicionarProblema()">+ Adicionar problema</button>
-          </div>
-          <div id="rec-problemas-lista">
-            ${problemasHtml}
-          </div>
-        </div>
-
-        <div class="form-group" style="margin-top:1rem">
-          <label class="form-label">Notas internas</label>
-          <textarea id="rec-notas" class="form-control" rows="3" placeholder="Contexto adicional, histórico relevante, acordos verbais...">${rec?.notas || ''}</textarea>
-        </div>
-
-      </div>
-
-      <div class="resumo-footer" style="justify-content:flex-end;gap:.6rem">
-        <button class="resumo-btn-copiar" onclick="document.getElementById('modal-rec-form').remove()">Cancelar</button>
-        <button class="resumo-btn-regen" style="opacity:1" onclick="window._guardarReclamacao('${id || ''}')">✓ Guardar</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(modal);
-}
-
-function renderFormProblema(p, i) {
-  return `
-    <div class="rec-form-problema" id="rec-prob-${i}" style="border:1px solid var(--border,#e5e7eb);border-radius:8px;padding:.9rem;margin-bottom:.6rem;position:relative">
-      <button onclick="window._removerProblema(${i})" style="position:absolute;top:.5rem;right:.5rem;background:none;border:none;cursor:pointer;font-size:1rem;color:#9ca3af">×</button>
-
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.6rem">
-        <div class="form-group" style="margin:0">
-          <label class="form-label">Tipo de problema</label>
-          <select class="form-control prob-tipo">
-            ${TIPOS_PROBLEMA.map(t => `<option ${p.tipo === t ? 'selected' : ''}>${t}</option>`).join('')}
-          </select>
-        </div>
-        <div class="form-group" style="margin:0">
-          <label class="form-label">Ref. LM (artigo)</label>
-          <input class="form-control prob-refLm" placeholder="Ex: 3276006xxxxxx" value="${p.refLm || ''}">
-        </div>
-      </div>
-
-      <div class="form-group" style="margin-bottom:.6rem">
-        <label class="form-label">Descrição do problema</label>
-        <textarea class="form-control prob-desc" rows="2" placeholder="Descreve o problema de forma clara e objetiva...">${p.descricao || ''}</textarea>
-      </div>
-
-      <div style="display:flex;align-items:center;gap:1rem">
-        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer">
-          <input type="checkbox" class="prob-foto" ${p.temFoto ? 'checked' : ''}> Tem foto/evidência
-        </label>
-        <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer">
-          <input type="checkbox" class="prob-resolvido" ${p.estado === 'resolvido' ? 'checked' : ''}> Já resolvido
-        </label>
-      </div>
-    </div>
-  `;
-}
-
-window._adicionarProblema = function () {
-  const lista = document.getElementById('rec-problemas-lista');
-  const i = lista.querySelectorAll('.rec-form-problema').length;
-  lista.insertAdjacentHTML('beforeend', renderFormProblema({}, i));
-};
-
-window._removerProblema = function (i) {
-  document.getElementById(`rec-prob-${i}`)?.remove();
-};
-
-function lerProblemasDoForm() {
-  const probs = [];
-  document.querySelectorAll('.rec-form-problema').forEach(el => {
-    probs.push({
-      tipo:      el.querySelector('.prob-tipo')?.value     || 'Outro',
-      descricao: el.querySelector('.prob-desc')?.value     || '',
-      refLm:     el.querySelector('.prob-refLm')?.value    || '',
-      temFoto:   el.querySelector('.prob-foto')?.checked   || false,
-      estado:    el.querySelector('.prob-resolvido')?.checked ? 'resolvido' : 'pendente',
-    });
-  });
-  return probs;
-}
-
-window._guardarReclamacao = function (idExistente) {
-  const projetoId      = document.getElementById('rec-projeto')?.value || '';
-  const refPc          = document.getElementById('rec-refPc')?.value.trim() || '';
-  const refOs          = document.getElementById('rec-refOs')?.value.trim() || '';
-  const emailServicos  = document.getElementById('rec-emailServicos')?.value.trim() || '';
-  const emailChefe     = document.getElementById('rec-emailChefe')?.value.trim() || '';
-  const estado         = document.getElementById('rec-estado')?.value || 'pendente';
-  const notas          = document.getElementById('rec-notas')?.value.trim() || '';
-  const problemas      = lerProblemasDoForm();
-
-  if (!problemas.length || !problemas[0].descricao) {
-    mostrarToast('⚠️ Atenção', 'Regista pelo menos um problema com descrição');
+window._abrirDiagnostico = function () {
+  if (!obterGroqKey()) {
+    mostrarToast('⚠️ Chave IA não configurada', 'Configura a chave Groq no Resumo IA');
     return;
   }
+  _recId   = gerarId();
+  _dadosRec = { id: _recId, dataCriacao: dataHoje(), estado: 'pendente', problemas: [] };
+  _conversa = [];
+  _criarModalChat();
+  _enviarSistema(); // IA faz a primeira pergunta
+};
 
-  const proj = getState('projetos')?.find(p => p.id === projetoId);
-
-  const lista = carregarReclamacoes();
-
-  if (idExistente) {
-    const idx = lista.findIndex(r => r.id === idExistente);
-    if (idx >= 0) {
-      lista[idx] = { ...lista[idx], projetoId, nomeCliente: proj?.nome || '', refPc, refOs, emailServicos, emailChefe, estado, notas, problemas };
-    }
-  } else {
-    lista.push({
-      id: gerarId(),
-      projetoId,
-      nomeCliente: proj?.nome || '',
-      refPc,
-      refOs,
-      emailServicos,
-      emailChefe,
-      estado,
-      notas,
-      problemas,
-      dataCriacao: dataHoje(),
-    });
+window._continuarDiagnostico = function (id) {
+  if (!obterGroqKey()) {
+    mostrarToast('⚠️ Chave IA não configurada', 'Configura a chave Groq no Resumo IA');
+    return;
   }
+  const lista = carregarReclamacoes();
+  const rec   = lista.find(r => r.id === id);
+  if (!rec) return;
+  _recId    = id;
+  _dadosRec = { ...rec };
+  _conversa = [];
+  _criarModalChat();
+  // Resumir o que já existe e perguntar o que falta
+  _adicionarMensagemIA('A retomar o diagnóstico desta reclamação. Diz-me se há algo a acrescentar, corrigir ou atualizar — ou se já podemos passar à análise e geração do email.');
+};
 
+function _criarModalChat() {
+  document.getElementById('modal-rec-chat')?.remove();
+
+  const modal = document.createElement('div');
+  modal.id    = 'modal-rec-chat';
+  modal.className = 'resumo-overlay open';
+  modal.innerHTML = `
+    <div class="resumo-modal rec-chat-modal">
+      <div class="resumo-header">
+        <div class="resumo-header-left">
+          <span class="resumo-icon">🚨</span>
+          <div>
+            <div class="resumo-titulo">Diagnóstico de Reclamação</div>
+            <div class="resumo-sub" id="rec-chat-sub">A iniciar diagnóstico…</div>
+          </div>
+        </div>
+        <button class="modal-close" onclick="window._fecharDiagnostico()">×</button>
+      </div>
+
+      <div class="rec-chat-body" id="rec-chat-body">
+        <div class="resumo-loading">
+          <div class="resumo-spinner"></div>
+          <span>A preparar o diagnóstico…</span>
+        </div>
+      </div>
+
+      <div class="rec-chat-footer">
+        <div class="rec-chat-input-wrap">
+          <textarea
+            id="rec-chat-input"
+            class="rec-chat-input"
+            placeholder="Escreve aqui a tua resposta…"
+            rows="2"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();window._enviarMensagem()}"
+          ></textarea>
+          <button class="rec-chat-send" onclick="window._enviarMensagem()">→</button>
+        </div>
+        <div class="rec-chat-actions" id="rec-chat-actions"></div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  setTimeout(() => document.getElementById('rec-chat-input')?.focus(), 100);
+}
+
+// ── Sistema de mensagens ──────────────────────────
+
+function _adicionarMensagemIA(texto, opcoes = []) {
+  const body = document.getElementById('rec-chat-body');
+  if (!body) return;
+
+  // Remover loading se existir
+  body.querySelector('.resumo-loading')?.remove();
+
+  const div = document.createElement('div');
+  div.className = 'rec-msg rec-msg-ia';
+  div.innerHTML = `
+    <div class="rec-msg-avatar">✦</div>
+    <div class="rec-msg-bubble">
+      <p class="rec-msg-texto">${texto.replace(/\n/g,'<br>')}</p>
+      ${opcoes.length ? `
+        <div class="rec-msg-opcoes">
+          ${opcoes.map(op => `
+            <button class="rec-opcao-btn" onclick="window._escolherOpcao('${op.replace(/'/g,"\\'")}')">
+              ${op}
+            </button>`).join('')}
+        </div>` : ''}
+    </div>
+  `;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+
+  _conversa.push({ role: 'assistant', content: texto });
+}
+
+function _adicionarMensagemUser(texto) {
+  const body = document.getElementById('rec-chat-body');
+  if (!body) return;
+
+  const div = document.createElement('div');
+  div.className = 'rec-msg rec-msg-user';
+  div.innerHTML = `
+    <div class="rec-msg-bubble rec-msg-bubble-user">
+      <p class="rec-msg-texto">${texto.replace(/\n/g,'<br>')}</p>
+    </div>
+  `;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+
+  _conversa.push({ role: 'user', content: texto });
+}
+
+function _mostrarTyping() {
+  const body = document.getElementById('rec-chat-body');
+  if (!body) return;
+  body.querySelector('.rec-typing')?.remove();
+  const div = document.createElement('div');
+  div.className = 'rec-msg rec-msg-ia rec-typing';
+  div.innerHTML = `
+    <div class="rec-msg-avatar">✦</div>
+    <div class="rec-msg-bubble">
+      <span class="rec-typing-dots"><span></span><span></span><span></span></span>
+    </div>
+  `;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+}
+
+function _removerTyping() {
+  document.querySelector('.rec-typing')?.remove();
+}
+
+// ── Enviar mensagem do utilizador ─────────────────
+
+window._enviarMensagem = function () {
+  const input = document.getElementById('rec-chat-input');
+  const texto = input?.value?.trim();
+  if (!texto || _aguardando) return;
+  input.value = '';
+  // Remover opções anteriores
+  document.querySelectorAll('.rec-msg-opcoes').forEach(el => el.remove());
+  _adicionarMensagemUser(texto);
+  _chamarIA(texto);
+};
+
+window._escolherOpcao = function (opcao) {
+  document.querySelectorAll('.rec-msg-opcoes').forEach(el => el.remove());
+  _adicionarMensagemUser(opcao);
+  _chamarIA(opcao);
+};
+
+// ── Primeira mensagem do sistema ──────────────────
+
+async function _enviarSistema() {
+  _aguardando = true;
+  _mostrarTyping();
+
+  const systemPrompt = _construirSystemPrompt();
+
+  try {
+    const resposta = await _chamarGroq(systemPrompt, [
+      { role: 'user', content: 'Inicia o diagnóstico.' }
+    ]);
+    _removerTyping();
+    _processarRespostaIA(resposta);
+  } catch (e) {
+    _removerTyping();
+    _adicionarMensagemIA('Não foi possível iniciar o diagnóstico. Verifica a tua chave API.');
+  } finally {
+    _aguardando = false;
+  }
+}
+
+// ── Chamar IA com histórico completo ──────────────
+
+async function _chamarIA(mensagemUser) {
+  if (_aguardando) return;
+  _aguardando = true;
+  _mostrarTyping();
+
+  const systemPrompt = _construirSystemPrompt();
+
+  try {
+    const resposta = await _chamarGroq(systemPrompt, _conversa);
+    _removerTyping();
+    _processarRespostaIA(resposta);
+  } catch (e) {
+    _removerTyping();
+    _adicionarMensagemIA('Ocorreu um erro. Tenta de novo.');
+  } finally {
+    _aguardando = false;
+    document.getElementById('rec-chat-input')?.focus();
+  }
+}
+
+// ── Processar resposta da IA (JSON estruturado) ───
+
+function _processarRespostaIA(resposta) {
+  try {
+    const json = JSON.parse(resposta);
+
+    // Atualizar dados recolhidos
+    if (json.dados) {
+      _dadosRec = { ..._dadosRec, ...json.dados };
+      // Atualizar subtitle com nome do cliente
+      const sub = document.getElementById('rec-chat-sub');
+      if (sub && _dadosRec.cliente) sub.textContent = _dadosRec.cliente;
+    }
+
+    // Mostrar pergunta
+    if (json.pergunta) {
+      _adicionarMensagemIA(json.pergunta, json.opcoes || []);
+    }
+
+    // Se diagnóstico completo — mostrar resumo e ações
+    if (json.completo) {
+      _guardarRascunho();
+      _mostrarResumoFinal(json.resumo, json.proximosPassos);
+    }
+
+    // Aprender com padrão se indicado
+    if (json.padrao) {
+      const mem = carregarMemoria();
+      mem.push({ data: dataHoje(), padrao: json.padrao });
+      guardarMemoria(mem);
+    }
+
+  } catch {
+    // Fallback: mostrar como texto simples se não for JSON válido
+    _adicionarMensagemIA(resposta);
+  }
+}
+
+// ── System prompt dinâmico ────────────────────────
+
+function _construirSystemPrompt() {
+  const projetos  = getState('projetos') || [];
+  const memoria   = carregarMemoria();
+  const nomesProj = projetos.map(p => `${p.nome} (${p.localidade||''})`).join(', ');
+
+  const memoriaTexto = memoria.length
+    ? `\n\nPADRÕES APRENDIDOS DE CASOS ANTERIORES:\n${memoria.map(m => `- ${m.padrao}`).join('\n')}`
+    : '';
+
+  const dadosAtuais = Object.keys(_dadosRec).length > 2
+    ? `\n\nDADOS JÁ RECOLHIDOS:\n${JSON.stringify(_dadosRec, null, 2)}`
+    : '';
+
+  return `És um assistente especializado em diagnóstico de reclamações pós-venda para Hélder Melo, VPR da Leroy Merlin Portugal (Viseu).
+
+O teu papel é conduzir uma conversa de diagnóstico guiada, como um colega experiente que faz as perguntas certas para não deixar nada de fora. És direto, empático e eficiente.
+
+PROJETOS EXISTENTES NA APP: ${nomesProj || 'nenhum ainda'}${dadosAtuais}${memoriaTexto}
+
+FLUXO DE DIAGNÓSTICO:
+1. Começa por perguntar o nome do cliente
+2. Pergunta o contacto (telefone/email)
+3. Pergunta a que projeto se refere (sugere da lista se possível)
+4. Identifica o tipo de reclamação:
+   - INSTALAÇÃO → pede nº OS, nº PC, descreve o problema específico (qualidade trabalho, algo por concluir, dano causado)
+   - MATERIAL → pede nº PC, ref. LM do artigo, descreve o problema (danificado, em falta, não corresponde)
+   - ENTREGA → pede nº PC, descreve a queixa (atraso, entrega errada, dano no transporte)
+   - OUTRO → aprofunda livremente
+5. Para cada problema identificado pergunta: já foi comunicado antes? quando foi detetado?
+6. Pergunta se há mais problemas a registar
+7. Quando tiver tudo, pergunta se pode fechar o diagnóstico
+
+REGRAS IMPORTANTES:
+- Faz UMA pergunta de cada vez — nunca várias em simultâneo
+- Adapta-te ao que o utilizador diz — se mencionar vários problemas, trata cada um separadamente
+- Se a resposta for vaga, pede esclarecimento antes de avançar
+- Usa tom direto e profissional mas sem ser frio
+- Aprende com o que é dito — se o utilizador mencionar algo incomum, regista como padrão
+- Quando identificares que o diagnóstico está completo (todos os dados essenciais recolhidos), marca como completo
+
+RESPONDE SEMPRE EM JSON com esta estrutura:
+{
+  "pergunta": "A próxima pergunta a fazer ao utilizador (obrigatório)",
+  "opcoes": ["opção 1", "opção 2"],  // opcional — só quando faz sentido dar escolhas
+  "dados": {  // dados estruturados recolhidos ATÉ AGORA (acumulativo)
+    "cliente": "",
+    "contacto": "",
+    "projetoId": "",  // id do projeto da app se identificado
+    "refPc": "",
+    "refOs": "",
+    "problemas": [{ "tipo": "", "descricao": "", "refLm": "", "estado": "pendente" }]
+  },
+  "completo": false,  // true quando o diagnóstico estiver terminado
+  "resumo": "",  // só quando completo=true — resumo do que foi recolhido
+  "proximosPassos": "",  // só quando completo=true
+  "padrao": ""  // opcional — padrão novo aprendido nesta conversa para memória futura
+}
+
+Responde APENAS com JSON válido, sem texto antes ou depois.`;
+}
+
+// ── Guardar rascunho durante a conversa ───────────
+
+function _guardarRascunho() {
+  const lista = carregarReclamacoes();
+  const idx   = lista.findIndex(r => r.id === _recId);
+  if (idx >= 0) {
+    lista[idx] = { ...lista[idx], ..._dadosRec };
+  } else {
+    lista.push({ ..._dadosRec });
+  }
   guardarReclamacoes(lista);
-  document.getElementById('modal-rec-form')?.remove();
+}
+
+// ── Resumo final + ações ──────────────────────────
+
+function _mostrarResumoFinal(resumo, proximosPassos) {
+  const body = document.getElementById('rec-chat-body');
+  if (!body) return;
+
+  const div = document.createElement('div');
+  div.className = 'rec-resumo-final';
+  div.innerHTML = `
+    <div class="rec-resumo-header">✦ Diagnóstico concluído</div>
+    ${resumo ? `<p class="rec-resumo-texto">${resumo.replace(/\n/g,'<br>')}</p>` : ''}
+    ${proximosPassos ? `<div class="rec-resumo-passos"><strong>Próximos passos:</strong><br>${proximosPassos.replace(/\n/g,'<br>')}</div>` : ''}
+    <div class="rec-resumo-acoes">
+      <button class="rec-btn rec-btn-ia"    onclick="window._abrirAnaliseIA('${_recId}')">✦ Análise IA completa</button>
+      <button class="rec-btn rec-btn-email" onclick="window._gerarEmail('${_recId}')">✉️ Gerar email</button>
+      <button class="rec-btn" style="background:var(--green-pale);color:var(--green)" onclick="window._fecharDiagnostico();window.renderReclamacoes()">✓ Guardar e fechar</button>
+    </div>
+  `;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+
+  // Guardar definitivamente
+  _guardarRascunho();
   renderReclamacoes();
-  mostrarToast('✓ Reclamação guardada', '');
+}
+
+window._fecharDiagnostico = function () {
+  if (_dadosRec && Object.keys(_dadosRec).length > 2) _guardarRascunho();
+  document.getElementById('modal-rec-chat')?.remove();
+  renderReclamacoes();
 };
 
 // ── Toggle problema resolvido ─────────────────────
@@ -360,103 +490,36 @@ window._guardarReclamacao = function (idExistente) {
 window._toggleProblema = function (recId, idx, checked) {
   const lista = carregarReclamacoes();
   const rec   = lista.find(r => r.id === recId);
-  if (!rec || !rec.problemas[idx]) return;
+  if (!rec?.problemas?.[idx]) return;
   rec.problemas[idx].estado = checked ? 'resolvido' : 'pendente';
-
-  // Auto-atualizar estado geral
-  const todos     = rec.problemas.length;
+  const total     = rec.problemas.length;
   const resolvidos = rec.problemas.filter(p => p.estado === 'resolvido').length;
-  if (resolvidos === todos) rec.estado = 'resolvido';
-  else if (resolvidos > 0)  rec.estado = 'em_curso';
-  else                      rec.estado = 'pendente';
-
+  rec.estado = resolvidos === total ? 'resolvido' : resolvidos > 0 ? 'em_curso' : 'pendente';
   guardarReclamacoes(lista);
   renderReclamacoes();
 };
 
-// ── Apagar reclamação ─────────────────────────────
-
 window._apagarReclamacao = function (id) {
   if (!confirm('Tens a certeza que queres apagar esta reclamação?')) return;
-  const lista = carregarReclamacoes().filter(r => r.id !== id);
-  guardarReclamacoes(lista);
+  guardarReclamacoes(carregarReclamacoes().filter(r => r.id !== id));
   renderReclamacoes();
   mostrarToast('Reclamação apagada', '');
 };
 
-// ── Gerar Email ───────────────────────────────────
-
-window._abrirEmail = function (recId) {
-  const lista = carregarReclamacoes();
-  const rec   = lista.find(r => r.id === recId);
-  if (!rec) return;
-
-  const proj = getState('projetos')?.find(p => p.id === rec.projetoId);
-  const nome = proj?.nome || rec.nomeCliente || 'Cliente';
-  const local = proj?.localidade || '';
-
-  const assunto = `Reclamação Pós-Venda${rec.refPc ? ' · PC ' + rec.refPc : ''}${rec.refOs ? ' · OS ' + rec.refOs : ''} · ${nome}`;
-
-  const problemasTexto = (rec.problemas || [])
-    .filter(p => p.estado !== 'resolvido')
-    .map((p, i) => {
-      let linha = `${i + 1}. ${p.tipo}: ${p.descricao}`;
-      if (p.refLm) linha += `\n   Ref. LM: ${p.refLm}`;
-      if (p.temFoto) linha += `\n   (Foto em anexo)`;
-      return linha;
-    }).join('\n\n');
-
-  const corpo = `Exmo(a) Sr(a),
-
-Venho por este meio formalizar uma situação de reclamação pós-venda referente ao projeto abaixo identificado, reportada pelo cliente ${nome}${local ? ' (' + local + ')' : ''}.
-
-IDENTIFICAÇÃO DO PROJETO
-${rec.refPc ? '• Referência PC: ' + rec.refPc : ''}
-${rec.refOs ? '• Ordem de Serviço: ' + rec.refOs : ''}
-${local ? '• Localidade: ' + local : ''}
-
-PROBLEMAS REPORTADOS
-${problemasTexto || '(ver descrição em anexo)'}
-
-${rec.notas ? 'NOTAS ADICIONAIS\n' + rec.notas + '\n' : ''}
-Solicito a vossa análise e resposta com a maior brevidade possível, de forma a podermos dar uma resposta atempada ao cliente e proceder à resolução das situações identificadas.
-
-Agradeço a colaboração.
-
-Com os melhores cumprimentos,
-Hélder Melo
-Vendedor Projetos de Renovação · Leroy Merlin Viseu
-917 880 364`;
-
-  // Abrir cliente de email
-  const mailto = `mailto:${rec.emailServicos || ''}?cc=${rec.emailChefe || ''}&subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
-  window.open(mailto, '_blank');
-};
-
-// ── Análise IA ────────────────────────────────────
+// ── Análise IA completa ───────────────────────────
 
 window._abrirAnaliseIA = function (recId) {
-  const lista = carregarReclamacoes();
-  const rec   = lista.find(r => r.id === recId);
+  const rec  = carregarReclamacoes().find(r => r.id === recId);
   if (!rec) return;
+  if (!obterGroqKey()) { mostrarToast('⚠️ Chave IA não configurada',''); return; }
 
-  const apiKey = obterGroqKey();
-  if (!apiKey) {
-    mostrarToast('⚠️ Chave IA não configurada', 'Configura a chave Groq no Resumo IA');
-    return;
-  }
-
-  // Criar modal de análise
-  let modal = document.getElementById('modal-rec-ia');
-  if (modal) modal.remove();
-
-  modal = document.createElement('div');
-  modal.id = 'modal-rec-ia';
-  modal.className = 'resumo-overlay open';
-
+  document.getElementById('modal-rec-ia')?.remove();
   const proj = getState('projetos')?.find(p => p.id === rec.projetoId);
-  const nome = proj?.nome || rec.nomeCliente || 'Cliente';
+  const nome = proj?.nome || rec.cliente || '—';
 
+  const modal = document.createElement('div');
+  modal.id    = 'modal-rec-ia';
+  modal.className = 'resumo-overlay open';
   modal.innerHTML = `
     <div class="resumo-modal">
       <div class="resumo-header">
@@ -470,134 +533,141 @@ window._abrirAnaliseIA = function (recId) {
         <button class="modal-close" onclick="document.getElementById('modal-rec-ia').remove()">×</button>
       </div>
       <div class="resumo-body" id="rec-ia-body">
-        <div class="resumo-loading">
-          <div class="resumo-spinner"></div>
-          <span>A analisar a reclamação…</span>
-        </div>
+        <div class="resumo-loading"><div class="resumo-spinner"></div><span>A analisar…</span></div>
       </div>
       <div class="resumo-footer">
         <button class="resumo-btn-copiar" onclick="window._copiarAnaliseRec()">📋 Copiar tudo</button>
         <span class="resumo-disclaimer">Gerado por IA — verificar sempre os dados</span>
       </div>
-    </div>
-  `;
-
+    </div>`;
   document.body.appendChild(modal);
-  _gerarAnaliseIA(rec, proj);
+  _executarAnaliseIA(rec, proj);
 };
 
-async function _gerarAnaliseIA(rec, proj) {
-  const body = document.getElementById('rec-ia-body');
-  if (!body) return;
-
+async function _executarAnaliseIA(rec, proj) {
+  const body   = document.getElementById('rec-ia-body');
   const apiKey = obterGroqKey();
+  const mem    = carregarMemoria();
 
-  // Construir contexto
-  const problemasTexto = (rec.problemas || []).map((p, i) =>
-    `${i + 1}. [${p.estado}] ${p.tipo}: ${p.descricao}${p.refLm ? ' (Ref. LM: ' + p.refLm + ')' : ''}${p.temFoto ? ' — com foto' : ''}`
+  const problemasTexto = (rec.problemas||[]).map((p,i) =>
+    `${i+1}. [${p.estado}] ${p.tipo}: ${p.descricao}${p.refLm?' (Ref. LM: '+p.refLm+')':''}`
   ).join('\n');
 
-  const prompt = `RECLAMAÇÃO PÓS-VENDA:
-Cliente: ${proj?.nome || rec.nomeCliente || '—'}
-Localidade: ${proj?.localidade || '—'}
-Ref. PC: ${rec.refPc || '—'}
-Ref. OS: ${rec.refOs || '—'}
-Data da reclamação: ${rec.dataCriacao || '—'}
-Fase do projeto: ${proj?.fase || '—'}
+  const memoriaTexto = mem.length
+    ? `\nPADRÕES DE CASOS ANTERIORES:\n${mem.map(m=>`- ${m.padrao}`).join('\n')}`
+    : '';
 
-PROBLEMAS REPORTADOS:
-${problemasTexto}
+  const prompt = `RECLAMAÇÃO:
+Cliente: ${proj?.nome || rec.cliente || '—'}
+Contacto: ${rec.contacto || '—'}
+Ref. PC: ${rec.refPc || '—'} | Ref. OS: ${rec.refOs || '—'}
+Data: ${rec.dataCriacao || '—'}
 
-${rec.notas ? 'NOTAS INTERNAS:\n' + rec.notas : ''}`;
+PROBLEMAS:
+${problemasTexto || '—'}
+${memoriaTexto}`;
 
-  const systemPrompt = `És um mentor experiente de vendas e gestão de reclamações para Hélder Melo, VPR da Leroy Merlin Portugal.
-O Hélder recebeu uma reclamação pós-venda de um cliente e precisa de apoio imediato para três coisas:
-1. Perceber a situação e como se defender internamente
-2. Saber como responder ao cliente de forma assertiva e humana
-3. Antecipar as questões difíceis (porque só agora, quem paga, como resolver)
-
-Responde OBRIGATORIAMENTE em JSON com exatamente esta estrutura:
+  const system = `És um mentor experiente em gestão de reclamações pós-venda para Hélder Melo, VPR da Leroy Merlin Portugal.
+Responde em JSON:
 {
-  "diagnostico": "Análise objetiva da situação: gravidade, urgência, responsabilidades prováveis. Máximo 3 frases.",
-  "defesa": "Argumentação interna para o Hélder se defender perante o chefe ou equipa de serviços. Aborda: porque pode ter demorado a aparecer (instalação recente, uso progressivo), como demonstrar que agiu de boa fé, quem deve assumir cada custo (fornecedor/instalador/loja). Texto corrido, máximo 4 frases.",
-  "respostaCliente": "Mensagem para enviar ao cliente (WhatsApp ou email). Tom próximo, humano e profissional. Reconhece o problema sem admitir culpa excessiva, transmite que está a tratar com prioridade e dá um prazo concreto de resposta. Máximo 5 linhas.",
-  "proximosPassos": "Lista sequencial de 3 a 5 ações concretas que o Hélder deve tomar hoje ou nos próximos 2 dias, por ordem de prioridade. Texto corrido separado por ' → '.",
-  "alertas": "Riscos ou pontos críticos a não ignorar nesta situação específica. Ex: prazo de garantia, risco de escalada, artigo com longa espera. Máximo 2 frases."
+  "diagnostico": "Análise da gravidade e responsabilidades. Máx 3 frases.",
+  "defesa": "Argumentação interna — porque demorou, boa fé, quem assume cada custo. Máx 4 frases.",
+  "respostaCliente": "Mensagem WhatsApp/email — tom próximo e humano, reconhece sem admitir culpa excessiva, dá prazo. Máx 5 linhas.",
+  "proximosPassos": "3 a 5 ações concretas por ordem de prioridade, separadas por ' → '",
+  "alertas": "Riscos críticos a não ignorar. Máx 2 frases."
 }
-
-Responde APENAS com o JSON, sem texto antes ou depois. Usa português europeu.`;
+Português europeu. Só JSON.`;
 
   try {
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'llama-3.3-70b-versatile',
-        max_tokens: 1400,
-        temperature: 0.6,
-        response_format: { type: 'json_object' },
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user',   content: prompt },
-        ],
-      }),
-    });
+    const res  = await _chamarGroq(system, [{ role:'user', content: prompt }]);
+    const json = JSON.parse(res);
 
-    if (!response.ok) throw new Error(`Erro ${response.status}`);
-
-    const data = await response.json();
-    const resultado = JSON.parse(data.choices?.[0]?.message?.content || '{}');
-
-    window._analiseRecTexto = [
-      `DIAGNÓSTICO\n${resultado.diagnostico}`,
-      `DEFESA INTERNA\n${resultado.defesa}`,
-      `RESPOSTA AO CLIENTE\n${resultado.respostaCliente}`,
-      `PRÓXIMOS PASSOS\n${resultado.proximosPassos}`,
-      `ALERTAS\n${resultado.alertas}`,
-    ].join('\n\n');
+    window._analiseRecTexto = ['DIAGNÓSTICO','DEFESA INTERNA','RESPOSTA AO CLIENTE','PRÓXIMOS PASSOS','ALERTAS']
+      .map((t,i) => `${t}\n${Object.values(json)[i]||'—'}`).join('\n\n');
 
     const blocos = [
-      { icon: '🔍', label: 'Diagnóstico',        cor: '#6b7280', campo: 'diagnostico',      copiar: false },
-      { icon: '🛡️', label: 'Defesa interna',     cor: '#3b82f6', campo: 'defesa',           copiar: false },
-      { icon: '💬', label: 'Resposta ao cliente', cor: '#10b981', campo: 'respostaCliente',  copiar: true  },
-      { icon: '⚡', label: 'Próximos passos',     cor: '#f59e0b', campo: 'proximosPassos',   copiar: false },
-      { icon: '⚠️', label: 'Alertas',             cor: '#ef4444', campo: 'alertas',          copiar: false },
+      { icon:'🔍', label:'Diagnóstico',        cor:'#6b7280', key:'diagnostico',     copiar:false },
+      { icon:'🛡️', label:'Defesa interna',     cor:'#3b82f6', key:'defesa',          copiar:false },
+      { icon:'💬', label:'Resposta ao cliente', cor:'#10b981', key:'respostaCliente', copiar:true  },
+      { icon:'⚡', label:'Próximos passos',     cor:'#f59e0b', key:'proximosPassos',  copiar:false },
+      { icon:'⚠️', label:'Alertas',             cor:'#ef4444', key:'alertas',         copiar:false },
     ];
 
-    body.innerHTML = blocos.map((b, i) => `
-      <div style="border-left:3px solid ${b.cor};padding:.9rem 1rem;margin-bottom:.9rem;background:var(--bg-alt,#f9f9f9);border-radius:0 8px 8px 0">
+    body.innerHTML = blocos.map((b,i) => `
+      <div style="border-left:3px solid ${b.cor};padding:.9rem 1rem;margin-bottom:.9rem;background:var(--parchment,#f9f9f9);border-radius:0 8px 8px 0">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.4rem">
-          <div style="display:flex;align-items:center;gap:.4rem">
-            <span>${b.icon}</span>
-            <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${b.cor}">${b.label}</span>
-          </div>
+          <span style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:${b.cor}">${b.icon} ${b.label}</span>
           ${b.copiar ? `<button onclick="window._copiarBlocoRec(${i})" style="font-size:.75rem;padding:.2rem .6rem;border:1px solid ${b.cor};color:${b.cor};background:transparent;border-radius:5px;cursor:pointer">📋 Copiar</button>` : ''}
         </div>
-        <p style="margin:0;font-size:.88rem;line-height:1.65;color:var(--text,#222);white-space:pre-line" data-rec-bloco="${i}">${resultado[b.campo] || '—'}</p>
-      </div>
-    `).join('');
-
-  } catch (e) {
-    body.innerHTML = `
-      <div class="resumo-erro">
-        <div class="resumo-erro-icon">⚠️</div>
-        <div>Não foi possível gerar a análise.</div>
-        <div class="resumo-erro-detalhe">${e.message}</div>
-      </div>`;
+        <p style="margin:0;font-size:.88rem;line-height:1.65;color:var(--ink2,#222);white-space:pre-line" data-rec-bloco="${i}">${json[b.key]||'—'}</p>
+      </div>`).join('');
+  } catch(e) {
+    body.innerHTML = `<div class="resumo-erro"><div class="resumo-erro-icon">⚠️</div><div>${e.message}</div></div>`;
   }
 }
 
-window._copiarBlocoRec = function (i) {
+window._copiarBlocoRec = i => {
   const el = document.querySelector(`[data-rec-bloco="${i}"]`);
-  if (!el) return;
-  navigator.clipboard.writeText(el.textContent).then(() => mostrarToast('✓ Copiado', ''));
+  if (el) navigator.clipboard.writeText(el.textContent).then(() => mostrarToast('✓ Copiado',''));
+};
+window._copiarAnaliseRec = () => {
+  if (window._analiseRecTexto) navigator.clipboard.writeText(window._analiseRecTexto).then(() => mostrarToast('✓ Copiado',''));
 };
 
-window._copiarAnaliseRec = function () {
-  const texto = window._analiseRecTexto;
-  if (!texto) return;
-  navigator.clipboard.writeText(texto).then(() => mostrarToast('✓ Análise copiada', ''));
+// ── Gerar email ───────────────────────────────────
+
+window._gerarEmail = function (recId) {
+  const rec  = carregarReclamacoes().find(r => r.id === recId);
+  if (!rec) return;
+  const proj = getState('projetos')?.find(p => p.id === rec.projetoId);
+  const nome = proj?.nome || rec.cliente || 'Cliente';
+
+  const assunto = `Reclamação Pós-Venda${rec.refPc?' · PC '+rec.refPc:''}${rec.refOs?' · OS '+rec.refOs:''} · ${nome}`;
+  const probs   = (rec.problemas||[]).filter(p=>p.estado!=='resolvido')
+    .map((p,i)=>`${i+1}. ${p.tipo}: ${p.descricao}${p.refLm?'\n   Ref. LM: '+p.refLm:''}`)
+    .join('\n\n');
+
+  const corpo = `Exmo(a) Sr(a),
+
+Venho por este meio formalizar uma reclamação pós-venda referente ao projeto do cliente ${nome}${proj?.localidade?' ('+proj.localidade+')':''}.
+
+IDENTIFICAÇÃO
+${rec.refPc?'• Ref. PC: '+rec.refPc:''}
+${rec.refOs?'• Ref. OS: '+rec.refOs:''}
+${rec.contacto?'• Contacto cliente: '+rec.contacto:''}
+
+PROBLEMAS REPORTADOS
+${probs||'(ver diagnóstico em anexo)'}
+
+Solicito análise e resposta com brevidade, para dar resposta atempada ao cliente.
+
+Com os melhores cumprimentos,
+Hélder Melo
+VPR · Leroy Merlin Viseu · 917 880 364`;
+
+  const mailto = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+  window.open(mailto, '_blank');
 };
+
+// ── Chamada à API Groq ────────────────────────────
+
+async function _chamarGroq(system, mensagens) {
+  const apiKey = obterGroqKey();
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${apiKey}` },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      max_tokens: 1000,
+      temperature: 0.5,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: system },
+        ...mensagens,
+      ],
+    }),
+  });
+  if (!res.ok) throw new Error(`Erro ${res.status}`);
+  const data = await res.json();
+  return data.choices?.[0]?.message?.content || '{}';
+}
