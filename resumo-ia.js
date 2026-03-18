@@ -1,6 +1,6 @@
 // ════════════════════════════════════════════════
 // resumo-ia.js — Resumo IA por projecto · Projetos LM
-// Usa a API Google Gemini para gerar análise narrativa
+// Usa a API Groq (llama-3.3-70b-versatile) — gratuito
 // API key guardada em localStorage (nunca vai para o GitHub)
 // ════════════════════════════════════════════════
 
@@ -9,7 +9,7 @@ import { mostrarToast } from './ui.js';
 
 // ── Gestão segura da API Key (localStorage) ───────
 
-const LS_KEY = 'projetos_lm_gemini_key';
+const LS_KEY = 'projetos_lm_groq_key';
 
 function obterApiKey() {
   return localStorage.getItem(LS_KEY) || '';
@@ -22,70 +22,79 @@ function guardarApiKey(key) {
 function mostrarConfigKey() {
   const keyAtual = obterApiKey();
 
-  let modal = document.getElementById('modal-gemini-key');
+  let modal = document.getElementById('modal-groq-key');
   if (!modal) {
     modal = document.createElement('div');
-    modal.id = 'modal-gemini-key';
+    modal.id = 'modal-groq-key';
     modal.className = 'resumo-overlay';
     modal.innerHTML = `
-      <div class="resumo-modal" style="max-width:440px">
+      <div class="resumo-modal" style="max-width:460px">
         <div class="resumo-header">
           <div class="resumo-header-left">
             <span class="resumo-icon">🔑</span>
             <div>
               <div class="resumo-titulo">Configurar IA</div>
-              <div class="resumo-sub">Google Gemini API Key</div>
+              <div class="resumo-sub">Groq API Key · Gratuito</div>
             </div>
           </div>
-          <button class="modal-close" onclick="document.getElementById('modal-gemini-key').classList.remove('open')">×</button>
+          <button class="modal-close" onclick="document.getElementById('modal-groq-key').classList.remove('open')">×</button>
         </div>
         <div class="resumo-body" style="padding:1.5rem">
-          <p style="margin:0 0 1rem;font-size:.9rem;color:var(--text-secondary,#666);line-height:1.5">
-            A chave API é guardada apenas no teu browser (localStorage) e nunca é enviada para o GitHub ou partilhada.
+          <p style="margin:0 0 1rem;font-size:.9rem;color:var(--text-secondary,#666);line-height:1.6">
+            A chave é guardada apenas no teu browser e nunca é enviada para o GitHub.<br>
+            Regista-te gratuitamente em <a href="https://console.groq.com" target="_blank" style="color:var(--accent,#4f8ef7);font-weight:600">console.groq.com</a> para obteres a tua chave.
           </p>
-          <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.4rem">Google Gemini API Key</label>
+          <label style="display:block;font-size:.85rem;font-weight:600;margin-bottom:.5rem;color:var(--text,#222)">Groq API Key</label>
           <input
-            id="gemini-key-input"
+            id="groq-key-input"
             type="password"
-            placeholder="AIza..."
-            style="width:100%;box-sizing:border-box;padding:.6rem .8rem;border:1px solid var(--border,#ddd);border-radius:8px;font-size:.9rem;font-family:monospace"
+            placeholder="gsk_..."
+            autocomplete="off"
+            style="width:100%;box-sizing:border-box;padding:.65rem .9rem;border:1.5px solid var(--border,#ddd);border-radius:8px;font-size:.9rem;font-family:monospace;outline:none;transition:border .2s"
             value="${keyAtual}"
+            onfocus="this.style.borderColor='var(--accent,#4f8ef7)'"
+            onblur="this.style.borderColor='var(--border,#ddd)'"
           />
-          <p style="margin:.6rem 0 0;font-size:.8rem;color:var(--text-secondary,#888)">
-            Obtém a tua chave gratuita em <a href="https://aistudio.google.com" target="_blank" style="color:var(--accent,#4f8ef7)">aistudio.google.com</a>
+          <p style="margin:.6rem 0 0;font-size:.8rem;color:var(--text-secondary,#999)">
+            A chave começa sempre por <code style="background:var(--bg-alt,#f4f4f4);padding:1px 5px;border-radius:4px">gsk_</code>
           </p>
         </div>
-        <div class="resumo-footer" style="justify-content:flex-end;gap:.5rem">
-          <button class="resumo-btn-copiar" onclick="document.getElementById('modal-gemini-key').classList.remove('open')">Cancelar</button>
-          <button class="resumo-btn-regen" style="opacity:1" onclick="window._guardarGeminiKey()">✓ Guardar e continuar</button>
+        <div class="resumo-footer" style="justify-content:flex-end;gap:.6rem">
+          <button class="resumo-btn-copiar" onclick="document.getElementById('modal-groq-key').classList.remove('open')">Cancelar</button>
+          <button class="resumo-btn-regen" style="opacity:1" onclick="window._guardarGroqKey()">✓ Guardar e continuar</button>
         </div>
       </div>`;
     document.body.appendChild(modal);
   } else {
-    // Atualizar valor do input se o modal já existia
-    const input = document.getElementById('gemini-key-input');
+    const input = document.getElementById('groq-key-input');
     if (input) input.value = keyAtual;
   }
 
   modal.classList.add('open');
+  setTimeout(() => document.getElementById('groq-key-input')?.focus(), 100);
 }
 
-window._guardarGeminiKey = function () {
-  const input = document.getElementById('gemini-key-input');
+window._guardarGroqKey = function () {
+  const input = document.getElementById('groq-key-input');
   const key = input?.value?.trim() || '';
-  if (!key || !key.startsWith('AIza')) {
-    mostrarToast('⚠️ Chave inválida', 'A chave deve começar por AIza…');
+  if (!key || !key.startsWith('gsk_')) {
+    mostrarToast('⚠️ Chave inválida', 'A chave Groq deve começar por gsk_');
+    input?.focus();
     return;
   }
   guardarApiKey(key);
-  document.getElementById('modal-gemini-key').classList.remove('open');
+  document.getElementById('modal-groq-key').classList.remove('open');
   mostrarToast('✓ Chave guardada', 'A IA está pronta a usar');
 
   // Se havia um projecto pendente, gerar resumo agora
   const id = window._resumoIAProjId;
   if (id) {
     const p = getState('projetos').find(x => x.id === id);
-    if (p) gerarResumo(p);
+    if (p) {
+      let modal = document.getElementById('modal-resumo-ia');
+      if (modal) modal.classList.add('open');
+      gerarResumo(p);
+    }
   }
 };
 
@@ -93,26 +102,25 @@ window._guardarGeminiKey = function () {
 
 function construirContexto(p) {
   const faseLabels = {
-    proposta:   'Em proposta',
-    retificacao:'Em rectificação',
-    aprovado:   'Aprovado',
-    encomenda:  'Materiais encomendados',
-    entrega:    'Entrega agendada',
-    montagem:   'Instalação em curso',
-    concluido:  'Concluído',
+    proposta:    'Em proposta',
+    retificacao: 'Em rectificação',
+    aprovado:    'Aprovado',
+    encomenda:   'Materiais encomendados',
+    entrega:     'Entrega agendada',
+    montagem:    'Instalação em curso',
+    concluido:   'Concluído',
   };
   const tipoLabels = {
-    cozinha:           'Cozinha',
-    'casa-de-banho':   'Casa de Banho',
-    roupeiro:          'Roupeiro',
+    cozinha:            'Cozinha',
+    'casa-de-banho':    'Casa de Banho',
+    roupeiro:           'Roupeiro',
     'renovacao-parcial':'Renovação Parcial',
-    aquecimento:       'Aquecimento',
+    aquecimento:        'Aquecimento',
   };
 
   const hoje = new Date();
   const fmt  = d => d ? new Date(d + 'T12:00:00').toLocaleDateString('pt-PT') : null;
 
-  // Calcular dias desde criação
   let diasCriado = null;
   if (p.dataCriacao) {
     const [d, m, y] = p.dataCriacao.split('/');
@@ -120,7 +128,6 @@ function construirContexto(p) {
     diasCriado = Math.round((hoje - dc) / 86400000);
   }
 
-  // Total orçamento
   const cats = [
     { nome: 'Móveis',           val: parseFloat(p.orc_moveis)     || 0 },
     { nome: 'Tampos',           val: parseFloat(p.orc_tampos)     || 0 },
@@ -130,23 +137,13 @@ function construirContexto(p) {
   ].filter(c => c.val > 0);
   const total = cats.reduce((s, c) => s + c.val, 0);
 
-  // Ocorrências activas
   const ocorAtivas     = (p.ocorrencias || []).filter(o => o.estado !== 'resolvida');
   const ocorResolvidas = (p.ocorrencias || []).filter(o => o.estado === 'resolvida');
+  const interacoes     = (p.interacoes  || []).slice(-5);
+  const visitas        = getState('visitasCache')?.[p.id];
+  const docs           = (p.docs || []);
+  const notas          = Array.isArray(p.notas) ? p.notas : (p.notas ? [{ texto: p.notas }] : []);
 
-  // Interacções recentes
-  const interacoes = (p.interacoes || []).slice(-5);
-
-  // Visitas
-  const visitas = getState('visitasCache')?.[p.id];
-
-  // Documentos
-  const docs = (p.docs || []);
-
-  // Notas
-  const notas = Array.isArray(p.notas) ? p.notas : (p.notas ? [{ texto: p.notas }] : []);
-
-  // Incluído
   const inc = p.incluido || {};
   const incluidos = [
     inc.iva23           && 'IVA 23%',
@@ -239,7 +236,7 @@ function gerarPrompt(ctx) {
   return linhas.join('\n');
 }
 
-// ── Chamar API Google Gemini ──────────────────────
+// ── Chamar API Groq ───────────────────────────────
 
 const SYSTEM_PROMPT = `És um assistente de gestão de projetos de interiores para Hélder Melo, VPR da Leroy Merlin Portugal.
 Recebes os dados completos de um projeto e deves gerar um resumo narrativo profissional e directo em português europeu.
@@ -257,23 +254,27 @@ async function chamarAPI(prompt) {
   const apiKey = obterApiKey();
   if (!apiKey) throw new Error('SEM_KEY');
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-  const response = await fetch(url, {
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
     body: JSON.stringify({
-      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: 1000, temperature: 0.7 },
+      model: 'llama-3.3-70b-versatile',
+      max_tokens: 1000,
+      temperature: 0.7,
+      messages: [
+        { role: 'system', content: SYSTEM_PROMPT },
+        { role: 'user',   content: prompt },
+      ],
     }),
   });
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
     const msg = err.error?.message || `Erro ${response.status}`;
-    // Chave inválida → limpar e pedir nova
-    if (response.status === 400 || response.status === 403) {
+    if (response.status === 401) {
       localStorage.removeItem(LS_KEY);
       throw new Error('CHAVE_INVALIDA');
     }
@@ -281,7 +282,7 @@ async function chamarAPI(prompt) {
   }
 
   const data = await response.json();
-  return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+  return data.choices?.[0]?.message?.content || '';
 }
 
 // ── Modal de resumo ───────────────────────────────
@@ -291,7 +292,6 @@ export function abrirResumoIA(projetoId) {
   const p = projetos.find(x => x.id === projetoId);
   if (!p) { mostrarToast('Projecto não encontrado', ''); return; }
 
-  // Guardar projecto actual para regenerar / após config de key
   window._resumoIAProjId = projetoId;
 
   // Se não tem key, mostrar configuração primeiro
@@ -330,19 +330,17 @@ export function abrirResumoIA(projetoId) {
         </div>
         <div class="resumo-footer">
           <button class="resumo-btn-copiar" onclick="window.copiarResumoIA()">📋 Copiar resumo</button>
-          <span class="resumo-disclaimer">Gerado por Gemini IA — verificar sempre os dados</span>
+          <span class="resumo-disclaimer">Gerado por IA — verificar sempre os dados</span>
         </div>
       </div>`;
     document.body.appendChild(modal);
   }
 
-  // Abrir modal
   modal.classList.add('open');
   document.getElementById('resumo-sub').textContent = `${p.nome} · ${p.localidade || ''}`;
   gerarResumo(p);
 }
 
-// Expor função de config de key para o botão 🔑 no header do modal
 window._abrirConfigKey = function () {
   fecharResumoIA();
   mostrarConfigKey();
@@ -352,10 +350,6 @@ async function gerarResumo(p) {
   const body   = document.getElementById('resumo-body');
   const btnReg = document.getElementById('resumo-btn-regen');
   if (!body) return;
-
-  // Garantir que o modal está aberto
-  const modal = document.getElementById('modal-resumo-ia');
-  if (modal) modal.classList.add('open');
 
   body.innerHTML = `
     <div class="resumo-loading">
@@ -369,10 +363,8 @@ async function gerarResumo(p) {
     const prompt = gerarPrompt(ctx);
     const texto  = await chamarAPI(prompt);
 
-    // Guardar para copiar
     window._resumoIATexto = texto;
 
-    // Renderizar em parágrafos
     const paragrafos = texto.split('\n').filter(l => l.trim());
     body.innerHTML = paragrafos.map(l =>
       `<p class="resumo-paragrafo">${l}</p>`
