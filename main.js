@@ -33,16 +33,8 @@ import {
 import {
   renderReclamacoes,
 } from './reclamacoes.js';
-import {
-  initOcorrencias, renderOcorrenciasModulo,
-  ocSelecionarProjeto, ocFiltrarProjetos, ocEscolherProjeto, ocLimparProjeto, ocFecharSugestoes,
-  ocToggleTipo, ocAddArtigo, ocGerarEmail, ocCopiarEmail,
-  ocNovoContacto, ocEditarContacto, ocGuardarContacto, ocFecharModalContacto, ocApagarContacto,
-  ocEditarTemplate, ocCarregarTemplate, ocGuardarTemplate, ocFecharModalTemplate,
-} from './ocorrencias.js';
 
 window._clienteModule            = { renderPaginaCliente };
-window.renderOcorrenciasModulo   = renderOcorrenciasModulo;
 
 // ── Exposição global ──────────────────────────────
 window.doLogin                  = () => loginHandler();
@@ -88,24 +80,6 @@ window.addOcorrencia            = addOcorrencia;
 window.atualizarEstadoOcorrencia= atualizarEstadoOcorrencia;
 window.copiarEmail              = copiarEmail;
 window.copiarRef                = copiarRef;
-window.ocSelecionarProjeto      = ocSelecionarProjeto;
-window.ocFiltrarProjetos        = ocFiltrarProjetos;
-window.ocEscolherProjeto        = ocEscolherProjeto;
-window.ocLimparProjeto          = ocLimparProjeto;
-window.ocFecharSugestoes        = ocFecharSugestoes;
-window.ocToggleTipo             = ocToggleTipo;
-window.ocAddArtigo              = ocAddArtigo;
-window.ocGerarEmail             = ocGerarEmail;
-window.ocCopiarEmail            = ocCopiarEmail;
-window.ocNovoContacto           = ocNovoContacto;
-window.ocEditarContacto         = ocEditarContacto;
-window.ocGuardarContacto        = ocGuardarContacto;
-window.ocFecharModalContacto    = ocFecharModalContacto;
-window.ocApagarContacto         = ocApagarContacto;
-window.ocEditarTemplate         = ocEditarTemplate;
-window.ocCarregarTemplate       = ocCarregarTemplate;
-window.ocGuardarTemplate        = ocGuardarTemplate;
-window.ocFecharModalTemplate    = ocFecharModalTemplate;
 window.mostrarToast             = mostrarToast;
 window.renderReclamacoes        = renderReclamacoes;
 
@@ -207,7 +181,6 @@ function popularTiposSelect() {
     const o = document.getElementById('loading-overlay');
     if (user) {
       await carregar();
-      await initOcorrencias();
       window._LANG = 'pt';
       renderPainel();
       setView('painel');
