@@ -5,6 +5,7 @@
 import { getState, setState, getProjects, getEditId } from './state.js';
 import { guardar, apagar, verificarAprovacoes, carregarVisitas } from './firebase.js';
 import { mostrarToast, setView, fmt, gerarId, dataHoje, formatarData } from './ui.js';
+import { getAlertasReclamacoes } from './reclamacoes.js';
 
 // ── Tipos de projecto ─────────────────────────────
 export const TIPOS_PROJETO = [
@@ -945,9 +946,36 @@ export function renderAlertas() {
   const badge = document.getElementById('tab-badge-alertas');
   if (badge) { badge.textContent = alertas.length || ''; badge.style.display = alertas.length ? '' : 'none'; }
 
+  // Alertas de reclamações
+  let reclamacoesHtml = '';
+  try {
+    const recsUrgentes = getAlertasReclamacoes();
+    if (recsUrgentes.length) {
+      reclamacoesHtml = `
+        <div class="tab-sec-titulo" style="margin-top:28px">🚨 Reclamações a acompanhar</div>
+        <div class="alerta-grid">
+          ${recsUrgentes.map(r => {
+            const dias = r.diasRestantes;
+            const cor  = dias < 0 ? '#ef4444' : dias === 0 ? '#ef4444' : '#f59e0b';
+            const txt  = dias < 0 ? `Atrasado ${Math.abs(dias)}d` : dias === 0 ? 'Hoje' : `${dias}d`;
+            const probs = (r.problemas||[]).filter(p=>p.estado!=='resolvido').map(p=>p.tipo).join(', ');
+            return `
+              <div class="alerta-card" onclick="window.setTab(document.querySelector('[onclick*=reclamacoes]'),'reclamacoes')" style="cursor:pointer;border-left:3px solid ${cor}">
+                <div class="alerta-header">
+                  <span class="alerta-titulo">🚨 ${r.nomeDisplay}</span>
+                  <span class="alerta-badge" style="background:${cor}20;color:${cor};border:1px solid ${cor}40">${txt}</span>
+                </div>
+                <div class="alerta-desc">${probs || 'Reclamação pendente'}</div>
+              </div>`;
+          }).join('')}
+        </div>`;
+    }
+  } catch {}
+
   document.getElementById('alertas-content').innerHTML = `
     <div class="tab-sec-titulo">Alertas activos</div>
     <div class="alerta-grid">${alertasHtml}</div>
+    ${reclamacoesHtml}
     <div class="tab-sec-titulo" style="margin-top:28px">Agenda — próximos 14 dias</div>
     <div class="agenda-lista">${agendaHtml}</div>`;
 }

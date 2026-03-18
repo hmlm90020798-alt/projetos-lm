@@ -1134,3 +1134,7 @@ img   { display: block; max-width: 100%; }
 .rec-resumo-passos  { font-size: .85rem; color: var(--ink2); line-height: 1.6; margin-bottom: .9rem; }
 .rec-resumo-acoes   { display: flex; gap: .5rem; flex-wrap: wrap; }
 .rec-btn-nova       { font-size: .88rem; }
+
+/* Reclamação urgente */
+.rec-card-urgente   { border-left: 3px solid #ef4444; }
+.rec-resumo-alerta  { font-size:.85rem;color:var(--ink3);margin:.6rem 0 .9rem;padding:.5rem .75rem;background:#fef3c7;border-radius:7px;border:1px solid #fcd34d; }
