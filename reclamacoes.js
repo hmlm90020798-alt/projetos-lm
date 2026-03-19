@@ -8,7 +8,7 @@ import { getState } from './state.js';
 import { mostrarToast, gerarId, dataHoje } from './ui.js';
 import { carregarGroqKey, _db } from './firebase.js';
 import { doc, setDoc, getDocs, deleteDoc,
-         collection, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+         collection } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // ── Storage ───────────────────────────────────────
 
@@ -494,7 +494,7 @@ async function _chamarIA() {
 
 // ── Processar resposta ────────────────────────────
 
-function _processarResposta(raw) {
+async function _processarResposta(raw) {
   try {
     const json = JSON.parse(raw);
 
@@ -598,7 +598,7 @@ async function _guardarRascunho() {
 
 // ── Resumo final ──────────────────────────────────
 
-function _mostrarResumoFinal(resumo, proximosPassos) {
+async function _mostrarResumoFinal(resumo, proximosPassos) {
   const body = document.getElementById('rec-chat-body');
   if (!body) return;
   const dias = diasParaPrazo(_dadosRec.prazoAcompanhamento);
