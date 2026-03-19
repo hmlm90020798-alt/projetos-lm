@@ -31,6 +31,30 @@
   --green-light:  #67AB2F;
   --green-pale:   #EEF5E8;
 
+  /* ── Pantone Mocha Mousse 2025 ── */
+  --mocha:          #9e7967;
+  --mocha-dark:     #63291e;
+  --mocha-deep:     #35170c;
+  --mocha-light:    #cca98d;
+  --mocha-pale:     #f7e7ce;
+  --mocha-mist:     #fdf5ef;
+  /* Petróleo — paleta "Vintage Bicycle" */
+  --petrol:         #3d5d52;
+  --petrol-dark:    #2a4a40;
+  --petrol-pale:    #edf2f0;
+  --petrol-border:  #c0d4cb;
+  --petrol-text:    #c0d4cb;
+  /* Terracotta — paleta "Classic Books" */
+  --terra:          #c97d43;
+  --terra-deep:     #63291e;
+  --terra-pale:     #efd0bc;
+  --terra-border:   #e8c4a8;
+  /* Neutro — paleta "Put it in Neutral" */
+  --neutral-dark:   #1c2915;
+  --neutral-mid:    #727a6b;
+  --neutral-light:  #ccd5c4;
+  --neutral-pale:   #ede3d9;
+
   --parchment:    #F7F5F0;
   --parchment2:   #F0ECE4;
   --white:        #FFFFFF;
@@ -156,13 +180,50 @@ img   { display: block; max-width: 100%; }
 
 /* Cards */
 .proj-grid          { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 16px; }
-.proj-card          { background: #FAFAF7; border: 0.5px solid var(--border); border-radius: 16px; overflow: hidden; cursor: pointer; transition: all .2s; }
-.proj-card:hover    { box-shadow: 0 16px 40px rgba(0,0,0,.12); transform: translateY(-3px); }
+.proj-card          { background: #FAFAF7; border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; cursor: pointer; transition: all .2s; }
+.proj-card:hover    { box-shadow: 0 16px 40px rgba(0,0,0,.1); transform: translateY(-3px); }
+
+/* ── Fundo por fase (Pantone 2025) ── */
+.proj-card.fase-proposta    { background: var(--mocha-mist);  border-color: #d4c8be; }
+.proj-card.fase-retificacao { background: var(--mocha-mist);  border-color: #d4c8be; }
+.proj-card.fase-aprovado    { background: var(--petrol-pale);  border-color: var(--petrol-border); }
+.proj-card.fase-encomenda   { background: var(--petrol-pale);  border-color: var(--petrol-border); }
+.proj-card.fase-entrega     { background: var(--terra-pale);   border-color: var(--terra-border); }
+.proj-card.fase-montagem    { background: var(--terra-pale);   border-color: var(--terra-border); }
+.proj-card.fase-concluido   { background: #f1eeeb;             border-color: #d8d0c8; }
+.proj-card.fase-expirado    { background: #f5f2f0;             border-color: #ddd4cc; opacity: .82; }
 
 .card-accent-bar    { height: 5px; width: 100%; }
 .card-top           { padding: 14px 18px 0; display: flex; align-items: center; justify-content: space-between; }
 .card-tipo-badge    { font-family: var(--mono); font-size: 10px; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; }
-.proj-badge         { font-family: var(--sans); font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 99px; letter-spacing: .4px; }
+.proj-badge         { font-family: var(--sans); font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 99px; letter-spacing: .4px; }
+
+/* ── Badges por fase ── */
+.badge-proposta    { background: var(--mocha);      color: #fff; }
+.badge-retif       { background: var(--mocha);      color: #fff; }
+.badge-aprovado    { background: var(--petrol);     color: #fff; }
+.badge-obra        { background: var(--terra);      color: #fff; }
+.badge-concluido   { background: var(--neutral-mid);color: #fff; }
+.badge-expirado    { background: var(--ink4);       color: #fff; }
+
+/* ── Texto dos cards por fase ── */
+.proj-card.fase-proposta .card-nome,
+.proj-card.fase-retificacao .card-nome { color: var(--mocha-deep); }
+.proj-card.fase-aprovado .card-nome,
+.proj-card.fase-encomenda .card-nome   { color: var(--petrol-dark); }
+.proj-card.fase-entrega .card-nome,
+.proj-card.fase-montagem .card-nome    { color: var(--terra-deep); }
+.proj-card.fase-concluido .card-nome   { color: var(--ink); }
+.proj-card.fase-expirado .card-nome    { color: var(--ink3); }
+
+.proj-card.fase-proposta .card-total,
+.proj-card.fase-retificacao .card-total { color: var(--mocha-dark); }
+.proj-card.fase-aprovado .card-total,
+.proj-card.fase-encomenda .card-total   { color: var(--petrol-dark); }
+.proj-card.fase-entrega .card-total,
+.proj-card.fase-montagem .card-total    { color: var(--terra-deep); }
+.proj-card.fase-expirado .card-total    { color: var(--ink4); }
+
 .card-nome          { font-family: var(--serif); font-size: 20px; color: var(--ink); padding: 10px 18px 2px; }
 .card-local         { font-family: var(--mono); font-size: 11px; color: var(--ink4); padding: 0 18px 10px; }
 .card-refs-row      { display: flex; gap: 6px; padding: 0 18px 12px; flex-wrap: wrap; }
@@ -179,8 +240,36 @@ img   { display: block; max-width: 100%; }
 .card-prazo.expirado { color: var(--red); }
 .card-ocorr-bar     { display: flex; align-items: center; gap: 6px; padding: 6px 18px; background: rgba(193,139,44,.08); border-top: 0.5px solid rgba(193,139,44,.2); font-family: var(--mono); font-size: 10px; color: #9A6B1A; }
 .ocorr-dot          { width: 6px; height: 6px; border-radius: 50%; background: #C18B2C; flex-shrink: 0; }
-.card-actions       { padding: 10px 18px 14px; display: flex; gap: 6px; border-top: 0.5px solid var(--border); }
-.btn-card           { flex: 1; padding: 7px 8px; border-radius: 7px; font-family: var(--sans); font-size: 11px; font-weight: 500; cursor: pointer; transition: all .15s; text-align: center; }
+.card-actions       { padding: 10px 18px 14px; display: flex; gap: 6px; border-top: 0.5px solid rgba(0,0,0,.08); }
+.btn-card           { flex: 1; padding: 7px 8px; border-radius: 7px; font-family: var(--sans); font-size: 11px; font-weight: 600; cursor: pointer; transition: all .15s; text-align: center; border: none; }
+
+/* Ver — neutro escuro legível em todos os fundos */
+.btn-card.ver       { background: rgba(0,0,0,.1); color: var(--ink); }
+.btn-card.ver:hover { background: rgba(0,0,0,.18); }
+
+/* Apresentar — adapta-se ao estado */
+.proj-card.fase-proposta .btn-card.apresentar,
+.proj-card.fase-retificacao .btn-card.apresentar { background: var(--mocha-deep); color: var(--mocha-pale); }
+.proj-card.fase-aprovado .btn-card.apresentar,
+.proj-card.fase-encomenda .btn-card.apresentar   { background: var(--petrol-dark); color: var(--petrol-text); }
+.proj-card.fase-entrega .btn-card.apresentar,
+.proj-card.fase-montagem .btn-card.apresentar    { background: var(--terra-deep);  color: var(--terra-pale); }
+.proj-card.fase-concluido .btn-card.apresentar,
+.proj-card.fase-expirado .btn-card.apresentar    { background: var(--neutral-dark); color: var(--neutral-light); }
+
+/* IA — adapta-se ao estado */
+.proj-card.fase-proposta .btn-card.ia,
+.proj-card.fase-retificacao .btn-card.ia { background: var(--neutral-dark); color: var(--neutral-light); }
+.proj-card.fase-aprovado .btn-card.ia,
+.proj-card.fase-encomenda .btn-card.ia   { background: var(--petrol-dark);  color: var(--petrol-text); }
+.proj-card.fase-entrega .btn-card.ia,
+.proj-card.fase-montagem .btn-card.ia    { background: var(--terra-deep);   color: var(--terra-pale); }
+.proj-card.fase-concluido .btn-card.ia,
+.proj-card.fase-expirado .btn-card.ia    { background: var(--neutral-dark); color: var(--neutral-light); }
+
+/* PDF e Link — neutros */
+.btn-card.pdf  { background: rgba(0,0,0,.06); color: var(--ink3); }
+.btn-card.danger { background: rgba(192,57,43,.1); color: #c0392b; }
 .empty-state        { text-align: center; padding: 80px 20px; color: var(--ink4); }
 .empty-icon         { font-size: 48px; margin-bottom: 16px; }
 .empty-titulo       { font-family: var(--serif); font-size: 22px; color: var(--ink3); margin-bottom: 8px; }
@@ -1020,8 +1109,7 @@ img   { display: block; max-width: 100%; }
 /* ══════════════════════════════════════════════
    RESUMO IA
 ══════════════════════════════════════════════ */
-.btn-card.ia        { background: linear-gradient(135deg, #1a2f10, #2a4a1a); color: #A8D878; border-color: rgba(168,216,120,.3); font-weight: 700; letter-spacing: .3px; }
-.btn-card.ia:hover  { background: linear-gradient(135deg, #2a4a1a, #3a6020); color: #C8F098; border-color: rgba(168,216,120,.6); }
+/* removido — substituído pela paleta Pantone 2025 */
 
 .resumo-overlay     { display: none; position: fixed; inset: 0; background: rgba(15,22,16,.7); backdrop-filter: blur(12px); z-index: 800; align-items: center; justify-content: center; padding: 24px; }
 .resumo-overlay.open { display: flex; }
@@ -1306,76 +1394,4 @@ img   { display: block; max-width: 100%; }
 }
 .bloco-guardar-btn:hover { background: var(--green-mid, #4A8C2A); }
 
-/* Botão de apresentação no card */
-.btn-card-apresentar {
-  background: linear-gradient(135deg, #1a2f10, #2a4a1a) !important;
-  color: #A8D878 !important;
-  border: none !important;
-  font-weight: 700 !important;
-}
-
-/* ── Modo Apresentação — Botão card ── */
-.btn-apresentar {
-  background: linear-gradient(135deg, #1a3010, #254518) !important;
-  color: #A8D878 !important;
-  border: 1px solid rgba(103,171,47,.35) !important;
-  font-weight: 700 !important;
-  letter-spacing: .02em;
-}
-.btn-apresentar:hover {
-  background: linear-gradient(135deg, #244015, #2e5520) !important;
-}
-
-/* ── Bloco Reuniões no modal ── */
-#reunioes-historico-lista {
-  margin-top: 6px;
-}
-#reunioes-historico-lista .reuniao-header {
-  transition: background .15s;
-}
-
-/* ── Ordenação discreta (integrada nos filtros) ── */
-.filtros-sep {
-  width: 1px; height: 20px;
-  background: var(--border);
-  margin: 0 2px; align-self: center; flex-shrink: 0;
-}
-/* .filtro-ordem herda de .filtro-btn — só override do estado ativo */
-.filtro-btn.filtro-ordem { color: var(--ink3); }
-.filtro-btn.filtro-ordem.ativo {
-  background: var(--green-pale);
-  border-color: var(--green-mid);
-  color: var(--green);
-}
-#btn-ordenar-icon { font-size: 10px; }
-
-/* ── Card Valor — toggle clicável ── */
-.dash-valor-toggle {
-  cursor: pointer;
-  transition: border-color .2s, background .2s;
-  user-select: none;
-  position: relative;
-}
-.dash-valor-toggle:hover { border-color: var(--green-mid); }
-.dash-valor-toggle.modo-global { border-color: var(--green); background: var(--green-pale); }
-.dash-valor-toggle.modo-global .dash-num { color: var(--green); }
-.dash-lbl-toggle { display: flex; align-items: center; gap: 5px; }
-.dash-toggle-hint {
-  font-size: 9px; color: var(--ink4); opacity: .6;
-  font-style: italic; margin-left: auto;
-}
-
-/* ── Modo Apresentação — Botão card ── */
-.btn-apresentar {
-  background: linear-gradient(135deg, #1a3010, #254518) !important;
-  color: #A8D878 !important;
-  border: 1px solid rgba(103,171,47,.35) !important;
-  font-weight: 700 !important;
-  letter-spacing: .02em;
-}
-.btn-apresentar:hover {
-  background: linear-gradient(135deg, #244015, #2e5520) !important;
-}
-
-/* ── Bloco Reuniões no modal ── */
-#reunioes-historico-lista { margin-top: 6px; }
+/* btn-card-apresentar removido — substituído pela paleta Pantone 2025 */

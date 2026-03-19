@@ -237,8 +237,19 @@ function renderCard(p) {
   const tipo   = TIPOS_PROJETO.find(t => t.value === p.tipo)?.label || p.tipoOutro || p.tipo || '';
   const temOcorr = (p.ocorrencias||[]).some(o => o.estado !== 'resolvida');
 
+  // Classe de fase para cor do card
+  const faseClasse = exp ? 'fase-expirado'
+    : p.fase === 'proposta'    ? 'fase-proposta'
+    : p.fase === 'retificacao' ? 'fase-retificacao'
+    : p.fase === 'aprovado'    ? 'fase-aprovado'
+    : p.fase === 'encomenda'   ? 'fase-encomenda'
+    : p.fase === 'entrega'     ? 'fase-entrega'
+    : p.fase === 'montagem'    ? 'fase-montagem'
+    : p.fase === 'concluido'   ? 'fase-concluido'
+    : 'fase-proposta';
+
   return `
-    <div class="proj-card${temOcorr ? ' card-ocorrencia' : ''}" onclick="window.editarProjeto('${p.id}')">
+    <div class="proj-card ${faseClasse}${temOcorr ? ' card-ocorrencia' : ''}" onclick="window.editarProjeto('${p.id}')">
       <div class="card-top">
         <div class="card-tipo-badge">${tipo}</div>
         <div style="display:flex;gap:6px;align-items:center">
@@ -261,11 +272,11 @@ function renderCard(p) {
       ${p.prazo ? `<div class="card-prazo${urg ? ' urgente' : ''}">
         ${urg ? '⚠️ ' : ''}Válido até ${formatarData(p.prazo)}</div>` : ''}
       <div class="card-actions">
-        <button class="btn-card primary" onclick="event.stopPropagation();window.verCliente('${p.id}')">👁 Ver</button>
-        <button class="btn-card btn-apresentar" onclick="event.stopPropagation();window.ativarModoApresentacao('${p.id}')" title="Abrir Modo Apresentação numa nova janela">⛶ Apresentar</button>
+        <button class="btn-card ver" onclick="event.stopPropagation();window.verCliente('${p.id}')">👁 Ver</button>
+        <button class="btn-card apresentar" onclick="event.stopPropagation();window.ativarModoApresentacao('${p.id}')" title="Abrir Modo Apresentação numa nova janela">⛶ Apresentar</button>
         <button class="btn-card ia" onclick="event.stopPropagation();window.abrirResumoIA('${p.id}')" title="Resumo gerado por IA">✦ IA</button>
         <button class="btn-card pdf" onclick="event.stopPropagation();window.gerarPDF('${p.id}')" title="Gerar PDF da proposta">📄 PDF</button>
-        <button class="btn-card partilhar" onclick="event.stopPropagation();window.partilharCliente('${p.id}')" title="Copiar link para partilhar com o cliente">
+        <button class="btn-card pdf" onclick="event.stopPropagation();window.partilharCliente('${p.id}')" title="Copiar link para partilhar com o cliente">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
           Link
         </button>
