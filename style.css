@@ -91,7 +91,7 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html  { scroll-behavior: smooth; }
-body  { font-family: var(--sans); background: var(--parchment); color: var(--ink); min-height: 100vh; }
+body  { font-family: var(--sans); background: radial-gradient(ellipse at 30% 40%, #b8917c 0%, #9e7967 45%, #7a5a48 100%); background-attachment: fixed; color: var(--ink); min-height: 100vh; }
 img   { display: block; max-width: 100%; }
 
 /* ──────────────────────────────────────────────
@@ -180,96 +180,132 @@ img   { display: block; max-width: 100%; }
 
 /* Cards */
 .proj-grid          { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px,1fr)); gap: 16px; }
-.proj-card          { background: #FAFAF7; border: 1.5px solid var(--border); border-radius: 16px; overflow: hidden; cursor: pointer; transition: all .2s; }
-.proj-card:hover    { box-shadow: 0 16px 40px rgba(0,0,0,.1); transform: translateY(-3px); }
+.proj-card {
+  border-radius: 20px;
+  overflow: visible;
+  cursor: pointer;
+  position: relative;
+  transition: transform .25s, box-shadow .25s;
+  /* Glass base */
+  background: rgba(255,255,255,.14);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,.38);
+  box-shadow:
+    0 8px 32px rgba(53,23,12,.25),
+    inset 0 1px 0 rgba(255,255,255,.5),
+    inset 0 -1px 0 rgba(53,23,12,.1);
+}
+.proj-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 50%;
+  background: linear-gradient(180deg, rgba(255,255,255,.12) 0%, rgba(255,255,255,0) 100%);
+  border-radius: 20px 20px 0 0;
+  pointer-events: none; z-index: 0;
+}
+.proj-card:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 20px 50px rgba(53,23,12,.35),
+    inset 0 1px 0 rgba(255,255,255,.6),
+    inset 0 -1px 0 rgba(53,23,12,.1);
+}
+.proj-card.fase-expirado { opacity: .75; }
 
-/* ── Fundo por fase (Pantone 2025) ── */
-.proj-card.fase-proposta    { background: var(--mocha-mist);  border-color: #d4c8be; }
-.proj-card.fase-retificacao { background: var(--mocha-mist);  border-color: #d4c8be; }
-.proj-card.fase-aprovado    { background: var(--petrol-pale);  border-color: var(--petrol-border); }
-.proj-card.fase-encomenda   { background: var(--petrol-pale);  border-color: var(--petrol-border); }
-.proj-card.fase-entrega     { background: var(--terra-pale);   border-color: var(--terra-border); }
-.proj-card.fase-montagem    { background: var(--terra-pale);   border-color: var(--terra-border); }
-.proj-card.fase-concluido   { background: #f1eeeb;             border-color: #d8d0c8; }
-.proj-card.fase-expirado    { background: #f5f2f0;             border-color: #ddd4cc; opacity: .82; }
+/* ── Linha de acento no topo por fase ── */
+.proj-card::after {
+  content: '';
+  position: absolute; top: 0; left: 18px; right: 18px; height: 2px;
+  border-radius: 0 0 2px 2px;
+  pointer-events: none; z-index: 1;
+}
+.proj-card.fase-proposta::after,
+.proj-card.fase-retificacao::after { background: linear-gradient(90deg, transparent, var(--mocha), transparent); }
+.proj-card.fase-aprovado::after,
+.proj-card.fase-encomenda::after   { background: linear-gradient(90deg, transparent, var(--petrol), transparent); }
+.proj-card.fase-entrega::after,
+.proj-card.fase-montagem::after    { background: linear-gradient(90deg, transparent, var(--terra), transparent); }
+.proj-card.fase-concluido::after   { background: linear-gradient(90deg, transparent, var(--neutral-mid), transparent); }
+.proj-card.fase-expirado::after    { background: linear-gradient(90deg, transparent, var(--ink4), transparent); }
 
 .card-accent-bar    { height: 5px; width: 100%; }
-.card-top           { padding: 14px 18px 0; display: flex; align-items: center; justify-content: space-between; }
+.card-top           { padding: 14px 18px 0; display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 1; }
 .card-tipo-badge    { font-family: var(--mono); font-size: 10px; color: var(--ink3); text-transform: uppercase; letter-spacing: .5px; }
 .proj-badge         { font-family: var(--sans); font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 99px; letter-spacing: .4px; }
 
-/* ── Badges por fase ── */
-.badge-proposta    { background: var(--mocha);      color: #fff; }
-.badge-retif       { background: var(--mocha);      color: #fff; }
-.badge-aprovado    { background: var(--petrol);     color: #fff; }
-.badge-obra        { background: var(--terra);      color: #fff; }
-.badge-concluido   { background: var(--neutral-mid);color: #fff; }
-.badge-expirado    { background: var(--ink4);       color: #fff; }
+/* ── Badges glass por fase ── */
+.badge-proposta    { background: rgba(158,121,103,.7); color: #fff; border: 1px solid rgba(255,255,255,.25); backdrop-filter: blur(4px); }
+.badge-retif       { background: rgba(158,121,103,.7); color: #fff; border: 1px solid rgba(255,255,255,.25); backdrop-filter: blur(4px); }
+.badge-aprovado    { background: rgba(61,93,82,.75);   color: #fff; border: 1px solid rgba(255,255,255,.25); backdrop-filter: blur(4px); }
+.badge-obra        { background: rgba(201,125,67,.75); color: #fff; border: 1px solid rgba(255,255,255,.25); backdrop-filter: blur(4px); }
+.badge-concluido   { background: rgba(114,122,107,.7); color: #fff; border: 1px solid rgba(255,255,255,.25); backdrop-filter: blur(4px); }
+.badge-expirado    { background: rgba(156,150,142,.65);color: #fff; border: 1px solid rgba(255,255,255,.2);  backdrop-filter: blur(4px); }
 
-/* ── Texto dos cards por fase ── */
-.proj-card.fase-proposta .card-nome,
-.proj-card.fase-retificacao .card-nome { color: var(--mocha-deep); }
-.proj-card.fase-aprovado .card-nome,
-.proj-card.fase-encomenda .card-nome   { color: var(--petrol-dark); }
-.proj-card.fase-entrega .card-nome,
-.proj-card.fase-montagem .card-nome    { color: var(--terra-deep); }
-.proj-card.fase-concluido .card-nome   { color: var(--ink); }
-.proj-card.fase-expirado .card-nome    { color: var(--ink3); }
+/* ── Texto dos cards — glass (branco sobre fundo translúcido) ── */
+.card-tipo-badge    { color: rgba(255,255,255,.65) !important; }
+.card-nome          { color: #fff !important; text-shadow: 0 1px 4px rgba(53,23,12,.2); }
+.card-local         { color: rgba(255,255,255,.62) !important; }
+.card-total         { color: #fff !important; text-shadow: 0 1px 6px rgba(53,23,12,.25); }
+.card-visitas       { color: rgba(255,255,255,.5) !important; }
+.card-aprovado      { color: rgba(255,255,255,.75) !important; }
+.card-prazo         { color: rgba(255,255,255,.55) !important; }
+.card-prazo.urgente { color: #ffb3a0 !important; font-weight: 700; }
 
-.proj-card.fase-proposta .card-total,
-.proj-card.fase-retificacao .card-total { color: var(--mocha-dark); }
-.proj-card.fase-aprovado .card-total,
-.proj-card.fase-encomenda .card-total   { color: var(--petrol-dark); }
-.proj-card.fase-entrega .card-total,
-.proj-card.fase-montagem .card-total    { color: var(--terra-deep); }
-.proj-card.fase-expirado .card-total    { color: var(--ink4); }
-
-.card-nome          { font-family: var(--serif); font-size: 20px; color: var(--ink); padding: 10px 18px 2px; }
-.card-local         { font-family: var(--mono); font-size: 11px; color: var(--ink4); padding: 0 18px 10px; }
-.card-refs-row      { display: flex; gap: 6px; padding: 0 18px 12px; flex-wrap: wrap; }
-.card-ref-pill      { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 99px; background: var(--parchment2); color: var(--ink3); border: 0.5px solid var(--border-mid); cursor: pointer; transition: opacity .15s; }
+.card-nome          { font-family: var(--serif); font-size: 20px; color: var(--ink); padding: 10px 18px 2px; position: relative; z-index: 1; }
+.card-local         { font-family: var(--mono); font-size: 11px; color: var(--ink4); padding: 0 18px 10px; position: relative; z-index: 1; }
+.card-refs-row      { display: flex; gap: 6px; padding: 0 18px 12px; flex-wrap: wrap; position: relative; z-index: 1; }
+.card-ref-pill      { font-family: var(--mono); font-size: 10px; padding: 2px 8px; border-radius: 99px; background: rgba(255,255,255,.18); color: rgba(255,255,255,.8); border: 1px solid rgba(255,255,255,.28); cursor: pointer; transition: opacity .15s; backdrop-filter: blur(4px); }
 .card-ref-pill:hover { opacity: .75; }
-.card-divider       { height: 0.5px; background: var(--border); margin: 0; }
-.card-financeiro    { padding: 10px 18px; display: flex; align-items: baseline; gap: 12px; }
+.card-divider       { height: 1px; background: rgba(255,255,255,.18); margin: 0; position: relative; z-index: 1; }
+.card-financeiro    { padding: 10px 18px; display: flex; align-items: baseline; gap: 12px; position: relative; z-index: 1; }
 .card-total         { font-family: var(--serif); font-size: 22px; }
 .card-meta-right    { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
 .card-aprovado      { font-family: var(--mono); font-size: 10px; }
 .card-visitas       { font-family: var(--mono); font-size: 10px; color: var(--ink4); }
-.card-prazo         { padding: 4px 18px 8px; font-family: var(--mono); font-size: 11px; color: var(--ink4); }
+.card-prazo         { padding: 4px 18px 8px; font-family: var(--mono); font-size: 11px; color: var(--ink4); position: relative; z-index: 1; }
 .card-prazo.urgente { color: var(--red); font-weight: 700; }
 .card-prazo.expirado { color: var(--red); }
-.card-ocorr-bar     { display: flex; align-items: center; gap: 6px; padding: 6px 18px; background: rgba(193,139,44,.08); border-top: 0.5px solid rgba(193,139,44,.2); font-family: var(--mono); font-size: 10px; color: #9A6B1A; }
+.card-ocorr-bar     { display: flex; align-items: center; gap: 6px; padding: 6px 18px; background: rgba(255,180,80,.12); border-top: 1px solid rgba(255,180,80,.2); font-family: var(--mono); font-size: 10px; color: rgba(255,210,140,.9); position: relative; z-index: 1; }
 .ocorr-dot          { width: 6px; height: 6px; border-radius: 50%; background: #C18B2C; flex-shrink: 0; }
-.card-actions       { padding: 10px 18px 14px; display: flex; gap: 6px; border-top: 0.5px solid rgba(0,0,0,.08); }
+.card-actions       { padding: 10px 18px 14px; display: flex; gap: 6px; border-top: 1px solid rgba(255,255,255,.15); position: relative; z-index: 1; }
 .btn-card           { flex: 1; padding: 7px 8px; border-radius: 7px; font-family: var(--sans); font-size: 11px; font-weight: 600; cursor: pointer; transition: all .15s; text-align: center; border: none; }
 
-/* Ver — neutro escuro legível em todos os fundos */
-.btn-card.ver       { background: rgba(0,0,0,.1); color: var(--ink); }
-.btn-card.ver:hover { background: rgba(0,0,0,.18); }
+/* ── Botões glass ── */
+.btn-card {
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.28);
+  color: rgba(255,255,255,.9);
+  backdrop-filter: blur(4px);
+}
+.btn-card:hover { background: rgba(255,255,255,.28); }
 
-/* Apresentar — adapta-se ao estado */
+/* Ver — neutro glass */
+.btn-card.ver       { background: rgba(255,255,255,.18); color: #fff; border-color: rgba(255,255,255,.35); }
+.btn-card.ver:hover { background: rgba(255,255,255,.30); }
+
+/* Apresentar — cor profunda por estado */
 .proj-card.fase-proposta .btn-card.apresentar,
-.proj-card.fase-retificacao .btn-card.apresentar { background: var(--mocha-deep); color: var(--mocha-pale); }
+.proj-card.fase-retificacao .btn-card.apresentar { background: rgba(53,23,12,.6);  border-color: rgba(247,231,206,.3); color: var(--mocha-pale); }
 .proj-card.fase-aprovado .btn-card.apresentar,
-.proj-card.fase-encomenda .btn-card.apresentar   { background: var(--petrol-dark); color: var(--petrol-text); }
+.proj-card.fase-encomenda .btn-card.apresentar   { background: rgba(42,74,64,.65); border-color: rgba(192,212,203,.3); color: #c0d4cb; }
 .proj-card.fase-entrega .btn-card.apresentar,
-.proj-card.fase-montagem .btn-card.apresentar    { background: var(--terra-deep);  color: var(--terra-pale); }
+.proj-card.fase-montagem .btn-card.apresentar    { background: rgba(99,41,30,.65); border-color: rgba(239,208,188,.3); color: var(--terra-pale); }
 .proj-card.fase-concluido .btn-card.apresentar,
-.proj-card.fase-expirado .btn-card.apresentar    { background: var(--neutral-dark); color: var(--neutral-light); }
+.proj-card.fase-expirado .btn-card.apresentar    { background: rgba(28,41,21,.6);  border-color: rgba(204,213,196,.3); color: #ccd5c4; }
 
-/* IA — adapta-se ao estado */
+/* IA — cor profunda por estado */
 .proj-card.fase-proposta .btn-card.ia,
-.proj-card.fase-retificacao .btn-card.ia { background: var(--neutral-dark); color: var(--neutral-light); }
+.proj-card.fase-retificacao .btn-card.ia { background: rgba(28,41,21,.6);  border-color: rgba(204,213,196,.3); color: #ccd5c4; }
 .proj-card.fase-aprovado .btn-card.ia,
-.proj-card.fase-encomenda .btn-card.ia   { background: var(--petrol-dark);  color: var(--petrol-text); }
+.proj-card.fase-encomenda .btn-card.ia   { background: rgba(42,74,64,.65); border-color: rgba(192,212,203,.3); color: #c0d4cb; }
 .proj-card.fase-entrega .btn-card.ia,
-.proj-card.fase-montagem .btn-card.ia    { background: var(--terra-deep);   color: var(--terra-pale); }
+.proj-card.fase-montagem .btn-card.ia    { background: rgba(99,41,30,.65); border-color: rgba(239,208,188,.3); color: var(--terra-pale); }
 .proj-card.fase-concluido .btn-card.ia,
-.proj-card.fase-expirado .btn-card.ia    { background: var(--neutral-dark); color: var(--neutral-light); }
+.proj-card.fase-expirado .btn-card.ia    { background: rgba(28,41,21,.6);  border-color: rgba(204,213,196,.3); color: #ccd5c4; }
 
-/* PDF e Link — neutros */
-.btn-card.pdf  { background: rgba(0,0,0,.06); color: var(--ink3); }
-.btn-card.danger { background: rgba(192,57,43,.1); color: #c0392b; }
+/* PDF, Link e Danger */
+.btn-card.pdf    { background: rgba(255,255,255,.12); color: rgba(255,255,255,.75); border-color: rgba(255,255,255,.2); }
+.btn-card.danger { background: rgba(192,57,43,.35);   color: #ffb3a0;              border-color: rgba(255,100,80,.3); }
 .empty-state        { text-align: center; padding: 80px 20px; color: var(--ink4); }
 .empty-icon         { font-size: 48px; margin-bottom: 16px; }
 .empty-titulo       { font-family: var(--serif); font-size: 22px; color: var(--ink3); margin-bottom: 8px; }
