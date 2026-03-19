@@ -33,7 +33,7 @@ import {
   abrirResumoIA, fecharResumoIA, regenerarResumoIA, copiarResumoIA,
 } from './resumo-ia.js';
 import {
-  renderReclamacoes,
+  renderReclamacoes, carregarReclamacoesFirebase,
 } from './reclamacoes.js';
 import {
   ativarModoApresentacao, sairModoApresentacao,
@@ -191,6 +191,7 @@ function popularTiposSelect() {
     const o = document.getElementById('loading-overlay');
     if (user) {
       await carregar();
+      await carregarReclamacoesFirebase(); // pré-carrega reclamações do Firebase
       await carregarGroqKey(); // carrega chave Groq do Firebase para localStorage
       window._LANG = 'pt';
       renderPainel();

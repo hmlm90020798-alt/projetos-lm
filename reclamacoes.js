@@ -6,22 +6,70 @@
 
 import { getState } from './state.js';
 import { mostrarToast, gerarId, dataHoje } from './ui.js';
+import { carregarGroqKey, _db } from './firebase.js';
+import { doc, setDoc, getDocs, deleteDoc,
+         collection, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
 // ── Storage ───────────────────────────────────────
 
 const LS_KEY_GROQ = 'projetos_lm_groq_key';
-const LS_KEY_REC  = 'projetos_lm_reclamacoes';
 const LS_KEY_MEM  = 'projetos_lm_rec_memoria';
+const _colRec     = () => collection(_db, 'reclamacoes');
+
+// ── Reclamações — Firebase (com fallback localStorage para leitura offline) ──
+
+let _cacheReclamacoes = null; // cache em memória para evitar leituras repetidas
+
+export async function carregarReclamacoesFirebase() {
+  try {
+    const snap = await getDocs(_colRec());
+    const lista = [];
+    snap.forEach(d => lista.push({ id: d.id, ...d.data() }));
+    lista.sort((a, b) => (b.dataCriacao || '').localeCompare(a.dataCriacao || ''));
+    _cacheReclamacoes = lista;
+    // Manter cópia local como backup offline
+    localStorage.setItem('projetos_lm_reclamacoes_bkp', JSON.stringify(lista));
+    return lista;
+  } catch (_) {
+    // Fallback: localStorage (backup offline)
+    try { return JSON.parse(localStorage.getItem('projetos_lm_reclamacoes_bkp') || '[]'); }
+    catch { return []; }
+  }
+}
 
 function carregarReclamacoes() {
-  try { return JSON.parse(localStorage.getItem(LS_KEY_REC) || '[]'); } catch { return []; }
+  // Síncrono: usa cache em memória ou localStorage como fallback
+  if (_cacheReclamacoes) return _cacheReclamacoes;
+  try { return JSON.parse(localStorage.getItem('projetos_lm_reclamacoes_bkp') || '[]'); }
+  catch { return []; }
 }
-function guardarReclamacoes(lista) {
-  localStorage.setItem(LS_KEY_REC, JSON.stringify(lista));
+
+async function guardarReclamacoes(lista) {
+  _cacheReclamacoes = lista;
+  // Backup local imediato
+  localStorage.setItem('projetos_lm_reclamacoes_bkp', JSON.stringify(lista));
+  // Persistir cada reclamação alterada no Firebase
+  try {
+    for (const r of lista) {
+      await setDoc(doc(_db, 'reclamacoes', r.id), r);
+    }
+  } catch (e) { console.error('Erro ao guardar reclamação no Firebase:', e); }
 }
-function obterGroqKey() {
-  return localStorage.getItem(LS_KEY_GROQ) || '';
+
+async function apagarReclamacaoFirebase(id) {
+  _cacheReclamacoes = (_cacheReclamacoes || []).filter(r => r.id !== id);
+  localStorage.setItem('projetos_lm_reclamacoes_bkp', JSON.stringify(_cacheReclamacoes));
+  try { await deleteDoc(doc(_db, 'reclamacoes', id)); }
+  catch (e) { console.error('Erro ao apagar reclamação:', e); }
 }
+
+// ── Groq — com fallback Firebase (funciona em browser privado) ────────
+async function obterGroqKey() {
+  const local = localStorage.getItem(LS_KEY_GROQ) || '';
+  if (local) return local;
+  try { return await carregarGroqKey(); } catch { return ''; }
+}
+
 function carregarMemoria() {
   try { return JSON.parse(localStorage.getItem(LS_KEY_MEM) || '[]'); } catch { return []; }
 }
@@ -53,11 +101,11 @@ let _aguardando = false;
 
 // ── Render página principal ───────────────────────
 
-export function renderReclamacoes() {
+export async function renderReclamacoes() {
   const secao = document.getElementById('reclamacoes-content');
   if (!secao) return;
 
-  const lista      = carregarReclamacoes();
+  const lista      = await carregarReclamacoesFirebase();
   const pendentes  = lista.filter(r => r.estado === 'pendente').length;
   const emCurso    = lista.filter(r => r.estado === 'em_curso').length;
   const resolvidas = lista.filter(r => r.estado === 'resolvido').length;
@@ -185,8 +233,9 @@ export function getAlertasReclamacoes() {
 
 // ── Modal de diagnóstico conversacional ───────────
 
-window._abrirDiagnostico = function () {
-  if (!obterGroqKey()) { mostrarToast('⚠️ Chave IA não configurada', 'Configura a chave Groq no Resumo IA'); return; }
+window._abrirDiagnostico = async function () {
+  const apiKey = await obterGroqKey();
+  if (!apiKey) { mostrarToast('⚠️ Chave IA não configurada', 'Configura a chave Groq no Resumo IA'); return; }
   _recId    = gerarId();
   _dadosRec = { id: _recId, dataCriacao: dataHoje(), estado: 'pendente', problemas: [], prazoAcompanhamento: calcPrazo(3) };
   _conversa = [];
@@ -304,8 +353,9 @@ function _iniciarDiagnosticoSemCliente(pc, os) {
   _adicionarMensagemIA(`✓ Registado${pc?' PC: '+pc:''}${os?' OS: '+os:''}. Qual o problema?`);
 }
 
-window._continuarDiagnostico = function (id) {
-  if (!obterGroqKey()) { mostrarToast('⚠️ Chave IA não configurada', 'Configura a chave Groq no Resumo IA'); return; }
+window._continuarDiagnostico = async function (id) {
+  const apiKey = await obterGroqKey();
+  if (!apiKey) { mostrarToast('⚠️ Chave IA não configurada', 'Configura a chave Groq no Resumo IA'); return; }
   const rec = carregarReclamacoes().find(r => r.id === id);
   if (!rec) return;
   _recId    = id;
@@ -460,7 +510,7 @@ function _processarResposta(raw) {
 
     // Mostrar pergunta — se vier vazia mas não estiver completo, é um bug da IA — pede para repetir
     if (json.completo) {
-      _guardarRascunho();
+      await _guardarRascunho();
       _mostrarResumoFinal(json.resumo, json.proximosPassos);
     } else if (json.pergunta && json.pergunta.trim()) {
       _adicionarMensagemIA(json.pergunta, json.opcoes || []);
@@ -538,12 +588,12 @@ RESPONDE SEMPRE EM JSON:
 
 // ── Guardar rascunho ──────────────────────────────
 
-function _guardarRascunho() {
+async function _guardarRascunho() {
   const lista = carregarReclamacoes();
   const idx   = lista.findIndex(r => r.id === _recId);
   if (idx >= 0) lista[idx] = { ...lista[idx], ..._dadosRec };
   else lista.push({ ..._dadosRec });
-  guardarReclamacoes(lista);
+  await guardarReclamacoes(lista);
 }
 
 // ── Resumo final ──────────────────────────────────
@@ -568,19 +618,19 @@ function _mostrarResumoFinal(resumo, proximosPassos) {
     </div>`;
   body.appendChild(div);
   body.scrollTop = body.scrollHeight;
-  _guardarRascunho();
-  renderReclamacoes();
+  await _guardarRascunho();
+  await renderReclamacoes();
 }
 
-window._fecharDiagnostico = function () {
-  if (_dadosRec && Object.keys(_dadosRec).length > 3) _guardarRascunho();
+window._fecharDiagnostico = async function () {
+  if (_dadosRec && Object.keys(_dadosRec).length > 3) await _guardarRascunho();
   document.getElementById('modal-rec-chat')?.remove();
-  renderReclamacoes();
+  await renderReclamacoes();
 };
 
 // ── Toggle problema ───────────────────────────────
 
-window._toggleProblema = function (recId, idx, checked) {
+window._toggleProblema = async function (recId, idx, checked) {
   const lista = carregarReclamacoes();
   const rec   = lista.find(r => r.id === recId);
   if (!rec?.problemas?.[idx]) return;
@@ -588,22 +638,23 @@ window._toggleProblema = function (recId, idx, checked) {
   const total      = rec.problemas.length;
   const resolvidos = rec.problemas.filter(p => p.estado === 'resolvido').length;
   rec.estado = resolvidos === total ? 'resolvido' : resolvidos > 0 ? 'em_curso' : 'pendente';
-  guardarReclamacoes(lista);
-  renderReclamacoes();
+  await guardarReclamacoes(lista);
+  await renderReclamacoes();
 };
 
-window._apagarReclamacao = function (id) {
+window._apagarReclamacao = async function (id) {
   if (!confirm('Apagar esta reclamação?')) return;
-  guardarReclamacoes(carregarReclamacoes().filter(r => r.id !== id));
-  renderReclamacoes();
+  await apagarReclamacaoFirebase(id);
+  await renderReclamacoes();
   mostrarToast('Reclamação apagada', '');
 };
 
 // ── Análise IA ────────────────────────────────────
 
-window._abrirAnaliseIA = function (recId) {
-  const rec = carregarReclamacoes().find(r => r.id === recId);
-  if (!rec || !obterGroqKey()) { mostrarToast('⚠️ Sem chave API',''); return; }
+window._abrirAnaliseIA = async function (recId) {
+  const rec    = carregarReclamacoes().find(r => r.id === recId);
+  const apiKey = await obterGroqKey();
+  if (!rec || !apiKey) { mostrarToast('⚠️ Sem chave API — configura em ✦ IA',''); return; }
 
   document.getElementById('modal-rec-ia')?.remove();
   const proj = getState('projetos')?.find(p => p.id === rec.projetoId);
@@ -708,9 +759,10 @@ window._gerarEmail = function (recId) {
 // ── Chamada Groq ──────────────────────────────────
 
 async function _chamarGroq(system, msgs) {
+  const apiKey = await obterGroqKey();
   const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${obterGroqKey()}` },
+    headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${apiKey}` },
     body: JSON.stringify({
       model: 'llama-3.3-70b-versatile',
       max_tokens: 1000,

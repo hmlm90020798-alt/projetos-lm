@@ -7,13 +7,16 @@
 //   match /databases/{database}/documents {
 //     match /projetos/{projetoId} {
 //       allow read: if true;
-//       // Escrita autenticada (painel) OU aprovação do cliente
 //       allow write: if request.auth != null
 //         || (request.resource.data.diff(resource.data).affectedKeys()
 //             .hasOnly(['aprovacao','fase']));
 //     }
 //     match /visitas/{projetoId} {
 //       allow read, write: if true;
+//     }
+//     // Reclamações — só autenticado (dados internos)
+//     match /reclamacoes/{recId} {
+//       allow read, write: if request.auth != null;
 //     }
 //   }
 // }
