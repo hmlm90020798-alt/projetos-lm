@@ -74,9 +74,7 @@
           <input type="text" id="painel-pesquisa" class="search-input"
                  placeholder="Pesquisar nome, localidade, PC, OS…"
                  oninput="window.renderPainel()">
-          <button class="btn-ordenar" id="btn-ordenar" onclick="window.toggleOrdem()" title="Ordenação">
-            <span id="btn-ordenar-label">📅 Data</span>
-          </button>
+
         </div>
         <div class="filtros">
           <button class="filtro-btn active" onclick="window.setFiltro(this,'todos')">Todos</button>
@@ -85,6 +83,11 @@
           <button class="filtro-btn" onclick="window.setFiltro(this,'obra')">Em Obra</button>
           <button class="filtro-btn" onclick="window.setFiltro(this,'concluido')">Concluído</button>
           <button class="filtro-btn filtro-exp" onclick="window.setFiltro(this,'expirado')">Expirado</button>
+          <span class="filtros-sep"></span>
+          <button class="filtro-ordem" id="btn-ordenar" onclick="window.toggleOrdem()" title="Ordenar projetos">
+            <span id="btn-ordenar-icon">↕</span>
+            <span id="btn-ordenar-label">Data</span>
+          </button>
         </div>
       </div>
       <div class="dashboard">
@@ -96,13 +99,12 @@
           <div class="dash-num" id="stat-taxa">0%</div>
           <div class="dash-lbl">Taxa de Aprovação</div>
         </div>
-        <div class="dash-card">
-          <div class="dash-num dash-num-sm" id="stat-valor">—</div>
-          <div class="dash-lbl">Valor Médio</div>
-        </div>
-        <div class="dash-card dash-global">
-          <div class="dash-num dash-num-sm" id="stat-global">—</div>
-          <div class="dash-lbl">Valor Global</div>
+        <div class="dash-card dash-valor-toggle" id="dash-card-valor" onclick="window.toggleValorCard()" title="Clica para alternar">
+          <div class="dash-num dash-num-sm" id="stat-valor-display">—</div>
+          <div class="dash-lbl dash-lbl-toggle">
+            <span id="dash-valor-label">Valor Médio</span>
+            <span class="dash-toggle-hint">clica ↔</span>
+          </div>
         </div>
         <div class="dash-card">
           <div class="dash-num" id="stat-tempo">—</div>

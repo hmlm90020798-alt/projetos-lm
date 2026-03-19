@@ -11,6 +11,9 @@ import { renderHistoricoReunioes } from './modo-apresentacao.js';
 // ── Ordenação ─────────────────────────────────────
 // 'data' = mais recente primeiro (default) | 'az' = A→Z | 'za' = Z→A
 let _ordemAtual = 'data';
+let _valorCardModo = 'medio'; // 'medio' | 'global'
+let _valorMedioAtual = 0;
+let _valorGlobalAtual = 0;
 
 export function toggleOrdem() {
   if (_ordemAtual === 'data') {
@@ -20,10 +23,31 @@ export function toggleOrdem() {
   } else {
     _ordemAtual = 'data';
   }
-  const labels = { data: '📅 Data', az: '🔤 A → Z', za: '🔤 Z → A' };
-  const el = document.getElementById('btn-ordenar-label');
-  if (el) el.textContent = labels[_ordemAtual];
+  const labels   = { data: 'Data', az: 'A → Z', za: 'Z → A' };
+  const icons    = { data: '↕', az: '↑', za: '↓' };
+  const elLabel  = document.getElementById('btn-ordenar-label');
+  const elIcon   = document.getElementById('btn-ordenar-icon');
+  const elBtn    = document.getElementById('btn-ordenar');
+  if (elLabel) elLabel.textContent = labels[_ordemAtual];
+  if (elIcon)  elIcon.textContent  = icons[_ordemAtual];
+  if (elBtn)   elBtn.classList.toggle('ativo', _ordemAtual !== 'data');
   renderPainel();
+}
+
+export function toggleValorCard() {
+  _valorCardModo = _valorCardModo === 'medio' ? 'global' : 'medio';
+  const display = document.getElementById('stat-valor-display');
+  const label   = document.getElementById('dash-valor-label');
+  const card    = document.getElementById('dash-card-valor');
+  if (_valorCardModo === 'global') {
+    if (display) display.textContent = _valorGlobalAtual > 0 ? fmt(_valorGlobalAtual) : '—';
+    if (label)   label.textContent   = 'Valor Global';
+    if (card)    card.classList.add('modo-global');
+  } else {
+    if (display) display.textContent = _valorMedioAtual > 0 ? fmt(_valorMedioAtual) : '—';
+    if (label)   label.textContent   = 'Valor Médio';
+    if (card)    card.classList.remove('modo-global');
+  }
 }
 
 function ordenarLista(lista) {
@@ -132,8 +156,14 @@ export function renderPainel() {
   const el = id => document.getElementById(id);
   if (el('stat-total'))      el('stat-total').textContent      = db.total;
   if (el('stat-taxa'))       el('stat-taxa').textContent       = db.taxa + '%';
-  if (el('stat-valor'))      el('stat-valor').textContent      = db.valorMedio > 0 ? fmt(db.valorMedio) : '—';
-  if (el('stat-global'))     el('stat-global').textContent     = db.valorGlobal > 0 ? fmt(db.valorGlobal) : '—';
+  // Guardar valores para o card toggle
+  _valorMedioAtual  = db.valorMedio;
+  _valorGlobalAtual = db.valorGlobal;
+  const displayEl = el('stat-valor-display');
+  if (displayEl) {
+    const val = _valorCardModo === 'global' ? db.valorGlobal : db.valorMedio;
+    displayEl.textContent = val > 0 ? fmt(val) : '—';
+  }
   if (el('stat-tempo'))      el('stat-tempo').textContent      = db.tempoMedio !== null ? db.tempoMedio + 'd' : '—';
   if (el('stat-concluidos')) el('stat-concluidos').textContent = db.concluidos;
   if (el('stat-expira'))     el('stat-expira').textContent     = db.expira;

@@ -1334,27 +1334,54 @@ img   { display: block; max-width: 100%; }
   transition: background .15s;
 }
 
-/* ── Botão ordenar ── */
-.btn-ordenar {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 0 12px; height: 36px;
-  border-radius: 8px;
-  border: 1px solid var(--border, rgba(0,0,0,.1));
-  background: var(--surface, #fff);
-  color: var(--text, #2a3a1a);
-  font-size: 12px; font-weight: 600;
-  cursor: pointer; white-space: nowrap;
-  transition: background .15s, border-color .15s;
-  font-family: var(--sans, 'DM Sans', sans-serif);
-  margin-left: 8px;
-  flex-shrink: 0;
+/* ── Ordenação discreta (integrada nos filtros) ── */
+.filtros-sep {
+  width: 1px; height: 20px;
+  background: var(--border);
+  margin: 0 2px; align-self: center; flex-shrink: 0;
 }
-.btn-ordenar:hover {
-  background: var(--bg-alt, #f4f9f0);
-  border-color: var(--green-mid, #67AB2F);
+.filtro-ordem {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 10px;
+  border: 1.5px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ink4);
+  font-family: var(--sans); font-size: 12px; font-weight: 500;
+  cursor: pointer; white-space: nowrap;
+  transition: all .15s;
+}
+.filtro-ordem:hover { color: var(--ink2); border-color: var(--border); }
+.filtro-ordem.ativo { color: var(--green); border-color: var(--green-pale); background: var(--green-pale); }
+#btn-ordenar-icon { font-size: 11px; opacity: .7; }
+
+/* ── Card Valor — toggle clicável ── */
+.dash-valor-toggle {
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  user-select: none;
+  position: relative;
+}
+.dash-valor-toggle:hover { border-color: var(--green-mid); }
+.dash-valor-toggle.modo-global { border-color: var(--green); background: var(--green-pale); }
+.dash-valor-toggle.modo-global .dash-num { color: var(--green); }
+.dash-lbl-toggle { display: flex; align-items: center; gap: 5px; }
+.dash-toggle-hint {
+  font-size: 9px; color: var(--ink4); opacity: .6;
+  font-style: italic; margin-left: auto;
 }
 
-/* ── Card Valor Global ── */
-.dash-global {
-  border-color: rgba(103,171,47,.25) !important;
+/* ── Modo Apresentação — Botão card ── */
+.btn-apresentar {
+  background: linear-gradient(135deg, #1a3010, #254518) !important;
+  color: #A8D878 !important;
+  border: 1px solid rgba(103,171,47,.35) !important;
+  font-weight: 700 !important;
+  letter-spacing: .02em;
 }
+.btn-apresentar:hover {
+  background: linear-gradient(135deg, #244015, #2e5520) !important;
+}
+
+/* ── Bloco Reuniões no modal ── */
+#reunioes-historico-lista { margin-top: 6px; }

@@ -23,6 +23,7 @@ import {
   iniciarPollingAprovacoes, addInteracao, addOcorrencia,
   atualizarEstadoOcorrencia, copiarEmail, copiarRef, TIPOS_PROJETO,
   toggleOrdem,
+  toggleValorCard,
 } from './painel.js';
 import {
   renderPaginaCliente, renderEstadoAprovacao, aprovarProposta,
@@ -63,6 +64,7 @@ window.gerarPDF                 = gerarPDF;
 window.setView                  = setView;
 window.renderPainel             = renderPainel;
 window.toggleOrdem              = toggleOrdem;
+window.toggleValorCard          = toggleValorCard;
 window.addLinhaElem             = addLinhaElem;
 window.addCatElemExtra          = addCatElemExtra;
 window.addLinhaElemExtra        = addLinhaElemExtra;
