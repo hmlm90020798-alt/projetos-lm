@@ -45,15 +45,16 @@ body{background:#0F1610;color:#E8F0E0;font-family:'DM Sans',sans-serif;overflow:
 #frame-wrap{margin-top:44px;width:100%;height:calc(100vh - 44px)}
 iframe{width:100%;height:100%;border:none;background:#0F1610}
 
-/* Painel Notas */
-#np{position:fixed;top:56px;right:16px;width:310px;max-height:calc(100vh - 72px);
+/* ── Painel Notas ── */
+#np{position:fixed;top:56px;right:16px;width:300px;max-height:calc(100vh - 72px);
   background:rgba(16,24,16,.98);border:1px solid rgba(103,171,47,.22);border-radius:14px;
   box-shadow:0 8px 40px rgba(0,0,0,.65);display:flex;flex-direction:column;
-  z-index:900;backdrop-filter:blur(16px);transition:opacity .2s}
+  z-index:900;backdrop-filter:blur(16px)}
 #np.hidden{display:none}
-#np.mini{width:44px;max-height:44px;border-radius:22px}
+#np.mini{width:44px;max-height:44px;border-radius:22px;overflow:hidden}
 #np.mini .np-body,#np.mini .np-foot,#np.mini .np-title,#np.mini .np-actions{display:none}
-#np.mini .np-head{border-radius:22px;justify-content:center;padding:0;height:44px}
+#np.mini .np-head{border-radius:22px;justify-content:center;padding:0;height:44px;border-bottom:none}
+#np.mini .np-ico{margin:0;font-size:18px}
 
 .np-head{display:flex;align-items:center;gap:8px;padding:9px 12px;
   background:rgba(103,171,47,.07);border-bottom:1px solid rgba(103,171,47,.13);
@@ -62,36 +63,43 @@ iframe{width:100%;height:100%;border:none;background:#0F1610}
 .np-title{font-size:10px;font-weight:700;color:#A8D878;letter-spacing:.08em;text-transform:uppercase;flex:1}
 .np-actions{display:flex;gap:3px}
 .np-btn{width:22px;height:22px;border-radius:5px;border:none;background:rgba(255,255,255,.05);
-  color:rgba(255,255,255,.45);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+  color:rgba(255,255,255,.45);cursor:pointer;font-size:13px;display:flex;align-items:center;
+  justify-content:center;transition:background .15s;font-family:'DM Sans',sans-serif}
 .np-btn:hover{background:rgba(255,255,255,.12);color:#fff}
 
-.np-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+/* Body das notas — scroll suave */
+.np-body{flex:1;overflow-y:auto;padding:10px 10px 6px;display:flex;flex-direction:column;gap:7px}
 .np-body::-webkit-scrollbar{width:3px}
 .np-body::-webkit-scrollbar-thumb{background:rgba(103,171,47,.2);border-radius:3px}
 
-.sec{border-radius:8px;border:1px solid rgba(255,255,255,.07);overflow:hidden}
-.sec-h{display:flex;align-items:center;gap:6px;padding:6px 9px;
-  background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer}
-.sec-h:hover{background:rgba(255,255,255,.07)}
-.sec-em{font-size:11px;flex-shrink:0}
-.sec-nm{font-size:10px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.05em;text-transform:uppercase;flex:1}
-.sec-ar{font-size:8px;color:rgba(255,255,255,.25);transition:transform .15s}
-.sec.cl .sec-ar{transform:rotate(-90deg)}
-.sec.cl .sec-bd{display:none}
-.sec-bd{padding:7px}
-textarea{width:100%;min-height:65px;resize:vertical;background:rgba(255,255,255,.04);
-  border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:7px;color:#E8F0E0;
-  font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.5;outline:none;transition:border-color .15s}
+/* Secções — sempre visíveis, sem accordion */
+.sec-label{
+  display:flex;align-items:center;gap:5px;
+  margin-bottom:3px}
+.sec-em{font-size:11px}
+.sec-nm{font-size:10px;font-weight:600;color:rgba(103,171,47,.7);
+  letter-spacing:.05em;text-transform:uppercase}
+textarea{
+  width:100%;min-height:52px;max-height:120px;resize:vertical;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);border-radius:7px;
+  padding:7px 8px;color:#E8F0E0;
+  font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.5;
+  outline:none;transition:border-color .15s, background .15s;
+  display:block}
 textarea:focus{border-color:rgba(103,171,47,.4);background:rgba(103,171,47,.04)}
-textarea::placeholder{color:rgba(255,255,255,.18)}
+textarea::placeholder{color:rgba(255,255,255,.16);font-size:11px}
 
+/* Footer */
 .np-foot{padding:9px 11px;border-top:1px solid rgba(103,171,47,.13);
   display:flex;gap:6px;align-items:center;flex-shrink:0}
 .np-info{flex:1;font-size:10px;color:rgba(255,255,255,.28);line-height:1.3}
 .np-info em{color:rgba(103,171,47,.65);font-style:normal}
-.btn-grv{padding:6px 13px;border-radius:7px;background:linear-gradient(135deg,#3a6b1a,#274f10);
-  border:1px solid rgba(103,171,47,.32);color:#A8D878;font-size:11px;font-weight:700;
-  cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;white-space:nowrap}
+.btn-grv{padding:6px 13px;border-radius:7px;
+  background:linear-gradient(135deg,#3a6b1a,#274f10);
+  border:1px solid rgba(103,171,47,.32);color:#A8D878;
+  font-size:11px;font-weight:700;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:background .15s;white-space:nowrap}
 .btn-grv:hover{background:linear-gradient(135deg,#4a8b22,#3a6b18)}
 
 /* Toast */
@@ -126,7 +134,7 @@ textarea::placeholder{color:rgba(255,255,255,.18)}
   <div class="np-body" id="np-body"></div>
   <div class="np-foot">
     <div class="np-info">Início: <em id="np-inicio">—</em></div>
-    <button class="btn-grv" onclick="saveReuniao()">💾 Guardar Reunião</button>
+    <button class="btn-grv" onclick="saveReuniao()">💾 Guardar</button>
   </div>
 </div>
 
@@ -139,45 +147,47 @@ const BASE_URL  = '${baseUrl}';
 const LS_KEY    = 'lm_reunioes_' + PROJ_ID;
 
 // Init
-const inicio = new Date();
+const inicio  = new Date();
 const hInicio = pad(inicio.getHours())+':'+pad(inicio.getMinutes());
-document.getElementById('tp-nome').textContent  = PROJ_NOME;
+document.getElementById('tp-nome').textContent   = PROJ_NOME;
 document.getElementById('np-inicio').textContent = hInicio;
 document.getElementById('fr').src = BASE_URL + '?p=' + PROJ_ID;
 
 function pad(n){ return String(n).padStart(2,'0'); }
 
-// Secções
+// ── Secções — sempre visíveis, compactas ─────────
 const SECS = [
-  {id:'geral',    em:'💬', nm:'Geral',           ph:'Observações gerais da reunião…'},
-  {id:'cliente',  em:'👤', nm:'Cliente',         ph:'Preferências, reacções, dúvidas do cliente…'},
-  {id:'proposta', em:'📋', nm:'Proposta',         ph:'Ajustes à proposta, valores discutidos…'},
-  {id:'proximos', em:'🎯', nm:'Próximos Passos',  ph:'O que ficou acordado para fazer a seguir…'},
-  {id:'decisoes', em:'✅', nm:'Decisões',         ph:'Decisões tomadas durante a reunião…'},
+  {id:'geral',    em:'💬', nm:'Geral',           ph:'Observações gerais…'},
+  {id:'cliente',  em:'👤', nm:'Cliente',         ph:'Preferências, dúvidas, reacções…'},
+  {id:'proposta', em:'📋', nm:'Proposta',         ph:'Ajustes, valores discutidos…'},
+  {id:'proximos', em:'🎯', nm:'Próximos Passos',  ph:'O que ficou acordado…'},
+  {id:'decisoes', em:'✅', nm:'Decisões',         ph:'Decisões tomadas…'},
 ];
 
 const body = document.getElementById('np-body');
-body.innerHTML = SECS.map((s,i)=>
-  '<div class="sec'+(i>0?' cl':'')+'" id="sec-'+s.id+'">'+
-  '<div class="sec-h" onclick="toggleSec(\\'' +s.id+ '\\')">'+
-  '<span class="sec-em">'+s.em+'</span>'+
-  '<span class="sec-nm">'+s.nm+'</span>'+
-  '<span class="sec-ar">▾</span></div>'+
-  '<div class="sec-bd"><textarea id="ta-'+s.id+'" placeholder="'+s.ph+'"></textarea></div>'+
+body.innerHTML = SECS.map(s =>
+  '<div>'+
+    '<div class="sec-label">'+
+      '<span class="sec-em">'+s.em+'</span>'+
+      '<span class="sec-nm">'+s.nm+'</span>'+
+    '</div>'+
+    '<textarea id="ta-'+s.id+'" placeholder="'+s.ph+'"></textarea>'+
   '</div>'
 ).join('');
 
-function toggleSec(id){ document.getElementById('sec-'+id)?.classList.toggle('cl'); }
-
-// Toggle / Mini painel
+// ── Toggle / Mini ─────────────────────────────────
 function toggleNP(){
   const p=document.getElementById('np');
-  p.classList.toggle('hidden');
   if(p.classList.contains('mini')) p.classList.remove('mini');
+  p.classList.toggle('hidden');
 }
-function miniNP(){ document.getElementById('np').classList.toggle('mini'); }
+function miniNP(){
+  const p=document.getElementById('np');
+  p.classList.remove('hidden');
+  p.classList.toggle('mini');
+}
 
-// Drag
+// ── Drag ──────────────────────────────────────────
 (function(){
   const p=document.getElementById('np'), h=document.getElementById('np-drag');
   let sx=0,sy=0,drag=false;
@@ -190,7 +200,14 @@ function miniNP(){ document.getElementById('np').classList.toggle('mini'); }
   document.addEventListener('mouseup',()=>{drag=false;});
 })();
 
-// Guardar reunião
+// ── Guardar reunião — usa localStorage do opener ──
+// A janela é aberta via document.write sobre about:blank,
+// por isso o localStorage pertence à janela pai (mesma origem).
+function getLS(){
+  try{ return window.opener?.localStorage || window.localStorage; }
+  catch{ return window.localStorage; }
+}
+
 function saveReuniao(){
   const agora=new Date();
   const data=agora.toLocaleDateString('pt-PT');
@@ -200,10 +217,11 @@ function saveReuniao(){
   if(!Object.values(notas).some(v=>v)){ toast('Sem notas para guardar'); return; }
   const r={id:Date.now(),data,hora,horaInicio:hInicio,projId:PROJ_ID,projNome:PROJ_NOME,notas};
   try{
-    const lista=JSON.parse(localStorage.getItem(LS_KEY)||'[]');
+    const ls=getLS();
+    const lista=JSON.parse(ls.getItem(LS_KEY)||'[]');
     lista.unshift(r);
-    localStorage.setItem(LS_KEY,JSON.stringify(lista));
-  }catch(_){}
+    ls.setItem(LS_KEY,JSON.stringify(lista));
+  }catch(e){ toast('Erro ao guardar: '+e.message); return; }
   toast('✓ Reunião guardada — '+data+' '+hora);
   setTimeout(()=>{
     if(confirm('Reunião guardada! Limpar notas para nova sessão?')){
@@ -256,34 +274,34 @@ export function sairModoApresentacao() {
 }
 
 // ── Histórico de reuniões (para painel de edição) ─
-export function carregarHistoricoReunioes(projId) {
-  return carregarReunioes(projId);
-}
-
 export function renderHistoricoReunioes(projId, containerEl) {
   if (!containerEl) return;
-  const lista = carregarReunioes(projId);
+  let lista = [];
+  try { lista = JSON.parse(localStorage.getItem(LS_KEY(projId)) || '[]'); }
+  catch { lista = []; }
+
   const LABELS = {
     geral:'💬 Geral', cliente:'👤 Cliente', proposta:'📋 Proposta',
     proximos:'🎯 Próximos Passos', decisoes:'✅ Decisões',
   };
 
   if (!lista.length) {
-    containerEl.innerHTML = `<p class="form-note" style="color:rgba(255,255,255,.3);font-style:italic;padding:8px 0">Sem reuniões registadas para este projeto.</p>`;
+    containerEl.innerHTML = `<p class="form-note" style="color:rgba(255,255,255,.3);font-style:italic;padding:4px 0">Sem reuniões registadas para este projeto.</p>`;
     return;
   }
 
   containerEl.innerHTML = lista.map(r => `
     <div style="margin-bottom:8px;border:1px solid rgba(103,171,47,.15);border-radius:8px;overflow:hidden">
       <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'"
-           style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(103,171,47,.07);cursor:pointer">
+           style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(103,171,47,.07);cursor:pointer;user-select:none">
         <span>📅</span>
         <span style="font-size:12px;font-weight:600;color:#A8D878;flex:1">${r.data} — ${r.hora}</span>
         ${r.horaInicio ? `<span style="font-size:10px;color:rgba(255,255,255,.3)">Início: ${r.horaInicio}</span>` : ''}
         <button onclick="event.stopPropagation();window._apagarReuniaoLocal(${r.id},'${projId}')"
-                style="background:none;border:none;color:rgba(220,80,80,.5);cursor:pointer;font-size:15px;line-height:1;padding:0 2px">×</button>
+                style="background:none;border:none;color:rgba(220,80,80,.5);cursor:pointer;font-size:16px;line-height:1;padding:0 2px;margin-left:4px"
+                title="Apagar esta reunião">×</button>
       </div>
-      <div style="padding:10px 12px;display:flex;flex-direction:column;gap:6px">
+      <div style="padding:10px 12px;display:flex;flex-direction:column;gap:7px">
         ${Object.entries(r.notas || {}).map(([k,v]) => `
           <div style="font-size:11px">
             <div style="color:rgba(103,171,47,.7);font-weight:600;margin-bottom:2px">${LABELS[k]||k}</div>
@@ -295,11 +313,17 @@ export function renderHistoricoReunioes(projId, containerEl) {
 
 // ── Apagar reunião individual ─────────────────────
 window._apagarReuniaoLocal = function(reuniaoId, projId) {
+  if (!confirm('Apagar esta reunião?')) return;
   try {
     const key  = LS_KEY(projId);
     const nova = (JSON.parse(localStorage.getItem(key)||'[]')).filter(r => r.id !== reuniaoId);
     localStorage.setItem(key, JSON.stringify(nova));
     const cont = document.getElementById('reunioes-historico-lista');
-    if (cont) renderHistoricoReunioes(projId, cont);
+    const blocoReunioes = document.getElementById('bloco-reunioes');
+    if (cont) {
+      renderHistoricoReunioes(projId, cont);
+      // Ocultar bloco se ficou vazio
+      if (blocoReunioes) blocoReunioes.style.display = nova.length ? '' : 'none';
+    }
   } catch(_) {}
 };

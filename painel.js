@@ -326,14 +326,19 @@ export function editarProjeto(id) {
   renderThumbs();
   atualizarTotalPreview();
 
-  // Histórico de reuniões (só visível quando existem reuniões guardadas)
+  // Histórico de reuniões — mostrar bloco só se houver reuniões guardadas
   const blocoReunioes = document.getElementById('bloco-reunioes');
   const listaReunioes = document.getElementById('reunioes-historico-lista');
   if (blocoReunioes && listaReunioes) {
-    renderHistoricoReunioes(id, listaReunioes);
-    // Mostrar bloco apenas se houver reuniões
-    const temReunioes = listaReunioes.querySelector('div') !== null;
-    blocoReunioes.style.display = temReunioes ? '' : 'none';
+    let reunioesGuardadas = [];
+    try { reunioesGuardadas = JSON.parse(localStorage.getItem(`lm_reunioes_${id}`) || '[]'); } catch(_) {}
+    if (reunioesGuardadas.length) {
+      blocoReunioes.style.display = '';
+      renderHistoricoReunioes(id, listaReunioes);
+    } else {
+      blocoReunioes.style.display = 'none';
+      listaReunioes.innerHTML = '';
+    }
   }
 
   colapsarBlocos();
