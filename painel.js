@@ -156,13 +156,17 @@ export function renderPainel() {
   const el = id => document.getElementById(id);
   if (el('stat-total'))      el('stat-total').textContent      = db.total;
   if (el('stat-taxa'))       el('stat-taxa').textContent       = db.taxa + '%';
-  // Guardar valores para o card toggle
+  // Card de valor toggle — actualizar display e label
   _valorMedioAtual  = db.valorMedio;
   _valorGlobalAtual = db.valorGlobal;
-  const displayEl = el('stat-valor-display');
+  const displayEl   = el('stat-valor-display');
+  const labelEl     = el('dash-valor-label');
   if (displayEl) {
     const val = _valorCardModo === 'global' ? db.valorGlobal : db.valorMedio;
     displayEl.textContent = val > 0 ? fmt(val) : '—';
+  }
+  if (labelEl) {
+    labelEl.textContent = _valorCardModo === 'global' ? 'Valor Global' : 'Valor Médio';
   }
   if (el('stat-tempo'))      el('stat-tempo').textContent      = db.tempoMedio !== null ? db.tempoMedio + 'd' : '—';
   if (el('stat-concluidos')) el('stat-concluidos').textContent = db.concluidos;

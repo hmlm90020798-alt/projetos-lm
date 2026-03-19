@@ -1340,20 +1340,14 @@ img   { display: block; max-width: 100%; }
   background: var(--border);
   margin: 0 2px; align-self: center; flex-shrink: 0;
 }
-.filtro-ordem {
-  display: inline-flex; align-items: center; gap: 4px;
-  padding: 6px 10px;
-  border: 1.5px solid transparent;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--ink4);
-  font-family: var(--sans); font-size: 12px; font-weight: 500;
-  cursor: pointer; white-space: nowrap;
-  transition: all .15s;
+/* .filtro-ordem herda de .filtro-btn — só override do estado ativo */
+.filtro-btn.filtro-ordem { color: var(--ink3); }
+.filtro-btn.filtro-ordem.ativo {
+  background: var(--green-pale);
+  border-color: var(--green-mid);
+  color: var(--green);
 }
-.filtro-ordem:hover { color: var(--ink2); border-color: var(--border); }
-.filtro-ordem.ativo { color: var(--green); border-color: var(--green-pale); background: var(--green-pale); }
-#btn-ordenar-icon { font-size: 11px; opacity: .7; }
+#btn-ordenar-icon { font-size: 10px; }
 
 /* ── Card Valor — toggle clicável ── */
 .dash-valor-toggle {
