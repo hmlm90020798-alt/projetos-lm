@@ -57,6 +57,10 @@
 
   --parchment:    #9e7967;
   --parchment2:   #8a6858;
+
+  /* ── Proposta do cliente — fundos próprios, independentes do painel ── */
+  --cli-bg:       #F7F5F0;
+  --cli-bg-soft:  #F0ECE4;
   --white:        #FFFFFF;
   --border:       #E4DED4;
   --border-mid:   #C8C0B4;
@@ -537,10 +541,10 @@ img   { display: block; max-width: 100%; }
 /* ──────────────────────────────────────────────
    7. PÁGINA CLIENTE — SECÇÕES COMUNS
 ────────────────────────────────────────────── */
-.cli-sec            { padding: 80px 0; }
+.cli-sec            { padding: 80px 0; background: var(--cli-bg); }
 .cli-sec-inner      { max-width: 1100px; margin: 0 auto; padding: 0 60px; }
 .cli-sec-dark       { background: var(--dark2); }
-.cli-sec-soft       { background: var(--parchment2); }
+.cli-sec-soft       { background: var(--cli-bg-soft); }
 .cli-sec-ink        { background: var(--dark); }
 .sec-header         { display: flex; align-items: flex-end; gap: 24px; margin-bottom: 48px; }
 .sec-num            { font-family: var(--serif); font-size: 72px; color: var(--border); line-height: 1; flex-shrink: 0; opacity: .6; }
