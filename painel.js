@@ -98,12 +98,13 @@ function faseOrdem(f) {
 // ── Dashboard ──────────────────────────────────────
 
 function calcTotalProjeto(p) {
+  const n = v => parseFloat(String(v || '0').replace(',', '.')) || 0;
   let t = 0;
-  t += parseFloat(p.orc_moveis)    || 0;
-  t += parseFloat(p.orc_tampos)    || 0;
-  t += parseFloat(p.orc_eletros)   || 0;
-  t += parseFloat(p.orc_acessorios)|| 0;
-  (p.orcamento||[]).forEach(c => { t += parseFloat(c.valor)||0; });
+  t += n(p.orc_moveis);
+  t += n(p.orc_tampos);
+  t += n(p.orc_eletros);
+  t += n(p.orc_acessorios);
+  (p.orcamento||[]).forEach(c => { t += n(c.valor); });
   return Math.max(0, t);
 }
 
@@ -156,13 +157,18 @@ export function renderPainel() {
   const el = id => document.getElementById(id);
   if (el('stat-total'))      el('stat-total').textContent      = db.total;
   if (el('stat-taxa'))       el('stat-taxa').textContent       = db.taxa + '%';
-  // Card de valor toggle — actualizar display e label
-  _valorMedioAtual  = db.valorMedio;
-  _valorGlobalAtual = db.valorGlobal;
-  const displayEl   = el('stat-valor-display');
-  const labelEl     = el('dash-valor-label');
+  // Card de valor toggle — calcular directamente para garantir robustez
+  {
+    let somaTotal = 0, cntTotal = 0;
+    lista.forEach(p => { const v = calcTotalProjeto(p); if (v > 0) { somaTotal += v; cntTotal++; } });
+    _valorGlobalAtual = somaTotal;
+    _valorMedioAtual  = cntTotal > 0 ? somaTotal / cntTotal : 0;
+  }
+  // Suportar id novo (stat-valor-display) e id legado (stat-valor)
+  const displayEl = el('stat-valor-display') || el('stat-valor');
+  const labelEl   = el('dash-valor-label');
   if (displayEl) {
-    const val = _valorCardModo === 'global' ? db.valorGlobal : db.valorMedio;
+    const val = _valorCardModo === 'global' ? _valorGlobalAtual : _valorMedioAtual;
     displayEl.textContent = val > 0 ? fmt(val) : '—';
   }
   if (labelEl) {
