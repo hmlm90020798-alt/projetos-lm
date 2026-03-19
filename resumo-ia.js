@@ -7,8 +7,9 @@
 
 import { getState } from './state.js';
 import { mostrarToast } from './ui.js';
+import { carregarGroqKey } from './firebase.js';
 
-// ── Gestão segura da API Key (localStorage) ───────
+// ── Gestão segura da API Key (localStorage + Firebase) ──
 
 const LS_KEY = 'projetos_lm_groq_key';
 
@@ -18,8 +19,20 @@ function obterApiKey() {
 
 function guardarApiKey(key) {
   localStorage.setItem(LS_KEY, key.trim());
-  // Guardar também no Firebase para sincronizar entre dispositivos
   if (window.guardarGroqKey) window.guardarGroqKey(key.trim());
+}
+
+// Tenta obter a chave do Firebase se não estiver no localStorage
+async function obterApiKeyComFallback() {
+  const local = obterApiKey();
+  if (local) return local;
+  // Navegador privado ou novo dispositivo — buscar directamente do Firebase
+  try {
+    const key = await carregarGroqKey(); // também guarda no localStorage se encontrar
+    return key || '';
+  } catch (_) {
+    return '';
+  }
 }
 
 function mostrarConfigKey() {
@@ -391,14 +404,16 @@ window._copiarMensagemIA = function(idx) {
 
 // ── Modal de resumo ───────────────────────────────
 
-export function abrirResumoIA(projetoId) {
+export async function abrirResumoIA(projetoId) {
   const projetos = getState('projetos');
   const p = projetos.find(x => x.id === projetoId);
   if (!p) { mostrarToast('Projecto não encontrado', ''); return; }
 
   window._resumoIAProjId = projetoId;
 
-  if (!obterApiKey()) {
+  // Tentar obter chave: primeiro localStorage, depois Firebase (modo privado/novo device)
+  const apiKey = await obterApiKeyComFallback();
+  if (!apiKey) {
     mostrarConfigKey();
     return;
   }

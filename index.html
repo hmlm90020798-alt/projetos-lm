@@ -74,6 +74,9 @@
           <input type="text" id="painel-pesquisa" class="search-input"
                  placeholder="Pesquisar nome, localidade, PC, OS…"
                  oninput="window.renderPainel()">
+          <button class="btn-ordenar" id="btn-ordenar" onclick="window.toggleOrdem()" title="Ordenação">
+            <span id="btn-ordenar-label">📅 Data</span>
+          </button>
         </div>
         <div class="filtros">
           <button class="filtro-btn active" onclick="window.setFiltro(this,'todos')">Todos</button>
@@ -96,6 +99,10 @@
         <div class="dash-card">
           <div class="dash-num dash-num-sm" id="stat-valor">—</div>
           <div class="dash-lbl">Valor Médio</div>
+        </div>
+        <div class="dash-card dash-global">
+          <div class="dash-num dash-num-sm" id="stat-global">—</div>
+          <div class="dash-lbl">Valor Global</div>
         </div>
         <div class="dash-card">
           <div class="dash-num" id="stat-tempo">—</div>

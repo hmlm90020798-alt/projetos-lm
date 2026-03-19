@@ -1333,3 +1333,28 @@ img   { display: block; max-width: 100%; }
 #reunioes-historico-lista .reuniao-header {
   transition: background .15s;
 }
+
+/* ── Botão ordenar ── */
+.btn-ordenar {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 0 12px; height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border, rgba(0,0,0,.1));
+  background: var(--surface, #fff);
+  color: var(--text, #2a3a1a);
+  font-size: 12px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: background .15s, border-color .15s;
+  font-family: var(--sans, 'DM Sans', sans-serif);
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.btn-ordenar:hover {
+  background: var(--bg-alt, #f4f9f0);
+  border-color: var(--green-mid, #67AB2F);
+}
+
+/* ── Card Valor Global ── */
+.dash-global {
+  border-color: rgba(103,171,47,.25) !important;
+}

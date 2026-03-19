@@ -8,6 +8,35 @@ import { mostrarToast, setView, fmt, gerarId, dataHoje, formatarData } from './u
 import { getAlertasReclamacoes } from './reclamacoes.js';
 import { renderHistoricoReunioes } from './modo-apresentacao.js';
 
+// ── Ordenação ─────────────────────────────────────
+// 'data' = mais recente primeiro (default) | 'az' = A→Z | 'za' = Z→A
+let _ordemAtual = 'data';
+
+export function toggleOrdem() {
+  if (_ordemAtual === 'data') {
+    _ordemAtual = 'az';
+  } else if (_ordemAtual === 'az') {
+    _ordemAtual = 'za';
+  } else {
+    _ordemAtual = 'data';
+  }
+  const labels = { data: '📅 Data', az: '🔤 A → Z', za: '🔤 Z → A' };
+  const el = document.getElementById('btn-ordenar-label');
+  if (el) el.textContent = labels[_ordemAtual];
+  renderPainel();
+}
+
+function ordenarLista(lista) {
+  const copia = [...lista];
+  if (_ordemAtual === 'az') {
+    copia.sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt'));
+  } else if (_ordemAtual === 'za') {
+    copia.sort((a, b) => (b.nome || '').localeCompare(a.nome || '', 'pt'));
+  }
+  // 'data' já vem ordenada por dataCriacao do Firebase
+  return copia;
+}
+
 // ── Tipos de projecto ─────────────────────────────
 export const TIPOS_PROJETO = [
   { value: 'cozinha',            label: '🍳 Cozinha' },
@@ -88,7 +117,8 @@ function calcDashboard(lista) {
     (p.ocorrencias||[]).some(o => o.estado !== 'resolvida')
   ).length;
 
-  return { total, aprovados, concluidos, taxa, valorMedio, tempoMedio, expira, ocorrAbertas };
+  const valorGlobal = somaV;
+  return { total, aprovados, concluidos, taxa, valorMedio, valorGlobal, tempoMedio, expira, ocorrAbertas };
 }
 
 // ── Render painel ─────────────────────────────────
@@ -103,6 +133,7 @@ export function renderPainel() {
   if (el('stat-total'))      el('stat-total').textContent      = db.total;
   if (el('stat-taxa'))       el('stat-taxa').textContent       = db.taxa + '%';
   if (el('stat-valor'))      el('stat-valor').textContent      = db.valorMedio > 0 ? fmt(db.valorMedio) : '—';
+  if (el('stat-global'))     el('stat-global').textContent     = db.valorGlobal > 0 ? fmt(db.valorGlobal) : '—';
   if (el('stat-tempo'))      el('stat-tempo').textContent      = db.tempoMedio !== null ? db.tempoMedio + 'd' : '—';
   if (el('stat-concluidos')) el('stat-concluidos').textContent = db.concluidos;
   if (el('stat-expira'))     el('stat-expira').textContent     = db.expira;
@@ -138,10 +169,11 @@ export function renderPainel() {
     </div>`;
     return;
   }
-  grid.innerHTML = filtrados.map(p => renderCard(p)).join('');
+  const ordenados = ordenarLista(filtrados);
+  grid.innerHTML = ordenados.map(p => renderCard(p)).join('');
 
   // Carregar visitas assincronamente e actualizar os cards
-  const ids = filtrados.map(p => p.id);
+  const ids = ordenados.map(p => p.id);
   carregarVisitas(ids).then(visitas => {
     ids.forEach(id => {
       const el = document.getElementById('visitas-' + id);

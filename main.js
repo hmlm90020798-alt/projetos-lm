@@ -22,6 +22,7 @@ import {
   atualizarTotalPreview, reiniciarPrazoForm, atualizarTipoProjeto,
   iniciarPollingAprovacoes, addInteracao, addOcorrencia,
   atualizarEstadoOcorrencia, copiarEmail, copiarRef, TIPOS_PROJETO,
+  toggleOrdem,
 } from './painel.js';
 import {
   renderPaginaCliente, renderEstadoAprovacao, aprovarProposta,
@@ -61,6 +62,7 @@ window.partilharCliente         = partilharCliente;
 window.gerarPDF                 = gerarPDF;
 window.setView                  = setView;
 window.renderPainel             = renderPainel;
+window.toggleOrdem              = toggleOrdem;
 window.addLinhaElem             = addLinhaElem;
 window.addCatElemExtra          = addCatElemExtra;
 window.addLinhaElemExtra        = addLinhaElemExtra;
