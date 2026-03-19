@@ -6,6 +6,7 @@ import { getState, setState, getProjects, getEditId } from './state.js';
 import { guardar, apagar, verificarAprovacoes, carregarVisitas } from './firebase.js';
 import { mostrarToast, setView, fmt, gerarId, dataHoje, formatarData } from './ui.js';
 import { getAlertasReclamacoes } from './reclamacoes.js';
+import { renderHistoricoReunioes } from './modo-apresentacao.js';
 
 // ── Tipos de projecto ─────────────────────────────
 export const TIPOS_PROJETO = [
@@ -188,9 +189,8 @@ function renderCard(p) {
       ${p.prazo ? `<div class="card-prazo${urg ? ' urgente' : ''}">
         ${urg ? '⚠️ ' : ''}Válido até ${formatarData(p.prazo)}</div>` : ''}
       <div class="card-actions">
-        <button class="btn-card" onclick="event.stopPropagation();window.editarProjeto('${p.id}')">✏️ Editar</button>
         <button class="btn-card primary" onclick="event.stopPropagation();window.verCliente('${p.id}')">👁 Ver</button>
-        <button class="btn-card" style="background:linear-gradient(135deg,#1a2f10,#2a4a1a);color:#A8D878;border:none;font-weight:700" onclick="event.stopPropagation();window.ativarModoApresentacao('${p.id}')" title="Modo Apresentação">⛶ Apresentar</button>
+        <button class="btn-card btn-apresentar" onclick="event.stopPropagation();window.ativarModoApresentacao('${p.id}')" title="Abrir Modo Apresentação numa nova janela">⛶ Apresentar</button>
         <button class="btn-card ia" onclick="event.stopPropagation();window.abrirResumoIA('${p.id}')" title="Resumo gerado por IA">✦ IA</button>
         <button class="btn-card pdf" onclick="event.stopPropagation();window.gerarPDF('${p.id}')" title="Gerar PDF da proposta">📄 PDF</button>
         <button class="btn-card partilhar" onclick="event.stopPropagation();window.partilharCliente('${p.id}')" title="Copiar link para partilhar com o cliente">
@@ -325,6 +325,17 @@ export function editarProjeto(id) {
   renderDocsForm(p.docs || []);
   renderThumbs();
   atualizarTotalPreview();
+
+  // Histórico de reuniões (só visível quando existem reuniões guardadas)
+  const blocoReunioes = document.getElementById('bloco-reunioes');
+  const listaReunioes = document.getElementById('reunioes-historico-lista');
+  if (blocoReunioes && listaReunioes) {
+    renderHistoricoReunioes(id, listaReunioes);
+    // Mostrar bloco apenas se houver reuniões
+    const temReunioes = listaReunioes.querySelector('div') !== null;
+    blocoReunioes.style.display = temReunioes ? '' : 'none';
+  }
+
   colapsarBlocos();
   document.getElementById('modal-projeto').classList.add('open');
 }

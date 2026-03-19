@@ -1,249 +1,305 @@
 // ════════════════════════════════════════════════
 // modo-apresentacao.js — Modo Apresentação · Projetos LM
-// Fullscreen limpo + bloco de notas flutuante por secção
 // ════════════════════════════════════════════════
 
-import { getState, setState } from './state.js';
-import { guardar }            from './firebase.js';
-import { mostrarToast }       from './ui.js';
+import { getState, setState, getProjects } from './state.js';
+import { mostrarToast } from './ui.js';
 
-// Secções disponíveis para notas
-const SECCOES = [
-  { id: 'galeria',    icon: '🖼️',  label: 'Imagens 3D' },
-  { id: 'elementos',  icon: '📋',  label: 'Elementos' },
-  { id: 'orcamento',  icon: '💰',  label: 'Orçamento' },
-  { id: 'notas',      icon: '📌',  label: 'Notas do Projeto' },
-  { id: 'timeline',   icon: '📅',  label: 'Acompanhamento' },
-  { id: 'docs',       icon: '📎',  label: 'Documentos' },
-  { id: 'geral',      icon: '💬',  label: 'Observações Gerais' },
+const LS_KEY = id => `lm_reunioes_${id}`;
+
+// ── Helpers ───────────────────────────────────────
+function carregarReunioes(projId) {
+  try { return JSON.parse(localStorage.getItem(LS_KEY(projId)) || '[]'); }
+  catch { return []; }
+}
+
+// ── HTML injectado na nova janela ─────────────────
+function buildWindowHTML(projId, projNome, baseUrl) {
+  return `<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>⛶ Apresentação · ${projNome}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0F1610;color:#E8F0E0;font-family:'DM Sans',sans-serif;overflow:hidden}
+
+/* Topbar */
+.topbar{position:fixed;top:0;left:0;right:0;height:44px;z-index:1000;
+  background:rgba(15,22,16,.97);border-bottom:1px solid rgba(103,171,47,.2);
+  backdrop-filter:blur(12px);display:flex;align-items:center;gap:12px;padding:0 18px}
+.topbar-marca{font-family:'DM Serif Display',serif;font-size:14px;color:#67AB2F;letter-spacing:.03em;flex-shrink:0}
+.topbar-proj{font-size:12px;color:rgba(255,255,255,.4);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.topbar-btns{display:flex;gap:7px;flex-shrink:0}
+.tbtn{padding:5px 12px;border-radius:6px;border:1px solid rgba(103,171,47,.3);
+  background:rgba(103,171,47,.1);color:#A8D878;font-size:11px;font-weight:600;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s}
+.tbtn:hover{background:rgba(103,171,47,.22)}
+.tbtn.red{border-color:rgba(220,70,70,.35);background:rgba(220,70,70,.1);color:#f08080}
+.tbtn.red:hover{background:rgba(220,70,70,.22)}
+
+/* Frame */
+#frame-wrap{margin-top:44px;width:100%;height:calc(100vh - 44px)}
+iframe{width:100%;height:100%;border:none;background:#0F1610}
+
+/* Painel Notas */
+#np{position:fixed;top:56px;right:16px;width:310px;max-height:calc(100vh - 72px);
+  background:rgba(16,24,16,.98);border:1px solid rgba(103,171,47,.22);border-radius:14px;
+  box-shadow:0 8px 40px rgba(0,0,0,.65);display:flex;flex-direction:column;
+  z-index:900;backdrop-filter:blur(16px);transition:opacity .2s}
+#np.hidden{display:none}
+#np.mini{width:44px;max-height:44px;border-radius:22px}
+#np.mini .np-body,#np.mini .np-foot,#np.mini .np-title,#np.mini .np-actions{display:none}
+#np.mini .np-head{border-radius:22px;justify-content:center;padding:0;height:44px}
+
+.np-head{display:flex;align-items:center;gap:8px;padding:9px 12px;
+  background:rgba(103,171,47,.07);border-bottom:1px solid rgba(103,171,47,.13);
+  cursor:move;user-select:none;flex-shrink:0;border-radius:14px 14px 0 0}
+.np-ico{font-size:14px;flex-shrink:0}
+.np-title{font-size:10px;font-weight:700;color:#A8D878;letter-spacing:.08em;text-transform:uppercase;flex:1}
+.np-actions{display:flex;gap:3px}
+.np-btn{width:22px;height:22px;border-radius:5px;border:none;background:rgba(255,255,255,.05);
+  color:rgba(255,255,255,.45);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.np-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+
+.np-body{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+.np-body::-webkit-scrollbar{width:3px}
+.np-body::-webkit-scrollbar-thumb{background:rgba(103,171,47,.2);border-radius:3px}
+
+.sec{border-radius:8px;border:1px solid rgba(255,255,255,.07);overflow:hidden}
+.sec-h{display:flex;align-items:center;gap:6px;padding:6px 9px;
+  background:rgba(255,255,255,.04);border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer}
+.sec-h:hover{background:rgba(255,255,255,.07)}
+.sec-em{font-size:11px;flex-shrink:0}
+.sec-nm{font-size:10px;font-weight:600;color:rgba(255,255,255,.5);letter-spacing:.05em;text-transform:uppercase;flex:1}
+.sec-ar{font-size:8px;color:rgba(255,255,255,.25);transition:transform .15s}
+.sec.cl .sec-ar{transform:rotate(-90deg)}
+.sec.cl .sec-bd{display:none}
+.sec-bd{padding:7px}
+textarea{width:100%;min-height:65px;resize:vertical;background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:7px;color:#E8F0E0;
+  font-family:'DM Sans',sans-serif;font-size:12px;line-height:1.5;outline:none;transition:border-color .15s}
+textarea:focus{border-color:rgba(103,171,47,.4);background:rgba(103,171,47,.04)}
+textarea::placeholder{color:rgba(255,255,255,.18)}
+
+.np-foot{padding:9px 11px;border-top:1px solid rgba(103,171,47,.13);
+  display:flex;gap:6px;align-items:center;flex-shrink:0}
+.np-info{flex:1;font-size:10px;color:rgba(255,255,255,.28);line-height:1.3}
+.np-info em{color:rgba(103,171,47,.65);font-style:normal}
+.btn-grv{padding:6px 13px;border-radius:7px;background:linear-gradient(135deg,#3a6b1a,#274f10);
+  border:1px solid rgba(103,171,47,.32);color:#A8D878;font-size:11px;font-weight:700;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .15s;white-space:nowrap}
+.btn-grv:hover{background:linear-gradient(135deg,#4a8b22,#3a6b18)}
+
+/* Toast */
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%) translateY(16px);
+  background:rgba(18,28,18,.98);border:1px solid rgba(103,171,47,.32);border-radius:9px;
+  padding:9px 16px;font-size:12px;color:#A8D878;font-weight:600;
+  opacity:0;transition:opacity .22s,transform .22s;z-index:9999;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-marca">⛶ Apresentação</div>
+  <div class="topbar-proj" id="tp-nome"></div>
+  <div class="topbar-btns">
+    <button class="tbtn" onclick="toggleNP()">📝 Notas</button>
+    <button class="tbtn red" onclick="window.close()">✕ Fechar</button>
+  </div>
+</div>
+
+<div id="frame-wrap"><iframe id="fr" src="" title="Proposta"></iframe></div>
+
+<div id="np">
+  <div class="np-head" id="np-drag">
+    <span class="np-ico">📝</span>
+    <span class="np-title">Notas da Reunião</span>
+    <div class="np-actions">
+      <button class="np-btn" onclick="miniNP()" title="Minimizar">—</button>
+    </div>
+  </div>
+  <div class="np-body" id="np-body"></div>
+  <div class="np-foot">
+    <div class="np-info">Início: <em id="np-inicio">—</em></div>
+    <button class="btn-grv" onclick="saveReuniao()">💾 Guardar Reunião</button>
+  </div>
+</div>
+
+<div class="toast" id="tst"></div>
+
+<script>
+const PROJ_ID   = '${projId}';
+const PROJ_NOME = ${JSON.stringify(projNome)};
+const BASE_URL  = '${baseUrl}';
+const LS_KEY    = 'lm_reunioes_' + PROJ_ID;
+
+// Init
+const inicio = new Date();
+const hInicio = pad(inicio.getHours())+':'+pad(inicio.getMinutes());
+document.getElementById('tp-nome').textContent  = PROJ_NOME;
+document.getElementById('np-inicio').textContent = hInicio;
+document.getElementById('fr').src = BASE_URL + '?p=' + PROJ_ID;
+
+function pad(n){ return String(n).padStart(2,'0'); }
+
+// Secções
+const SECS = [
+  {id:'geral',    em:'💬', nm:'Geral',           ph:'Observações gerais da reunião…'},
+  {id:'cliente',  em:'👤', nm:'Cliente',         ph:'Preferências, reacções, dúvidas do cliente…'},
+  {id:'proposta', em:'📋', nm:'Proposta',         ph:'Ajustes à proposta, valores discutidos…'},
+  {id:'proximos', em:'🎯', nm:'Próximos Passos',  ph:'O que ficou acordado para fazer a seguir…'},
+  {id:'decisoes', em:'✅', nm:'Decisões',         ph:'Decisões tomadas durante a reunião…'},
 ];
 
-let _secaoAberta = null;
-let _notasTemp   = {}; // notas em edição nesta sessão
+const body = document.getElementById('np-body');
+body.innerHTML = SECS.map((s,i)=>
+  '<div class="sec'+(i>0?' cl':'')+'" id="sec-'+s.id+'">'+
+  '<div class="sec-h" onclick="toggleSec(\\'' +s.id+ '\\')">'+
+  '<span class="sec-em">'+s.em+'</span>'+
+  '<span class="sec-nm">'+s.nm+'</span>'+
+  '<span class="sec-ar">▾</span></div>'+
+  '<div class="sec-bd"><textarea id="ta-'+s.id+'" placeholder="'+s.ph+'"></textarea></div>'+
+  '</div>'
+).join('');
 
-// ── Ativar modo apresentação ──────────────────────
+function toggleSec(id){ document.getElementById('sec-'+id)?.classList.toggle('cl'); }
 
-export function ativarModoApresentacao(projetoId) {
-  const proj = getState('projetos')?.find(p => p.id === projetoId);
-  if (!proj) return;
+// Toggle / Mini painel
+function toggleNP(){
+  const p=document.getElementById('np');
+  p.classList.toggle('hidden');
+  if(p.classList.contains('mini')) p.classList.remove('mini');
+}
+function miniNP(){ document.getElementById('np').classList.toggle('mini'); }
 
-  // Guardar projeto atual
-  setState({ projAtualId: projetoId });
+// Drag
+(function(){
+  const p=document.getElementById('np'), h=document.getElementById('np-drag');
+  let sx=0,sy=0,drag=false;
+  h.addEventListener('mousedown',e=>{
+    if(e.target.tagName==='BUTTON') return;
+    drag=true; sx=e.clientX-p.offsetLeft; sy=e.clientY-p.offsetTop;
+    p.style.right='auto'; e.preventDefault();
+  });
+  document.addEventListener('mousemove',e=>{if(!drag)return;p.style.left=(e.clientX-sx)+'px';p.style.top=(e.clientY-sy)+'px';});
+  document.addEventListener('mouseup',()=>{drag=false;});
+})();
 
-  // Entrar em fullscreen
-  const el = document.documentElement;
-  if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
-
-  // Adicionar classe ao body
-  document.body.classList.add('modo-apresentacao');
-
-  // Esconder elementos do painel
-  document.getElementById('view-painel')?.classList.remove('active');
-
-  // Mostrar a página do cliente (já existe no DOM)
-  document.getElementById('view-cliente')?.classList.add('active');
-
-  // Render da página do cliente
-  window._clienteModule?.renderPaginaCliente(proj);
-
-  // Injetar o bloco de notas
-  _injetarBlocoNotas(proj);
-
-  // Botão de saída
-  _injetarBotaoSaida(projetoId);
+// Guardar reunião
+function saveReuniao(){
+  const agora=new Date();
+  const data=agora.toLocaleDateString('pt-PT');
+  const hora=pad(agora.getHours())+':'+pad(agora.getMinutes());
+  const notas={};
+  SECS.forEach(s=>{ const v=document.getElementById('ta-'+s.id)?.value?.trim(); if(v) notas[s.id]=v; });
+  if(!Object.values(notas).some(v=>v)){ toast('Sem notas para guardar'); return; }
+  const r={id:Date.now(),data,hora,horaInicio:hInicio,projId:PROJ_ID,projNome:PROJ_NOME,notas};
+  try{
+    const lista=JSON.parse(localStorage.getItem(LS_KEY)||'[]');
+    lista.unshift(r);
+    localStorage.setItem(LS_KEY,JSON.stringify(lista));
+  }catch(_){}
+  toast('✓ Reunião guardada — '+data+' '+hora);
+  setTimeout(()=>{
+    if(confirm('Reunião guardada! Limpar notas para nova sessão?')){
+      SECS.forEach(s=>{ const el=document.getElementById('ta-'+s.id); if(el) el.value=''; });
+    }
+  },350);
 }
 
-// ── Sair do modo apresentação ─────────────────────
+function toast(msg){
+  const t=document.getElementById('tst');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+<\/script>
+</body></html>`;
+}
 
+// ── Ativar Modo Apresentação ──────────────────────
+export function ativarModoApresentacao(id) {
+  const p = getProjects().find(x => x.id === id);
+  if (!p) return;
+
+  const base = window.location.origin + window.location.pathname;
+  const sw = window.screen.width;
+  const sh = window.screen.height;
+  const w  = Math.min(1280, sw);
+  const left = sw - w;
+
+  const win = window.open(
+    'about:blank',
+    `apres_${id}`,
+    `width=${w},height=${sh},left=${left},top=0,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes`
+  );
+
+  if (!win) {
+    mostrarToast('⚠️ Janela bloqueada', 'Permite janelas popup para usar o Modo Apresentação.');
+    return;
+  }
+
+  win.document.open();
+  win.document.write(buildWindowHTML(id, p.nome || '—', base));
+  win.document.close();
+
+  mostrarToast('⛶ Modo Apresentação', `A abrir "${p.nome || 'proposta'}" numa nova janela.`);
+}
+
+// ── Sair ──────────────────────────────────────────
 export function sairModoApresentacao() {
-  document.body.classList.remove('modo-apresentacao');
+  setState({ modoApresentacao: false, projApresentacaoId: null });
+}
 
-  // Sair de fullscreen
-  if (document.exitFullscreen && document.fullscreenElement) {
-    document.exitFullscreen().catch(() => {});
+// ── Histórico de reuniões (para painel de edição) ─
+export function carregarHistoricoReunioes(projId) {
+  return carregarReunioes(projId);
+}
+
+export function renderHistoricoReunioes(projId, containerEl) {
+  if (!containerEl) return;
+  const lista = carregarReunioes(projId);
+  const LABELS = {
+    geral:'💬 Geral', cliente:'👤 Cliente', proposta:'📋 Proposta',
+    proximos:'🎯 Próximos Passos', decisoes:'✅ Decisões',
+  };
+
+  if (!lista.length) {
+    containerEl.innerHTML = `<p class="form-note" style="color:rgba(255,255,255,.3);font-style:italic;padding:8px 0">Sem reuniões registadas para este projeto.</p>`;
+    return;
   }
 
-  // Remover elementos injetados
-  document.getElementById('bloco-notas')?.remove();
-  document.getElementById('btn-sair-apresentacao')?.remove();
-
-  // Voltar ao painel
-  document.getElementById('view-cliente')?.classList.remove('active');
-  document.getElementById('view-painel')?.classList.add('active');
-
-  _secaoAberta = null;
-  _notasTemp   = {};
-}
-
-// ── Injetar botão de saída ────────────────────────
-
-function _injetarBotaoSaida(projetoId) {
-  document.getElementById('btn-sair-apresentacao')?.remove();
-  const btn = document.createElement('button');
-  btn.id        = 'btn-sair-apresentacao';
-  btn.innerHTML = '✕ Sair';
-  btn.onclick   = sairModoApresentacao;
-  document.body.appendChild(btn);
-}
-
-// ── Injetar bloco de notas ────────────────────────
-
-function _injetarBlocoNotas(proj) {
-  document.getElementById('bloco-notas')?.remove();
-
-  const bloco = document.createElement('div');
-  bloco.id    = 'bloco-notas';
-  bloco.innerHTML = `
-    <div id="bloco-notas-toggle" onclick="window._toggleBlocoNotas()">
-      <span class="bloco-notas-icon">📝</span>
-      <span class="bloco-notas-label">Notas</span>
-      <span class="bloco-notas-count" id="bloco-notas-count"></span>
-      <span class="bloco-notas-arrow" id="bloco-notas-arrow">▲</span>
-    </div>
-    <div id="bloco-notas-body" class="bloco-notas-body">
-      <div class="bloco-seccoes" id="bloco-seccoes">
-        ${SECCOES.map(s => `
-          <button class="bloco-seccao-btn" id="btn-sec-${s.id}"
-            onclick="window._abrirSecaoNota('${s.id}')">
-            <span class="bloco-seccao-icon">${s.icon}</span>
-            <span class="bloco-seccao-label">${s.label}</span>
-            <span class="bloco-seccao-badge" id="badge-sec-${s.id}" style="display:none">●</span>
-          </button>`).join('')}
+  containerEl.innerHTML = lista.map(r => `
+    <div style="margin-bottom:8px;border:1px solid rgba(103,171,47,.15);border-radius:8px;overflow:hidden">
+      <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'"
+           style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(103,171,47,.07);cursor:pointer">
+        <span>📅</span>
+        <span style="font-size:12px;font-weight:600;color:#A8D878;flex:1">${r.data} — ${r.hora}</span>
+        ${r.horaInicio ? `<span style="font-size:10px;color:rgba(255,255,255,.3)">Início: ${r.horaInicio}</span>` : ''}
+        <button onclick="event.stopPropagation();window._apagarReuniaoLocal(${r.id},'${projId}')"
+                style="background:none;border:none;color:rgba(220,80,80,.5);cursor:pointer;font-size:15px;line-height:1;padding:0 2px">×</button>
       </div>
-      <div id="bloco-editor" class="bloco-editor" style="display:none">
-        <div class="bloco-editor-header">
-          <button class="bloco-editor-voltar" onclick="window._voltarSeccoes()">← Voltar</button>
-          <span class="bloco-editor-titulo" id="bloco-editor-titulo"></span>
-        </div>
-        <textarea
-          id="bloco-nota-input"
-          class="bloco-nota-textarea"
-          placeholder="Escreve aqui a nota desta secção…"
-          oninput="window._autoGuardarNota()"
-        ></textarea>
-        <div class="bloco-editor-footer">
-          <span class="bloco-editor-hint">Guardado automaticamente</span>
-          <button class="bloco-guardar-btn" onclick="window._guardarTodasNotas()">
-            💾 Guardar no projeto
-          </button>
-        </div>
+      <div style="padding:10px 12px;display:flex;flex-direction:column;gap:6px">
+        ${Object.entries(r.notas || {}).map(([k,v]) => `
+          <div style="font-size:11px">
+            <div style="color:rgba(103,171,47,.7);font-weight:600;margin-bottom:2px">${LABELS[k]||k}</div>
+            <div style="color:rgba(255,255,255,.6);line-height:1.5;white-space:pre-wrap">${v}</div>
+          </div>`).join('')}
       </div>
-    </div>
-  `;
-  document.body.appendChild(bloco);
-
-  // Inicializar notas com o que já existe no projeto
-  _notasTemp = {};
-  (proj.notasApresentacao || []).forEach(n => {
-    _notasTemp[n.secao] = n.texto;
-  });
-  _atualizarBadges();
-
-  // Começar fechado
-  bloco.classList.add('fechado');
-  document.getElementById('bloco-notas-arrow').textContent = '▲';
+    </div>`).join('');
 }
 
-// ── Toggle abrir/fechar ───────────────────────────
-
-window._toggleBlocoNotas = function () {
-  const bloco  = document.getElementById('bloco-notas');
-  const arrow  = document.getElementById('bloco-notas-arrow');
-  const fechado = bloco.classList.toggle('fechado');
-  arrow.textContent = fechado ? '▲' : '▼';
-  if (!fechado && _secaoAberta) _abrirSecaoNota(_secaoAberta);
-};
-
-// ── Abrir editor de uma secção ────────────────────
-
-window._abrirSecaoNota = function (secaoId) {
-  _secaoAberta = secaoId;
-  const sec    = SECCOES.find(s => s.id === secaoId);
-
-  // Abrir o bloco se estiver fechado
-  const bloco = document.getElementById('bloco-notas');
-  if (bloco.classList.contains('fechado')) {
-    bloco.classList.remove('fechado');
-    document.getElementById('bloco-notas-arrow').textContent = '▼';
-  }
-
-  // Mostrar editor, esconder lista
-  document.getElementById('bloco-seccoes').style.display = 'none';
-  document.getElementById('bloco-editor').style.display  = 'flex';
-
-  // Preencher título e texto
-  document.getElementById('bloco-editor-titulo').textContent = `${sec.icon} ${sec.label}`;
-  document.getElementById('bloco-nota-input').value = _notasTemp[secaoId] || '';
-
-  // Destacar botão ativo
-  document.querySelectorAll('.bloco-seccao-btn').forEach(b => b.classList.remove('ativo'));
-  document.getElementById(`btn-sec-${secaoId}`)?.classList.add('ativo');
-
-  // Foco no textarea
-  setTimeout(() => document.getElementById('bloco-nota-input')?.focus(), 100);
-};
-
-// ── Voltar à lista de secções ─────────────────────
-
-window._voltarSeccoes = function () {
-  _secaoAberta = null;
-  document.getElementById('bloco-seccoes').style.display = 'grid';
-  document.getElementById('bloco-editor').style.display  = 'none';
-  document.querySelectorAll('.bloco-seccao-btn').forEach(b => b.classList.remove('ativo'));
-};
-
-// ── Auto-guardar nota no estado temporário ─────────
-
-window._autoGuardarNota = function () {
-  if (!_secaoAberta) return;
-  const texto = document.getElementById('bloco-nota-input')?.value || '';
-  _notasTemp[_secaoAberta] = texto;
-  _atualizarBadges();
-};
-
-// ── Atualizar badges de secções com notas ─────────
-
-function _atualizarBadges() {
-  let total = 0;
-  SECCOES.forEach(s => {
-    const badge = document.getElementById(`badge-sec-${s.id}`);
-    const temNota = !!_notasTemp[s.id]?.trim();
-    if (badge) badge.style.display = temNota ? '' : 'none';
-    if (temNota) total++;
-  });
-  const count = document.getElementById('bloco-notas-count');
-  if (count) count.textContent = total > 0 ? total : '';
-}
-
-// ── Guardar todas as notas no Firebase ────────────
-
-window._guardarTodasNotas = async function () {
-  const projId = getState('projAtualId');
-  if (!projId) return;
-
-  const projetos = getState('projetos');
-  const proj     = projetos.find(p => p.id === projId);
-  if (!proj) return;
-
-  // Converter notas para array
-  const notasApresentacao = Object.entries(_notasTemp)
-    .filter(([, txt]) => txt?.trim())
-    .map(([secao, texto]) => {
-      const sec = SECCOES.find(s => s.id === secao);
-      return {
-        secao,
-        label: sec?.label || secao,
-        texto: texto.trim(),
-        data:  new Date().toLocaleDateString('pt-PT'),
-      };
-    });
-
-  proj.notasApresentacao = notasApresentacao;
-
+// ── Apagar reunião individual ─────────────────────
+window._apagarReuniaoLocal = function(reuniaoId, projId) {
   try {
-    await guardar(proj);
-    mostrarToast('✓ Notas guardadas', `${notasApresentacao.length} secção(ões) com notas`);
-  } catch (e) {
-    mostrarToast('Erro ao guardar', e.message);
-  }
+    const key  = LS_KEY(projId);
+    const nova = (JSON.parse(localStorage.getItem(key)||'[]')).filter(r => r.id !== reuniaoId);
+    localStorage.setItem(key, JSON.stringify(nova));
+    const cont = document.getElementById('reunioes-historico-lista');
+    if (cont) renderHistoricoReunioes(projId, cont);
+  } catch(_) {}
 };

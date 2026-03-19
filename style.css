@@ -1313,3 +1313,23 @@ img   { display: block; max-width: 100%; }
   border: none !important;
   font-weight: 700 !important;
 }
+
+/* ── Modo Apresentação — Botão card ── */
+.btn-apresentar {
+  background: linear-gradient(135deg, #1a3010, #254518) !important;
+  color: #A8D878 !important;
+  border: 1px solid rgba(103,171,47,.35) !important;
+  font-weight: 700 !important;
+  letter-spacing: .02em;
+}
+.btn-apresentar:hover {
+  background: linear-gradient(135deg, #244015, #2e5520) !important;
+}
+
+/* ── Bloco Reuniões no modal ── */
+#reunioes-historico-lista {
+  margin-top: 6px;
+}
+#reunioes-historico-lista .reuniao-header {
+  transition: background .15s;
+}

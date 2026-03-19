@@ -394,6 +394,13 @@
         <button class="btn-add" onclick="window.addDoc()">+ Documento</button>
       </div>
 
+      <!-- Histórico de Reuniões -->
+      <div class="form-bloco collapsed" id="bloco-reunioes" style="display:none">
+        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>📅 Reuniões</span><span class="accordion-arrow">&#9662;</span></div>
+        <div class="form-note">Notas guardadas durante sessões de apresentação desta proposta.</div>
+        <div id="reunioes-historico-lista"></div>
+      </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn-cancelar" onclick="window.fecharModal()">Cancelar</button>
