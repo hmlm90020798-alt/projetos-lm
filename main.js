@@ -190,6 +190,8 @@ function popularTiposSelect() {
     clearTimeout(window._loginFallbackTimer);
     const o = document.getElementById('loading-overlay');
     if (user) {
+      // Forçar refresh do token para garantir que o Firestore o reconhece
+      await user.getIdToken(true);
       await carregar();
       await carregarReclamacoesFirebase(); // pré-carrega reclamações do Firebase
       await carregarGroqKey(); // carrega chave Groq do Firebase para localStorage
