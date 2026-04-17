@@ -3,7 +3,7 @@
 // ════════════════════════════════════════════════
 
 import { getState, setState, getProjects, getEditId } from './state.js';
-import { guardar, apagar, verificarAprovacoes, carregarVisitas } from './firebase.js';
+import { guardar, apagar, iniciarListenerAprovacoes, carregarVisitas } from './firebase.js';
 import { mostrarToast, setView, fmt, gerarId, dataHoje, formatarData } from './ui.js';
 import { getAlertasReclamacoes } from './reclamacoes.js';
 import { renderHistoricoReunioes } from './modo-apresentacao.js';
@@ -928,6 +928,25 @@ export function gerarPDF(id) {
   window.open(url, '_blank');
 }
 
+export function exportarProjetos() {
+  const lista = getProjects();
+  if (!lista.length) { mostrarToast('Sem dados para exportar', ''); return; }
+  const limpa = lista.map(p => {
+    const { imagens, ...resto } = p;
+    return { ...resto, imagens: (imagens || []).map((_, i) => `[imagem_${i+1}]`) };
+  });
+  const json  = JSON.stringify(limpa, null, 2);
+  const blob  = new Blob([json], { type: 'application/json' });
+  const url   = URL.createObjectURL(blob);
+  const a     = document.createElement('a');
+  const data  = new Date().toISOString().split('T')[0];
+  a.href      = url;
+  a.download  = `projetos-lm-backup-${data}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  mostrarToast('✓ Backup exportado', `${lista.length} projetos guardados`);
+}
+
 export function setFiltro(btnEl, filtro) {
   setState({ filtroAtivo: filtro });
   document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('active'));
@@ -964,8 +983,8 @@ export function iniciarPollingAprovacoes() {
     mostrarToast(`🎉 ${p.nome||'Cliente'} aprovou!`, `${d.aprovacao.data} às ${d.aprovacao.hora||'--:--'}`);
     renderPainel();
   };
-  verificarAprovacoes(handler);
-  setInterval(() => verificarAprovacoes(handler), 120000);
+  if (window._cancelarListeners) window._cancelarListeners();
+  window._cancelarListeners = iniciarListenerAprovacoes(handler);
 }
 
 // ── Separadores (tabs) ────────────────────────────
