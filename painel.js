@@ -1009,6 +1009,31 @@ export function setTab(btnEl, tab) {
 
 // ── Alertas & Agenda ──────────────────────────────
 
+const LS_ALERTAS_DISPENSADOS = 'projetos_lm_alertas_dispensados';
+
+function alertasDispensados() {
+  try { return JSON.parse(localStorage.getItem(LS_ALERTAS_DISPENSADOS) || '{}'); }
+  catch { return {}; }
+}
+
+function dispensarAlerta(chave) {
+  const d = alertasDispensados();
+  d[chave] = new Date().toISOString().split('T')[0];
+  localStorage.setItem(LS_ALERTAS_DISPENSADOS, JSON.stringify(d));
+  renderAlertas();
+}
+
+// Limpar automaticamente dispensados com mais de 30 dias
+function limparDispensadosAntigos() {
+  const d     = alertasDispensados();
+  const limite = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+  let alterado = false;
+  for (const k in d) { if (d[k] < limite) { delete d[k]; alterado = true; } }
+  if (alterado) localStorage.setItem(LS_ALERTAS_DISPENSADOS, JSON.stringify(d));
+}
+
+window.dispensarAlerta = dispensarAlerta;
+
 export function renderAlertas() {
   const lista  = getProjects();
   const hoje   = new Date();
@@ -1090,15 +1115,29 @@ export function renderAlertas() {
   alertas.sort((a, b) => a.ordem - b.ordem);
   agenda.sort((a, b) => a.data - b.data);
 
+  // Filtrar alertas dispensados
+  limparDispensadosAntigos();
+  const dispensados = alertasDispensados();
+  const alertasFiltrados = alertas.filter(a => {
+    const chave = `${a.id}_${a.tipo}`;
+    return !dispensados[chave];
+  });
+
   const corLabel = { urgente: 'Urgente', aviso: 'Atenção', info: 'Info', ok: 'Em curso' };
 
-  const alertasHtml = alertas.length ? alertas.map(a => `
-    <div class="alerta-card alerta-${a.cor}" onclick="window.abrirProjetoDoAlerta('${a.id}')" style="cursor:pointer">
-      <div class="alerta-tipo alerta-tipo-${a.cor}">${a.tipo}</div>
-      <div class="alerta-nome">${a.nome}</div>
-      <div class="alerta-detalhe">${a.sub}</div>
-      ${a.data ? `<div class="alerta-data">${a.data}</div>` : ''}
-    </div>`).join('')
+  const alertasHtml = alertasFiltrados.length ? alertasFiltrados.map(a => {
+    const chave = `${a.id}_${a.tipo}`;
+    return `
+    <div class="alerta-card alerta-${a.cor}">
+      <div class="alerta-card-inner" onclick="window.abrirProjetoDoAlerta('${a.id}')" style="cursor:pointer;flex:1">
+        <div class="alerta-tipo alerta-tipo-${a.cor}">${a.tipo}</div>
+        <div class="alerta-nome">${a.nome}</div>
+        <div class="alerta-detalhe">${a.sub}</div>
+        ${a.data ? `<div class="alerta-data">${a.data}</div>` : ''}
+      </div>
+      <button class="alerta-dispensar" onclick="event.stopPropagation();window.dispensarAlerta('${chave}')" title="Dispensar alerta">×</button>
+    </div>`;
+  }).join('')
   : `<p class="tab-vazio">✓ Sem alertas activos — tudo em ordem.</p>`;
 
   const hoje2 = new Date(); hoje2.setHours(0,0,0,0);
@@ -1117,9 +1156,9 @@ export function renderAlertas() {
   }).join('')
   : `<p class="tab-vazio">Sem eventos nos próximos 14 dias.</p>`;
 
-  // Atualizar badge
+  // Atualizar badge — só alertas não dispensados
   const badge = document.getElementById('tab-badge-alertas');
-  if (badge) { badge.textContent = alertas.length || ''; badge.style.display = alertas.length ? '' : 'none'; }
+  if (badge) { badge.textContent = alertasFiltrados.length || ''; badge.style.display = alertasFiltrados.length ? '' : 'none'; }
 
   // Alertas de reclamações
   let reclamacoesHtml = '';

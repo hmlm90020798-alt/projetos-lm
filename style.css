@@ -105,7 +105,6 @@ img   { display: block; max-width: 100%; }
 .view.active          { display: block; }
 #view-login.active    { display: flex; flex-direction: column; align-items: center; justify-content: center; }
 #view-expirada.active { display: flex; align-items: center; justify-content: center; }
-#view-erro-rede.active { display: flex; align-items: center; justify-content: center; }
 
 /* ──────────────────────────────────────────────
    3. LOGIN
@@ -534,8 +533,6 @@ img   { display: block; max-width: 100%; }
 .btn-topo           { display: none; }
 .btn-hero-primary   { padding: 13px 24px; background: var(--green); border: none; border-radius: 8px; color: #fff; font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; }
 .btn-hero-primary:hover { background: var(--green-mid); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(44,94,26,.4); }
-.btn-hero-secondary { padding: 13px 24px; background: transparent; border: 1px solid rgba(245,242,236,.2); border-radius: 8px; color: rgba(245,242,236,.6); font-family: var(--sans); font-size: 13px; font-weight: 600; cursor: pointer; text-decoration: none; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; }
-.btn-hero-secondary:hover { border-color: rgba(245,242,236,.4); color: #F5F2EC; }
 .btn-hero-approve   { padding: 13px 24px; background: var(--champ); border: none; border-radius: 8px; color: var(--dark); font-family: var(--sans); font-size: 13px; font-weight: 700; cursor: pointer; text-decoration: none; transition: all .2s; display: inline-flex; align-items: center; gap: 8px; }
 .btn-hero-approve:hover { background: var(--champ-light); transform: translateY(-1px); }
 
@@ -703,7 +700,6 @@ img   { display: block; max-width: 100%; }
 .footer-inner a     { color: rgba(245,242,236,.3); text-decoration: none; border-bottom: 1px solid rgba(245,242,236,.15); }
 
 #view-expirada      { min-height: 100vh; background: var(--dark); flex-direction: column; text-align: center; padding: 40px; }
-#view-erro-rede     { min-height: 100vh; background: var(--dark); flex-direction: column; text-align: center; padding: 40px; }
 .exp-wrap           { max-width: 440px; }
 .exp-icon           { font-size: 52px; margin-bottom: 20px; }
 .exp-titulo         { font-family: var(--serif); font-size: 36px; color: #F5F2EC; margin-bottom: 14px; }
@@ -807,7 +803,6 @@ img   { display: block; max-width: 100%; }
   #view-painel,
   #view-login,
   #view-expirada,
-  #view-erro-rede,
   .lightbox { display: none !important; }
 
   /* Mostrar só a vista cliente */
@@ -961,8 +956,11 @@ img   { display: block; max-width: 100%; }
 
 /* ── Alertas ── */
 .alerta-grid       { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 12px; }
-.alerta-card       { background: rgba(255,255,255,.92); border: 1.5px solid rgba(255,255,255,.5); border-radius: 10px; padding: 14px 16px; cursor: default; transition: border-color .15s; backdrop-filter: blur(8px); }
+.alerta-card       { background: rgba(255,255,255,.92); border: 1.5px solid rgba(255,255,255,.5); border-radius: 10px; padding: 14px 16px; cursor: default; transition: border-color .15s; backdrop-filter: blur(8px); display: flex; align-items: flex-start; gap: 8px; }
 .alerta-card:hover { border-color: var(--green); }
+.alerta-card-inner { flex: 1; }
+.alerta-dispensar  { background: none; border: none; cursor: pointer; color: rgba(0,0,0,.2); font-size: 18px; line-height: 1; padding: 0 2px; margin-top: -2px; flex-shrink: 0; transition: color .15s; }
+.alerta-dispensar:hover { color: rgba(0,0,0,.5); }
 .alerta-urgente    { border-left: 3px solid var(--red); border-radius: 0 10px 10px 0; }
 .alerta-aviso      { border-left: 3px solid var(--amber); border-radius: 0 10px 10px 0; }
 .alerta-info       { border-left: 3px solid #378ADD; border-radius: 0 10px 10px 0; }
