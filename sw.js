@@ -6,22 +6,22 @@
 const CACHE = 'projetos-lm-v1';
 
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/style.css',
-  '/main.js',
-  '/firebase.js',
-  '/painel.js',
-  '/cliente.js',
-  '/reclamacoes.js',
-  '/ocorrencias.js',
-  '/resumo-ia.js',
-  '/modo-apresentacao.js',
-  '/state.js',
-  '/ui.js',
-  '/i18n.js',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/projetos-lm/',
+  '/projetos-lm/index.html',
+  '/projetos-lm/style.css',
+  '/projetos-lm/main.js',
+  '/projetos-lm/firebase.js',
+  '/projetos-lm/painel.js',
+  '/projetos-lm/cliente.js',
+  '/projetos-lm/reclamacoes.js',
+  '/projetos-lm/ocorrencias.js',
+  '/projetos-lm/resumo-ia.js',
+  '/projetos-lm/modo-apresentacao.js',
+  '/projetos-lm/state.js',
+  '/projetos-lm/ui.js',
+  '/projetos-lm/i18n.js',
+  '/projetos-lm/icon-192.png',
+  '/projetos-lm/icon-512.png',
   'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap',
 ];
 
@@ -66,6 +66,6 @@ self.addEventListener('fetch', e => {
         }
         return response;
       });
-    }).catch(() => caches.match('/index.html'))
+    }).catch(() => caches.match('/projetos-lm/index.html'))
   );
 });

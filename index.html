@@ -6,16 +6,17 @@
 <title>Projetos LM · Hélder Melo</title>
 
 <!-- PWA — Manifest -->
-<link rel="manifest" href="/manifest.json">
+<link rel="manifest" href="/projetos-lm/manifest.json">
 
 <!-- PWA — iOS (Safari não usa o manifest para estas) -->
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Projetos LM">
-<link rel="apple-touch-icon" href="/icon-180.png">
-<link rel="apple-touch-icon" sizes="152x152" href="/icon-152.png">
-<link rel="apple-touch-icon" sizes="167x167" href="/icon-167.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
+<link rel="apple-touch-icon" href="/projetos-lm/icon-180.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/projetos-lm/icon-152.png">
+<link rel="apple-touch-icon" sizes="167x167" href="/projetos-lm/icon-167.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/projetos-lm/icon-180.png">
 
 <!-- PWA — Theme color (barra do browser) -->
 <meta name="theme-color" content="#0F1610">
@@ -29,7 +30,7 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(() => {});
+      navigator.serviceWorker.register('/projetos-lm/sw.js', { scope: '/projetos-lm/' }).catch(() => {});
     });
   }
 </script>
