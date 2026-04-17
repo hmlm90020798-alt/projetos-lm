@@ -150,6 +150,8 @@ img   { display: block; max-width: 100%; }
 .sync-saving        { color: rgba(245,242,236,.35); }
 .sync-saved         { color: var(--green-light); }
 .sync-error         { color: #FF7B7B; }
+.btn-exportar       { background: none; border: 1px solid rgba(255,255,255,.1); color: rgba(245,242,236,.4); font-family: var(--sans); font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all .15s; }
+.btn-exportar:hover { color: #F5F2EC; border-color: rgba(255,255,255,.25); }
 .btn-logout         { background: none; border: 1px solid rgba(255,255,255,.1); color: rgba(245,242,236,.4); font-family: var(--sans); font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: all .15s; }
 .btn-logout:hover   { color: #F5F2EC; border-color: rgba(255,255,255,.25); }
 .painel-body        { padding: 32px 28px; max-width: 1280px; margin: 0 auto; }

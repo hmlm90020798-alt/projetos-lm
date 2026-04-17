@@ -16,7 +16,7 @@ import { setView, mostrarToast } from './ui.js';
 import {
   renderPainel, abrirModalNovo, fecharModal, guardarProjeto,
   editarProjeto, apagarProjeto, verCliente, partilharCliente, gerarPDF,
-  setFiltro, setTab, renderAlertas, renderOcorrenciasTab, abrirProjetoDoAlerta,
+  setFiltro, setTab, renderAlertas, renderOcorrenciasTab, abrirProjetoDoAlerta, exportarProjetos,
   addLinhaElem, addCatElemExtra, addLinhaElemExtra,
   addCatOrcamento, addNota, addDoc, processarImagens, removerImagem, renderThumbs,
   atualizarTotalPreview, reiniciarPrazoForm, atualizarTipoProjeto,
@@ -44,6 +44,7 @@ window._clienteModule            = { renderPaginaCliente };
 // ── Exposição global ──────────────────────────────
 window.doLogin                  = () => loginHandler();
 window.doLogout                 = async () => { await doLogout(); localStorage.clear(); setView('login'); };
+window.exportarProjetos         = exportarProjetos;
 window.abrirResumoIA            = abrirResumoIA;
 window.fecharResumoIA           = fecharResumoIA;
 window.regenerarResumoIA        = regenerarResumoIA;
