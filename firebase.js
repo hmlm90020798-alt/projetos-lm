@@ -27,7 +27,7 @@
 
 import { initializeApp }                                        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, doc, setDoc, getDoc, getDocs,
-         collection, deleteDoc, updateDoc }                     from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+         collection, deleteDoc, updateDoc, onSnapshot }         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { getAuth, signInWithEmailAndPassword,
          signOut, onAuthStateChanged }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getState, setState }                                   from './state.js';
@@ -129,19 +129,25 @@ export async function carregarVisitas(ids) {
   return resultado;
 }
 
-// ── Polling de aprovações ─────────────────────────
-export async function verificarAprovacoes(onNova) {
+// ── Listener realtime de aprovações ──────────────
+// Substitui o polling de 2 em 2 minutos por um listener que reage
+// instantaneamente a qualquer alteração nos campos aprovacao e fase.
+// Retorna a função de cancelamento (chamar ao fazer logout).
+export function iniciarListenerAprovacoes(onNova) {
+  const unsubscribes = [];
   for (const p of getState('projetos')) {
-    try {
-      const snap = await getDoc(doc(_db, 'projetos', p.id));
-      if (!snap.exists()) continue;
-      const d   = snap.data();
+    const unsub = onSnapshot(doc(_db, 'projetos', p.id), snap => {
+      if (!snap.exists()) return;
+      const d    = snap.data();
       const nova = !p.aprovacao?.data && d.aprovacao?.data;
       p.aprovacao = d.aprovacao;
       p.fase      = d.fase;
       if (nova) onNova(p, d);
-    } catch (_) {}
+    }, () => {}); // ignora erros silenciosamente
+    unsubscribes.push(unsub);
   }
+  // Retorna função que cancela todos os listeners de uma vez
+  return () => unsubscribes.forEach(u => u());
 }
 
 // ── Auth ──────────────────────────────────────────

@@ -43,7 +43,7 @@ window._clienteModule            = { renderPaginaCliente };
 
 // ── Exposição global ──────────────────────────────
 window.doLogin                  = () => loginHandler();
-window.doLogout                 = async () => { await doLogout(); localStorage.clear(); setView('login'); };
+window.doLogout                 = async () => { if (window._cancelarListeners) window._cancelarListeners(); await doLogout(); localStorage.clear(); setView('login'); };
 window.exportarProjetos         = exportarProjetos;
 window.abrirResumoIA            = abrirResumoIA;
 window.fecharResumoIA           = fecharResumoIA;
