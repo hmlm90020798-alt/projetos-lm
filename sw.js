@@ -1,0 +1,71 @@
+// ════════════════════════════════════════════════
+// sw.js — Service Worker · Projetos LM
+// Cache dos assets estáticos para instalação PWA
+// ════════════════════════════════════════════════
+
+const CACHE = 'projetos-lm-v1';
+
+const ASSETS = [
+  '/',
+  '/index.html',
+  '/style.css',
+  '/main.js',
+  '/firebase.js',
+  '/painel.js',
+  '/cliente.js',
+  '/reclamacoes.js',
+  '/ocorrencias.js',
+  '/resumo-ia.js',
+  '/modo-apresentacao.js',
+  '/state.js',
+  '/ui.js',
+  '/i18n.js',
+  '/icon-192.png',
+  '/icon-512.png',
+  'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap',
+];
+
+// Instalar — cache dos assets
+self.addEventListener('install', e => {
+  e.waitUntil(
+    caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+  );
+});
+
+// Ativar — limpar caches antigas
+self.addEventListener('activate', e => {
+  e.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+    ).then(() => self.clients.claim())
+  );
+});
+
+// Fetch — network first para Firebase/API, cache first para assets estáticos
+self.addEventListener('fetch', e => {
+  const url = new URL(e.request.url);
+
+  // Firebase, Groq e APIs externas — sempre network, nunca cache
+  if (
+    url.hostname.includes('firestore.googleapis.com') ||
+    url.hostname.includes('firebase') ||
+    url.hostname.includes('groq.com') ||
+    url.hostname.includes('gstatic.com')
+  ) {
+    return; // deixa o browser tratar normalmente
+  }
+
+  // Assets estáticos — cache first, fallback network
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      return cached || fetch(e.request).then(response => {
+        // Cache respostas válidas de assets próprios
+        if (response.ok && url.origin === self.location.origin) {
+          const clone = response.clone();
+          caches.open(CACHE).then(cache => cache.put(e.request, clone));
+        }
+        return response;
+      });
+    }).catch(() => caches.match('/index.html'))
+  );
+});

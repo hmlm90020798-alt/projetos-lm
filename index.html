@@ -4,9 +4,35 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Projetos LM · Hélder Melo</title>
+
+<!-- PWA — Manifest -->
+<link rel="manifest" href="/manifest.json">
+
+<!-- PWA — iOS (Safari não usa o manifest para estas) -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Projetos LM">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="apple-touch-icon" sizes="152x152" href="/icon-152.png">
+<link rel="apple-touch-icon" sizes="167x167" href="/icon-167.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png">
+
+<!-- PWA — Theme color (barra do browser) -->
+<meta name="theme-color" content="#0F1610">
+<meta name="msapplication-TileColor" content="#0F1610">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+
+<!-- Service Worker -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
+</script>
 </head>
 <body>
 
@@ -542,17 +568,6 @@
     <h1 class="exp-titulo">Proposta Expirada</h1>
     <p class="exp-sub">O prazo de validade desta proposta terminou.<br>Contacte-nos para retomar o processo.</p>
     <a href="tel:917880364" class="btn-hero-primary" style="margin-top:28px;display:inline-flex">📞 917 880 364</a>
-  </div>
-</div>
-
-<!-- ══ ERRO DE REDE ══ -->
-<div id="view-erro-rede" class="view">
-  <div class="exp-wrap">
-    <div class="exp-icon" id="erro-rede-icon">📡</div>
-    <h1 class="exp-titulo" id="erro-rede-titulo">Sem ligação à internet</h1>
-    <p class="exp-sub" id="erro-rede-sub">Verifica a tua ligação e tenta novamente.</p>
-    <button id="erro-rede-retry" class="btn-hero-primary" style="margin-top:28px;display:inline-flex;border:none;cursor:pointer">↺ Tentar novamente</button>
-    <a href="tel:917880364" class="btn-hero-secondary" style="margin-top:12px;display:inline-flex">📞 917 880 364</a>
   </div>
 </div>
 
