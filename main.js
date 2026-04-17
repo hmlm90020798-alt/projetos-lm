@@ -16,7 +16,7 @@ import { setView, mostrarToast } from './ui.js';
 import {
   renderPainel, abrirModalNovo, fecharModal, guardarProjeto,
   editarProjeto, apagarProjeto, verCliente, partilharCliente, gerarPDF,
-  setFiltro, setTab, renderAlertas, renderOcorrenciasTab, abrirProjetoDoAlerta, exportarProjetos,
+  setFiltro, setTab, renderAlertas, renderOcorrenciasTab, abrirProjetoDoAlerta,
   addLinhaElem, addCatElemExtra, addLinhaElemExtra,
   addCatOrcamento, addNota, addDoc, processarImagens, removerImagem, renderThumbs,
   atualizarTotalPreview, reiniciarPrazoForm, atualizarTipoProjeto,
@@ -43,8 +43,7 @@ window._clienteModule            = { renderPaginaCliente };
 
 // ── Exposição global ──────────────────────────────
 window.doLogin                  = () => loginHandler();
-window.doLogout                 = async () => { if (window._cancelarListeners) window._cancelarListeners(); await doLogout(); localStorage.clear(); setView('login'); };
-window.exportarProjetos         = exportarProjetos;
+window.doLogout                 = async () => { await doLogout(); setView('login'); };
 window.abrirResumoIA            = abrirResumoIA;
 window.fecharResumoIA           = fecharResumoIA;
 window.regenerarResumoIA        = regenerarResumoIA;
@@ -127,18 +126,33 @@ async function checkUrlParam() {
       setView('cliente');
       const btn = document.getElementById('btn-voltar-painel');
       if (btn) btn.style.display = 'none';
-      if (!isPrint) registarVisita(id); // não registar visita quando é PDF
-      // Activar print automaticamente se vier de ?print=1
-      if (isPrint) {
-        setTimeout(() => { window.print(); }, 800);
-      }
+      if (!isPrint) registarVisita(id);
+      if (isPrint) { setTimeout(() => { window.print(); }, 800); }
     } else {
+      // Projeto não existe — proposta expirada ou link inválido
       setView('expirada');
     }
-  } catch (_) {
-    setView('expirada');
+  } catch (err) {
+    // Erro de rede ou Firestore indisponível — mostra página de erro com retry
+    const isOffline = !navigator.onLine || err?.code === 'unavailable';
+    mostrarErroRede(id, isOffline);
   }
   return true;
+}
+
+// ── Erro de rede na vista do cliente ──────────────
+function mostrarErroRede(id, isOffline) {
+  const el = document.getElementById('erro-rede-icon');
+  const titulo = document.getElementById('erro-rede-titulo');
+  const sub    = document.getElementById('erro-rede-sub');
+  if (el)    el.textContent    = isOffline ? '📡' : '⚠️';
+  if (titulo) titulo.textContent = isOffline ? 'Sem ligação à internet' : 'Erro temporário';
+  if (sub)    sub.textContent    = isOffline
+    ? 'Verifica a tua ligação e tenta novamente.'
+    : 'Não foi possível carregar a proposta. Por favor tenta novamente.';
+  const btn = document.getElementById('erro-rede-retry');
+  if (btn) btn.onclick = () => { setView('loading-overlay'); checkUrlParam(); };
+  setView('erro-rede');
 }
 
 // ── Popular select de tipos ───────────────────────

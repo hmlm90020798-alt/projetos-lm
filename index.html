@@ -37,7 +37,6 @@
     </div>
     <div class="painel-header-right">
       <span class="sync-status" id="sync-status"></span>
-      <button class="btn-exportar" onclick="window.exportarProjetos()" title="Exportar backup dos projetos">⬇ Backup</button>
       <button class="btn-logout" onclick="window.doLogout()">Sair</button>
     </div>
   </header>
@@ -543,6 +542,17 @@
     <h1 class="exp-titulo">Proposta Expirada</h1>
     <p class="exp-sub">O prazo de validade desta proposta terminou.<br>Contacte-nos para retomar o processo.</p>
     <a href="tel:917880364" class="btn-hero-primary" style="margin-top:28px;display:inline-flex">📞 917 880 364</a>
+  </div>
+</div>
+
+<!-- ══ ERRO DE REDE ══ -->
+<div id="view-erro-rede" class="view">
+  <div class="exp-wrap">
+    <div class="exp-icon" id="erro-rede-icon">📡</div>
+    <h1 class="exp-titulo" id="erro-rede-titulo">Sem ligação à internet</h1>
+    <p class="exp-sub" id="erro-rede-sub">Verifica a tua ligação e tenta novamente.</p>
+    <button id="erro-rede-retry" class="btn-hero-primary" style="margin-top:28px;display:inline-flex;border:none;cursor:pointer">↺ Tentar novamente</button>
+    <a href="tel:917880364" class="btn-hero-secondary" style="margin-top:12px;display:inline-flex">📞 917 880 364</a>
   </div>
 </div>
 
