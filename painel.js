@@ -3,7 +3,7 @@
 // ════════════════════════════════════════════════
 
 import { getState, setState, getProjects, getEditId } from './state.js';
-import { guardar, apagar, iniciarListenerAprovacoes, carregarVisitas } from './firebase.js';
+import { guardar, apagar, verificarAprovacoes, carregarVisitas } from './firebase.js';
 import { mostrarToast, setView, fmt, gerarId, dataHoje, formatarData } from './ui.js';
 import { getAlertasReclamacoes } from './reclamacoes.js';
 import { renderHistoricoReunioes } from './modo-apresentacao.js';
@@ -167,12 +167,44 @@ export function renderPainel() {
   // Suportar id novo (stat-valor-display) e id legado (stat-valor)
   const displayEl = el('stat-valor-display') || el('stat-valor');
   const labelEl   = el('dash-valor-label');
-  if (displayEl) {
-    const val = _valorCardModo === 'global' ? _valorGlobalAtual : _valorMedioAtual;
-    displayEl.textContent = val > 0 ? fmt(val) : '—';
-  }
-  if (labelEl) {
-    labelEl.textContent = _valorCardModo === 'global' ? 'Valor Global' : 'Valor Médio';
+  const cardEl    = el('dash-card-valor');
+
+  // Se há filtro activo (não "todos"), mostrar soma dos projetos filtrados
+  const filtroAtivo = getState('filtroAtivo');
+  const isFiltrado  = filtroAtivo && filtroAtivo !== 'todos';
+
+  if (isFiltrado) {
+    // Calcular soma dos projetos que passam no filtro actual
+    const hoje = new Date();
+    const listaFiltrada = lista.filter(p => {
+      const pd  = p.prazo ? new Date(p.prazo + 'T23:59:59') : null;
+      const exp = pd && pd < hoje && faseOrdem(p.fase) < faseOrdem('aprovado');
+      return filtroAtivo === 'proposta'  ? (p.fase === 'proposta' || p.fase === 'retificacao') && !exp
+           : filtroAtivo === 'aprovado'  ? p.fase === 'aprovado'
+           : filtroAtivo === 'obra'      ? ['encomenda','entrega','montagem'].includes(p.fase)
+           : filtroAtivo === 'concluido' ? p.fase === 'concluido'
+           : filtroAtivo === 'expirado'  ? exp
+           : true;
+    });
+    const somaFiltrada = listaFiltrada.reduce((acc, p) => acc + (calcTotalProjeto(p) || 0), 0);
+    const FILTRO_LABEL = {
+      proposta:  'Total Em Análise',
+      aprovado:  'Total Aprovado',
+      obra:      'Total Em Obra',
+      concluido: 'Total Concluído',
+      expirado:  'Total Expirado',
+    };
+    if (displayEl) displayEl.textContent = somaFiltrada > 0 ? fmt(somaFiltrada) : '—';
+    if (labelEl)   labelEl.textContent   = FILTRO_LABEL[filtroAtivo] || 'Total Filtrado';
+    if (cardEl)    cardEl.classList.add('modo-global');
+  } else {
+    // Sem filtro — comportamento normal (média ou global)
+    if (displayEl) {
+      const val = _valorCardModo === 'global' ? _valorGlobalAtual : _valorMedioAtual;
+      displayEl.textContent = val > 0 ? fmt(val) : '—';
+    }
+    if (labelEl) labelEl.textContent = _valorCardModo === 'global' ? 'Valor Global' : 'Valor Médio';
+    if (cardEl)  cardEl.classList.remove('modo-global');
   }
   if (el('stat-tempo'))      el('stat-tempo').textContent      = db.tempoMedio !== null ? db.tempoMedio + 'd' : '—';
   if (el('stat-concluidos')) el('stat-concluidos').textContent = db.concluidos;
@@ -932,9 +964,8 @@ export function iniciarPollingAprovacoes() {
     mostrarToast(`🎉 ${p.nome||'Cliente'} aprovou!`, `${d.aprovacao.data} às ${d.aprovacao.hora||'--:--'}`);
     renderPainel();
   };
-  // Cancela listeners anteriores se existirem (ex: re-login)
-  if (window._cancelarListeners) window._cancelarListeners();
-  window._cancelarListeners = iniciarListenerAprovacoes(handler);
+  verificarAprovacoes(handler);
+  setInterval(() => verificarAprovacoes(handler), 120000);
 }
 
 // ── Separadores (tabs) ────────────────────────────
