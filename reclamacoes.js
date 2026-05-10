@@ -9,6 +9,7 @@ import { mostrarToast, gerarId, dataHoje } from './ui.js';
 import { carregarGroqKey, _db } from './firebase.js';
 import { doc, setDoc, getDocs, deleteDoc,
          collection } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { esc, nl2br }                          from './sanitize.js';
 
 // ── Storage ───────────────────────────────────────
 
@@ -175,10 +176,10 @@ function _renderCard(r) {
     <div class="rec-card ${dias !== null && dias <= 1 && r.estado !== 'resolvido' ? 'rec-card-urgente' : ''}">
       <div class="rec-card-header">
         <div class="rec-card-info">
-          <div class="rec-card-nome">${nome}</div>
+          <div class="rec-card-nome">${esc(nome)}</div>
           <div class="rec-card-meta">
-            ${r.refPc ? `<span>PC: ${r.refPc}</span>` : ''}
-            ${r.refOs ? `<span>OS: ${r.refOs}</span>` : ''}
+            ${r.refPc ? `<span>PC: ${esc(r.refPc)}</span>` : ''}
+            ${r.refOs ? `<span>OS: ${esc(r.refOs)}</span>` : ''}
             <span>${r.dataCriacao || ''}</span>
           </div>
         </div>
@@ -198,9 +199,9 @@ function _renderCard(r) {
                   onchange="window._toggleProblema('${r.id}',${i},this.checked)">
               </div>
               <div class="rec-problema-body">
-                <div class="rec-problema-tipo">${p.tipo||''}</div>
-                <div class="rec-problema-desc">${p.descricao||''}</div>
-                ${p.refLm?`<div class="rec-problema-ref">Ref. LM: <code>${p.refLm}</code></div>`:''}
+                <div class="rec-problema-tipo">${esc(p.tipo)}</div>
+                <div class="rec-problema-desc">${esc(p.descricao)}</div>
+                ${p.refLm?`<div class="rec-problema-ref">Ref. LM: <code>${esc(p.refLm)}</code></div>`:''}
               </div>
             </div>`).join('')}
         </div>` : ''}
@@ -310,8 +311,8 @@ window._filtrarClientes = function (termo) {
       style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:.65rem .9rem;background:var(--parchment);border:1px solid var(--border);border-radius:8px;cursor:pointer;text-align:left;transition:border-color .15s"
       onmouseover="this.style.borderColor='var(--green)'" onmouseout="this.style.borderColor='var(--border)'">
       <div>
-        <div style="font-weight:600;font-size:.9rem;color:var(--ink)">${p.nome||'—'}</div>
-        <div style="font-size:.78rem;color:var(--ink3);font-family:var(--mono)">${p.localidade||''}${p.refPc?' · PC: '+p.refPc:''}${p.refOs?' · OS: '+p.refOs:''}</div>
+        <div style="font-weight:600;font-size:.9rem;color:var(--ink)">${esc(p.nome) || '—'}</div>
+        <div style="font-size:.78rem;color:var(--ink3);font-family:var(--mono)">${esc(p.localidade)||''}${p.refPc?' · PC: '+esc(p.refPc):''}${p.refOs?' · OS: '+esc(p.refOs):''}</div>
       </div>
       <span style="color:var(--green);font-size:1.1rem">→</span>
     </button>`).join('');
@@ -410,9 +411,9 @@ function _adicionarMensagemIA(texto, opcoes = []) {
   div.innerHTML = `
     <div class="rec-msg-avatar">✦</div>
     <div class="rec-msg-bubble">
-      <p class="rec-msg-texto">${texto.replace(/\n/g,'<br>')}</p>
+      <p class="rec-msg-texto">${nl2br(texto)}</p>
       ${opcoes.length ? `<div class="rec-msg-opcoes">${opcoes.map(op =>
-        `<button class="rec-opcao-btn" onclick="window._escolherOpcao('${op.replace(/'/g,"\\'")}')">${op}</button>`
+        `<button class="rec-opcao-btn" onclick="window._escolherOpcao('${op.replace(/'/g,"\\'")}')">${esc(op)}</button>`
       ).join('')}</div>` : ''}
     </div>`;
   body.appendChild(div);
@@ -425,7 +426,7 @@ function _adicionarMensagemUser(texto) {
   if (!body) return;
   const div = document.createElement('div');
   div.className = 'rec-msg rec-msg-user';
-  div.innerHTML = `<div class="rec-msg-bubble rec-msg-bubble-user"><p class="rec-msg-texto">${texto.replace(/\n/g,'<br>')}</p></div>`;
+  div.innerHTML = `<div class="rec-msg-bubble rec-msg-bubble-user"><p class="rec-msg-texto">${nl2br(texto)}</p></div>`;
   body.appendChild(div);
   body.scrollTop = body.scrollHeight;
   _conversa.push({ role: 'user', content: texto });
@@ -606,8 +607,8 @@ async function _mostrarResumoFinal(resumo, proximosPassos) {
   div.className = 'rec-resumo-final';
   div.innerHTML = `
     <div class="rec-resumo-header">✦ Diagnóstico concluído</div>
-    ${resumo ? `<p class="rec-resumo-texto">${resumo.replace(/\n/g,'<br>')}</p>` : ''}
-    ${proximosPassos ? `<div class="rec-resumo-passos"><strong>Próximos passos:</strong><br>${proximosPassos.replace(/\n/g,'<br>')}</div>` : ''}
+    ${resumo ? `<p class="rec-resumo-texto">${nl2br(resumo)}</p>` : ''}
+    ${proximosPassos ? `<div class="rec-resumo-passos"><strong>Próximos passos:</strong><br>${nl2br(proximosPassos)}</div>` : ''}
     <div class="rec-resumo-alerta">
       ⏰ Alerta de acompanhamento definido para <strong>${dias !== null ? (dias === 0 ? 'hoje' : `${dias} dia${dias!==1?'s':''}`) : '3 dias'}</strong>
     </div>
@@ -670,7 +671,7 @@ window._abrirAnaliseIA = async function (recId) {
           <span class="resumo-icon">✦</span>
           <div>
             <div class="resumo-titulo">Análise IA · Reclamação</div>
-            <div class="resumo-sub">${nome}${rec.refPc?' · PC '+rec.refPc:''}</div>
+            <div class="resumo-sub">${esc(nome)}${rec.refPc?' · PC '+esc(rec.refPc):''}</div>
           </div>
         </div>
         <button class="modal-close" onclick="document.getElementById('modal-rec-ia').remove()">×</button>
