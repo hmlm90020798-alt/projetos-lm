@@ -7,6 +7,7 @@ import { getState, setState, getLang }          from './state.js';
 import { _db, registarVisita, aprovarClienteFirebase, carregarUm } from './firebase.js';
 import { mostrarToast }                         from './ui.js';
 import { doc, getDoc }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { esc, safeUrl, nl2br }                  from './sanitize.js';
 
 // ── Helpers ──────────────────────────────────────
 
@@ -128,9 +129,9 @@ function renderElementos(p) {
       <div class="elem-lista">
         ${g.itens.map(i => `
           <div class="elem-item">
-            <span class="elem-nome">${i.nome}</span>
+            <span class="elem-nome">${esc(i.nome)}</span>
             ${i.url
-              ? `<a href="${i.url}" target="_blank" rel="noopener noreferrer" class="elem-link">${tE.verArtigo}</a>`
+              ? `<a href="${safeUrl(i.url)}" target="_blank" rel="noopener noreferrer" class="elem-link">${tE.verArtigo}</a>`
               : ''}
           </div>`).join('')}
       </div>
@@ -321,8 +322,8 @@ function renderTimeline(p) {
   const tOc = T[getLang()].ocorrencias;
   const ocorrHtml = ocorrAtivas.map(o => `
     <div class="tl-ocorrencia">
-      <div class="tl-ocorrencia-tipo">⚠️ ${tOc.tipos[o.tipo] || o.tipo}</div>
-      <div class="tl-ocorrencia-desc">${o.descricao || ''}</div>
+      <div class="tl-ocorrencia-tipo">⚠️ ${esc(tOc.tipos[o.tipo] || o.tipo)}</div>
+      <div class="tl-ocorrencia-desc">${esc(o.descricao)}</div>
       <div class="tl-ocorrencia-estado">${tOc.emResolucao}</div>
     </div>`).join('');
 
@@ -457,7 +458,7 @@ function renderNotasCartoes(p) {
         <span class="nota-card-icon">📌</span>
         ${titulo || (lang === 'en' ? 'Important Note' : 'Nota Importante')}
       </div>
-      <p class="nota-card-texto">${texto.replace(/\n/g, '<br>')}</p>
+      <p class="nota-card-texto">${nl2br(texto)}</p>
     </div>`;
   }).join('');
 
@@ -469,7 +470,7 @@ function renderNotasCartoes(p) {
             <span class="nota-card-icon">${c.icon}</span>
             ${c.titulo}
           </div>
-          <p class="nota-card-texto">${c.texto}</p>
+          <p class="nota-card-texto">${nl2br(c.texto)}</p>
         </div>`).join('')}
       ${notasExtra}
     </div>`;
@@ -482,7 +483,7 @@ function renderDocumentos(docs, lang) {
   return `
     <div class="docs-grid">
       ${docs.map(d => `
-        <a href="${d.url}" target="_blank" rel="noopener noreferrer" class="doc-card">
+        <a href="${safeUrl(d.url)}" target="_blank" rel="noopener noreferrer" class="doc-card">
           <div class="doc-card-icon">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
               <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
@@ -490,7 +491,7 @@ function renderDocumentos(docs, lang) {
             </svg>
           </div>
           <div class="doc-card-info">
-            <div class="doc-card-nome">${d.nome}</div>
+            <div class="doc-card-nome">${esc(d.nome)}</div>
             <div class="doc-card-hint">${lang === 'en' ? '↗ Open document' : '↗ Abrir documento'}</div>
           </div>
         </a>`).join('')}
@@ -567,9 +568,9 @@ export function renderPaginaCliente(p) {
     <div class="hero-3d-block">
       <div class="hero-eyebrow">${tH.eyebrow}</div>
       <h1 class="hero-titulo">${tipoNome}</h1>
-      <div class="hero-para">${tH.para} <em>${nome}</em></div>
+      <div class="hero-para">${tH.para} <em>${esc(nome)}</em></div>
       <div class="hero-meta">
-        ${p.localidade ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${p.localidade}</div>` : ''}
+        ${p.localidade ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${esc(p.localidade)}</div>` : ''}
         ${validadeHtml}
       </div>
       ${prazoPassou
