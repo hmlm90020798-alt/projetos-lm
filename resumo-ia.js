@@ -1,7 +1,7 @@
 // ════════════════════════════════════════════════
 // resumo-ia.js — Resumo IA por projecto · Projetos LM
 // Usa a API Groq (llama-3.3-70b-versatile) — gratuito
-// API key guardada em localStorage (nunca vai para o GitHub)
+// API key guardada em memória por sessão (nunca no localStorage nem no GitHub)
 // Output estruturado em 4 blocos: Resumo · Próximo Passo · Mensagem · Conselho
 // ════════════════════════════════════════════════
 
@@ -9,27 +9,27 @@ import { getState } from './state.js';
 import { mostrarToast } from './ui.js';
 import { carregarGroqKey } from './firebase.js';
 
-// ── Gestão segura da API Key (localStorage + Firebase) ──
+// ── Gestão da API Key (apenas em memória + Firestore) ──
+// A chave NÃO é guardada no localStorage — apenas em memória por sessão.
 
-const LS_KEY = 'projetos_lm_groq_key';
+let _groqKeyCache = '';
 
 function obterApiKey() {
-  return localStorage.getItem(LS_KEY) || '';
+  return _groqKeyCache;
 }
 
 function guardarApiKey(key) {
-  localStorage.setItem(LS_KEY, key.trim());
+  _groqKeyCache = key.trim();
   if (window.guardarGroqKey) window.guardarGroqKey(key.trim());
 }
 
-// Tenta obter a chave do Firebase se não estiver no localStorage
+// Tenta obter a chave: primeiro memória, depois Firestore
 async function obterApiKeyComFallback() {
-  const local = obterApiKey();
-  if (local) return local;
-  // Navegador privado ou novo dispositivo — buscar directamente do Firebase
+  if (_groqKeyCache) return _groqKeyCache;
   try {
-    const key = await carregarGroqKey(); // também guarda no localStorage se encontrar
-    return key || '';
+    const key = await carregarGroqKey();
+    if (key) _groqKeyCache = key;
+    return _groqKeyCache;
   } catch (_) {
     return '';
   }
@@ -334,7 +334,7 @@ async function chamarAPI(prompt) {
     const err = await response.json().catch(() => ({}));
     const msg = err.error?.message || `Erro ${response.status}`;
     if (response.status === 401) {
-      localStorage.removeItem(LS_KEY);
+      _groqKeyCache = ''; // limpar cache em memória
       throw new Error('CHAVE_INVALIDA');
     }
     throw new Error(msg);
@@ -411,7 +411,7 @@ export async function abrirResumoIA(projetoId) {
 
   window._resumoIAProjId = projetoId;
 
-  // Tentar obter chave: primeiro localStorage, depois Firebase (modo privado/novo device)
+  // Tentar obter chave: primeiro cache em memória, depois Firestore
   const apiKey = await obterApiKeyComFallback();
   if (!apiKey) {
     mostrarConfigKey();

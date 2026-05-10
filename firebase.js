@@ -179,7 +179,7 @@ export async function carregarTemplates() {
 export async function guardarGroqKey(key) {
   try {
     await setDoc(doc(_db, 'config', 'groq'), { key });
-    localStorage.setItem('projetos_lm_groq_key', key);
+    // Chave guardada apenas no Firestore — nunca no localStorage
   } catch (e) { console.error('Erro ao guardar chave Groq:', e); }
 }
 
@@ -187,10 +187,8 @@ export async function carregarGroqKey() {
   try {
     const snap = await getDoc(doc(_db, 'config', 'groq'));
     if (snap.exists() && snap.data().key) {
-      const key = snap.data().key;
-      localStorage.setItem('projetos_lm_groq_key', key);
-      return key;
+      return snap.data().key;
     }
   } catch (_) {}
-  return localStorage.getItem('projetos_lm_groq_key') || '';
+  return '';
 }
