@@ -3,7 +3,7 @@
 // Cache dos assets estáticos para instalação PWA
 // ════════════════════════════════════════════════
 
-const CACHE = 'projetos-lm-v1';
+const CACHE = 'projetos-lm-v2'; // incrementar a cada deploy significativo
 
 const ASSETS = [
   '/projetos-lm/',
@@ -20,6 +20,7 @@ const ASSETS = [
   '/projetos-lm/state.js',
   '/projetos-lm/ui.js',
   '/projetos-lm/i18n.js',
+  '/projetos-lm/sanitize.js',
   '/projetos-lm/icon-192.png',
   '/projetos-lm/icon-512.png',
   'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap',
@@ -28,7 +29,11 @@ const ASSETS = [
 // Instalar — cache dos assets
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE).then(cache =>
+      // addAll falha tudo-ou-nada; usamos Promise.allSettled por asset
+      // para que uma fonte externa em baixo (ex: Google Fonts) não bloqueie a instalação
+      Promise.allSettled(ASSETS.map(url => cache.add(url)))
+    ).then(() => self.skipWaiting())
   );
 });
 
