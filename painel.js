@@ -3,12 +3,10 @@
 // ════════════════════════════════════════════════
 
 import { getState, setState, getProjects, getEditId } from './state.js';
-import { guardar, apagar, iniciarListenerAprovacoes, carregarVisitas,
-         carregarMensagens, responderMensagem, marcarMensagensLidas } from './firebase.js';
+import { guardar, apagar, iniciarListenerAprovacoes, carregarVisitas } from './firebase.js';
 import { mostrarToast, setView, fmt, gerarId, dataHoje, formatarData } from './ui.js';
 import { getAlertasReclamacoes } from './reclamacoes.js';
 import { renderHistoricoReunioes } from './modo-apresentacao.js';
-import { esc } from './sanitize.js';
 
 // ── Ordenação ─────────────────────────────────────
 // 'data' = mais recente primeiro (default) | 'az' = A→Z | 'za' = Z→A
@@ -342,9 +340,6 @@ export function abrirModalNovo() {
   limparForm();
   colapsarBlocos();
   document.getElementById('modal-projeto').classList.add('open');
-
-  // Carregar mensagens do cliente para este projeto
-  renderMensagensModal(id);
 }
 
 export function fecharModal() {
@@ -465,9 +460,6 @@ export function editarProjeto(id) {
 
   colapsarBlocos();
   document.getElementById('modal-projeto').classList.add('open');
-
-  // Carregar mensagens do cliente para este projeto
-  renderMensagensModal(id);
 }
 
 export async function guardarProjeto() {
@@ -568,7 +560,8 @@ export async function guardarProjeto() {
     interacoes, ocorrencias,
     imagens:     getState('editImgs'),
     data:        new Date().toLocaleDateString('pt-PT'),
-    dataCriacao: editId ? (getProjects().find(p => p.id === editId)?.dataCriacao || dataHoje()) : dataHoje(),
+    dataCriacao:     editId ? (getProjects().find(p => p.id === editId)?.dataCriacao || dataHoje()) : dataHoje(),
+    dataModificacao: new Date().toISOString(),
   };
 
   // Se a fase for aprovado ou superior e não houver registo de aprovação, registar agora
@@ -996,111 +989,7 @@ export function iniciarPollingAprovacoes() {
   };
   if (window._cancelarListeners) window._cancelarListeners();
   window._cancelarListeners = iniciarListenerAprovacoes(handler);
-
-  // Polling de mensagens — verifica novas mensagens de clientes a cada 60s
-  if (window._msgPollingTimer) clearInterval(window._msgPollingTimer);
-  window._msgPollingTimer = setInterval(verificarMensagensNovas, 60000);
-  verificarMensagensNovas(); // verificar imediatamente ao iniciar
 }
-
-// ── Verificação de mensagens novas ────────────────
-// Guarda o último timestamp visto por projeto em memória
-const _ultimaMsgVista = {};
-
-async function verificarMensagensNovas() {
-  const projetos = getState('projetos') || [];
-  for (const p of projetos) {
-    try {
-      const msgs = await carregarMensagens(p.id);
-      const clienteMsgs = msgs.filter(m => m.origem === 'cliente' && !m.lida);
-      if (!clienteMsgs.length) continue;
-
-      // Verificar se há mensagens mais recentes que a última vista
-      const ultimaTs = clienteMsgs[clienteMsgs.length - 1].ts?.toMillis?.() || 0;
-      const anterior = _ultimaMsgVista[p.id] || 0;
-
-      if (ultimaTs > anterior) {
-        _ultimaMsgVista[p.id] = ultimaTs;
-        const nomeProjeto = esc(p.nome || 'Cliente');
-        const total = clienteMsgs.length;
-        mostrarToast(
-          `💬 ${nomeProjeto}`,
-          total === 1 ? '1 mensagem por responder' : `${total} mensagens por responder`
-        );
-        // Atualizar badge de mensagens no painel se existir
-        atualizarBadgeMensagens(p.id, total);
-      }
-    } catch (_) {}
-  }
-}
-
-function atualizarBadgeMensagens(projId, total) {
-  // Badge no card do projeto
-  const badge = document.querySelector(`[data-proj-id="${projId}"] .card-msg-badge`);
-  if (badge) {
-    badge.textContent = total;
-    badge.style.display = total > 0 ? 'flex' : 'none';
-  }
-}
-
-// ── Mensagens do cliente no modal ────────────────
-
-async function renderMensagensModal(projId) {
-  const wrap = document.getElementById('modal-msgs-lista');
-  const form = document.getElementById('modal-msgs-form');
-  if (!wrap) return;
-
-  wrap.innerHTML = '<div style="color:var(--ink4);font-size:12px;padding:12px 0">A carregar…</div>';
-
-  const msgs = await carregarMensagens(projId);
-  await marcarMensagensLidas(projId);
-
-  // Atualizar badge após marcar como lidas
-  atualizarBadgeMensagens(projId, 0);
-
-  if (!msgs.length) {
-    wrap.innerHTML = '<div style="color:var(--ink4);font-size:13px;padding:16px 0;text-align:center">Sem mensagens ainda.</div>';
-  } else {
-    wrap.innerHTML = msgs.map(m => {
-      const isHM  = m.origem === 'hm';
-      const ts    = m.ts?.toDate ? m.ts.toDate().toLocaleString('pt-PT', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
-      return `<div class="modal-msg-item ${isHM ? 'modal-msg-hm' : 'modal-msg-cliente'}">
-        <div class="modal-msg-origem">${isHM ? '✦ Hélder Melo' : '👤 Cliente'}${ts ? ` · ${ts}` : ''}</div>
-        <div class="modal-msg-texto">${esc(m.texto).replace(/\n/g,'<br>')}</div>
-      </div>`;
-    }).join('');
-  }
-
-  // Scroll para o fim
-  wrap.scrollTop = wrap.scrollHeight;
-
-  if (form) form.style.display = '';
-}
-
-window._responderMensagemModal = async function() {
-  const projId = getEditId();
-  const input  = document.getElementById('modal-msg-input');
-  if (!projId || !input) return;
-  const texto = input.value.trim();
-  if (!texto) return;
-
-  const btn = document.getElementById('modal-msg-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '…'; }
-  input.disabled = true;
-
-  try {
-    await responderMensagem(projId, texto);
-    input.value = '';
-    await renderMensagensModal(projId);
-    mostrarToast('✓ Resposta enviada', 'O cliente verá na próxima visita.');
-  } catch (e) {
-    mostrarToast('⚠️ Erro ao enviar', 'Tente novamente.');
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = 'Responder'; }
-    input.disabled = false;
-    input.focus();
-  }
-};
 
 // ── Separadores (tabs) ────────────────────────────
 

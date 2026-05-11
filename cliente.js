@@ -568,6 +568,95 @@ export async function enviarMensagem() {
   }
 }
 
+
+// ── Notificações do cliente ───────────────────────
+// Compara estado atual com o que o cliente viu na última visita.
+// Guarda timestamps no localStorage — funciona no mesmo browser/dispositivo.
+
+const LS_VISTO_MSGS   = id => `lm_visto_msgs_${id}`;
+const LS_VISTO_PROJ   = id => `lm_visto_proj_${id}`;
+
+async function verificarNotificacoesCliente(projId, p) {
+  try {
+    // ── 1. Mensagens novas do Hélder Melo
+    const msgs      = await carregarMensagens(projId);
+    const msgsHM    = msgs.filter(m => m.origem === 'hm');
+    const ultimaMsg = msgsHM.length ? msgsHM[msgsHM.length - 1] : null;
+    const ultimaMsgTs = ultimaMsg?.ts?.toMillis?.() || 0;
+    const vistoMsgsTs = parseInt(localStorage.getItem(LS_VISTO_MSGS(projId)) || '0', 10);
+
+    if (ultimaMsgTs > vistoMsgsTs) {
+      // Há mensagens novas — mostrar notificação clicável
+      setTimeout(() => mostrarNotifCliente(
+        '💬 Tem uma resposta',
+        'Hélder Melo respondeu à sua mensagem.',
+        () => {
+          document.getElementById('mensagens')?.scrollIntoView({ behavior: 'smooth' });
+          // Marcar como visto
+          localStorage.setItem(LS_VISTO_MSGS(projId), ultimaMsgTs.toString());
+        }
+      ), 1200);
+      return; // uma notificação de cada vez
+    }
+
+    // ── 2. Proposta atualizada
+    const projTs    = p.dataModificacao ? new Date(p.dataModificacao).getTime() : 0;
+    const vistoProj = parseInt(localStorage.getItem(LS_VISTO_PROJ(projId)) || '0', 10);
+
+    // Só notifica se já visitou antes (vistoProj > 0) e há atualização nova
+    if (projTs > 0 && vistoProj > 0 && projTs > vistoProj) {
+      setTimeout(() => mostrarNotifCliente(
+        '📋 Proposta atualizada',
+        'A sua proposta foi revista. Consulte as novidades.',
+        () => document.getElementById('hero')?.scrollIntoView({ behavior: 'smooth' })
+      ), 1200);
+    }
+
+    // Registar timestamp desta visita para o projeto
+    if (projTs > 0) {
+      localStorage.setItem(LS_VISTO_PROJ(projId), projTs.toString());
+    }
+
+  } catch (_) {}
+}
+
+function mostrarNotifCliente(titulo, sub, onClicar) {
+  const toast = document.getElementById('toast-notif');
+  if (!toast) return;
+
+  const tTitulo = document.getElementById('toast-titulo');
+  const tSub    = document.getElementById('toast-sub');
+  const tIco    = document.getElementById('toast-ico');
+
+  if (tTitulo) tTitulo.textContent = titulo;
+  if (tSub)    tSub.textContent    = sub;
+  if (tIco)    tIco.textContent    = titulo.split(' ')[0]; // emoji
+
+  toast.classList.add('show');
+  toast.style.cursor = 'pointer';
+
+  // Remover listener anterior se existir
+  if (toast._notifHandler) toast.removeEventListener('click', toast._notifHandler);
+
+  toast._notifHandler = () => {
+    toast.classList.remove('show');
+    if (onClicar) onClicar();
+    // Marcar msgs como vistas ao clicar
+    const projId = getState('projAtualId');
+    if (projId) {
+      const msgs = document.querySelectorAll('.msg-item-hm');
+      if (msgs.length) {
+        // Aproximação: usar timestamp atual como "visto"
+        localStorage.setItem(LS_VISTO_MSGS(projId), Date.now().toString());
+      }
+    }
+  };
+  toast.addEventListener('click', toast._notifHandler);
+
+  // Auto-fechar após 6 segundos
+  setTimeout(() => toast.classList.remove('show'), 6000);
+}
+
 export function renderPaginaCliente(p) {
   setState({ projCache: p });
 
@@ -739,6 +828,10 @@ export function renderPaginaCliente(p) {
       setTimeout(() => { el.style.width = el.dataset.pct + '%'; }, 100);
     });
   });
+
+  // ── Verificar notificações para o cliente (mensagens novas + proposta atualizada)
+  const _projId = getState('projAtualId');
+  if (_projId) verificarNotificacoesCliente(_projId, p);
 }
 
 // ── Lightbox ──────────────────────────────────────
