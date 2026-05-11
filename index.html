@@ -436,6 +436,30 @@
         <div id="reunioes-historico-lista"></div>
       </div>
 
+      <!-- Mensagens do Cliente -->
+      <div class="form-bloco collapsed" id="bloco-mensagens">
+        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')">
+          <span>💬 Mensagens do Cliente <span class="card-msg-badge" id="modal-msg-badge" style="display:none"></span></span>
+          <span class="accordion-arrow">&#9662;</span>
+        </div>
+        <div class="form-note">Mensagens enviadas pelo cliente através da página da proposta.</div>
+        <div class="modal-msgs-wrap">
+          <div class="modal-msgs-lista" id="modal-msgs-lista"></div>
+          <div class="modal-msgs-form" id="modal-msgs-form" style="display:none">
+            <textarea
+              id="modal-msg-input"
+              class="modal-msg-textarea"
+              placeholder="Escreva a sua resposta…"
+              rows="2"
+              onkeydown="if(event.key==='Enter'&&event.ctrlKey)window._responderMensagemModal()"></textarea>
+            <div class="modal-msg-footer">
+              <span style="font-size:11px;color:var(--ink4);font-family:var(--mono)">Ctrl+Enter para enviar</span>
+              <button class="btn-guardar" id="modal-msg-btn" style="padding:7px 16px;font-size:12px" onclick="window._responderMensagemModal()">Responder</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
     <div class="modal-footer">
       <button class="btn-cancelar" onclick="window.fecharModal()">Cancelar</button>
