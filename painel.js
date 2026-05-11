@@ -251,11 +251,40 @@ export function renderPainel() {
   carregarVisitas(ids).then(visitas => {
     ids.forEach(id => {
       const el = document.getElementById('visitas-' + id);
-      if (el) {
-        const v = visitas[id]?.total || 0;
-        el.textContent = `👁 ${v}`;
-        el.title = `${v} visita${v !== 1 ? 's' : ''} do cliente`;
+      if (!el) return;
+
+      const dados   = visitas[id];
+      const total   = dados?.total || 0;
+      const lista   = dados?.visitas || [];
+      const ultima  = lista.length ? lista[lista.length - 1] : null;
+
+      if (!total) {
+        el.innerHTML = '<span class="vis-zero" title="Cliente ainda não abriu o link">👁 Nunca aberto</span>';
+        return;
       }
+
+      // Calcular há quantos dias foi a última visita
+      const agora = Date.now();
+      const tsUltima = ultima?.ts || 0;
+      const diasDesde = tsUltima ? Math.floor((agora - tsUltima) / 86400000) : null;
+      const labelTempo = diasDesde === null ? ''
+        : diasDesde === 0 ? 'hoje'
+        : diasDesde === 1 ? 'ontem'
+        : `há ${diasDesde} dias`;
+
+      // Indicador de engagement
+      const engClass = total >= 5 ? 'vis-alto'
+        : total >= 2 ? 'vis-medio'
+        : 'vis-baixo';
+
+      const tooltipLinha1 = `${total} visita${total !== 1 ? 's' : ''}`;
+      const tooltipLinha2 = ultima ? `Última: ${ultima.data} às ${ultima.hora}` : '';
+      const tooltipLinha3 = lista.length > 1 ? `Primeira: ${lista[0].data} às ${lista[0].hora}` : '';
+
+      el.innerHTML = `
+        <span class="vis-badge ${engClass}" title="${tooltipLinha1}&#10;${tooltipLinha2}&#10;${tooltipLinha3}">
+          👁 ${total}${labelTempo ? ` · ${labelTempo}` : ''}
+        </span>`;
     });
   }).catch(() => {});
 }
@@ -1064,10 +1093,17 @@ async function renderMensagensModal(projId) {
   }
   atualizarBadgeMensagens(projId, 0);
 
-  if (!msgs.length) {
-    wrap.innerHTML = '<div style="color:var(--ink4);font-size:13px;padding:16px 0;text-align:center">Sem mensagens ainda.</div>';
-  } else {
-    wrap.innerHTML = msgs.map(m => {
+  const MODAL_MSG_MAX = 10;
+
+  const renderSlice = (visivel) => {
+    const slice = msgs.slice(msgs.length - visivel);
+    const anterior = msgs.length - slice.length;
+    const verMaisHtml = anterior > 0
+      ? `<div style="text-align:center;padding:8px 0 12px">
+           <button style="background:none;border:1px solid rgba(255,255,255,.1);border-radius:99px;padding:5px 14px;font-size:11px;color:var(--ink4);cursor:pointer;font-family:var(--mono)" onclick="this.closest('.modal-msgs-lista')._verMais()">↑ Ver ${anterior} mensagem${anterior > 1 ? 's' : ''} anterior${anterior > 1 ? 'es' : ''}</button>
+         </div>`
+      : '';
+    wrap.innerHTML = verMaisHtml + slice.map(m => {
       const isHM  = m.origem === 'hm';
       const ts    = m.ts?.toDate ? m.ts.toDate().toLocaleString('pt-PT', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '';
       return `<div class="modal-msg-item ${isHM ? 'modal-msg-hm' : 'modal-msg-cliente'}">
@@ -1075,10 +1111,20 @@ async function renderMensagensModal(projId) {
         <div class="modal-msg-texto">${esc(m.texto).replace(/\n/g,'<br>')}</div>
       </div>`;
     }).join('');
-  }
+    wrap.scrollTop = wrap.scrollHeight;
+  };
 
-  // Scroll para o fim
-  wrap.scrollTop = wrap.scrollHeight;
+  if (!msgs.length) {
+    wrap.innerHTML = '<div style="color:var(--ink4);font-size:13px;padding:16px 0;text-align:center">Sem mensagens ainda.</div>';
+  } else {
+    let visivelCount = Math.min(MODAL_MSG_MAX, msgs.length);
+    renderSlice(visivelCount);
+    // Permitir carregar mais via propriedade no elemento
+    wrap._verMais = () => {
+      visivelCount = Math.min(visivelCount + MODAL_MSG_MAX, msgs.length);
+      renderSlice(visivelCount);
+    };
+  }
 
   if (form) form.style.display = '';
 }

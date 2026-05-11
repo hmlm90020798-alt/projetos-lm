@@ -298,6 +298,13 @@ img   { display: block; max-width: 100%; }
 .card-local         { color: rgba(255,255,255,.62) !important; }
 .card-total         { color: #fff !important; text-shadow: 0 1px 6px rgba(53,23,12,.25); }
 .card-visitas       { color: rgba(255,255,255,.72) !important; }
+
+/* Visitas — engagement indicators */
+.vis-badge         { font-family: var(--mono); font-size: 11px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; cursor: default; }
+.vis-zero          { font-family: var(--mono); font-size: 11px; color: rgba(255,255,255,.25); font-style: italic; }
+.vis-baixo         { background: rgba(255,255,255,.06); color: rgba(255,255,255,.45); }
+.vis-medio         { background: rgba(196,169,106,.12); color: var(--champ-light); }
+.vis-alto          { background: rgba(44,94,26,.2); color: var(--green-light); }
 .card-aprovado      { color: rgba(255,255,255,.75) !important; }
 .card-prazo         { color: rgba(255,255,255,.55) !important; }
 .card-prazo.urgente { color: #ffb3a0 !important; font-weight: 700; }
@@ -1498,6 +1505,10 @@ img   { display: block; max-width: 100%; }
 .msg-vazio         { text-align: center; padding: 32px 0; }
 .msg-vazio-icon    { font-size: 32px; margin-bottom: 12px; }
 .msg-vazio p       { font-size: 14px; color: var(--ink3); line-height: 1.6; }
+
+.msg-ver-mais-wrap { text-align: center; padding: 8px 0 16px; }
+.btn-msg-ver-mais  { background: none; border: 1px solid var(--border); border-radius: 99px; padding: 7px 18px; font-family: var(--mono); font-size: 11px; color: var(--ink3); cursor: pointer; transition: all .2s; }
+.btn-msg-ver-mais:hover { border-color: var(--green); color: var(--green); background: var(--green-pale); }
 
 /* Mensagem individual */
 .msg-item          { display: flex; gap: 12px; align-items: flex-start; }
