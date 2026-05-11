@@ -300,11 +300,11 @@ img   { display: block; max-width: 100%; }
 .card-visitas       { color: rgba(255,255,255,.72) !important; }
 
 /* Visitas — engagement indicators */
-.vis-badge         { font-family: var(--mono); font-size: 11px; display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 99px; cursor: default; }
-.vis-zero          { font-family: var(--mono); font-size: 11px; color: rgba(255,255,255,.25); font-style: italic; }
-.vis-baixo         { background: rgba(255,255,255,.06); color: rgba(255,255,255,.45); }
-.vis-medio         { background: rgba(196,169,106,.12); color: var(--champ-light); }
-.vis-alto          { background: rgba(44,94,26,.2); color: var(--green-light); }
+.vis-badge         { font-family: var(--mono); font-size: 11px; display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 99px; cursor: default; font-weight: 500; }
+.vis-zero          { font-family: var(--mono); font-size: 11px; color: rgba(255,255,255,.4); font-style: italic; }
+.vis-baixo         { background: rgba(0,0,0,.35); color: rgba(255,255,255,.75); border: 1px solid rgba(255,255,255,.12); }
+.vis-medio         { background: rgba(0,0,0,.4);  color: #E8D4A0; border: 1px solid rgba(196,169,106,.4); }
+.vis-alto          { background: rgba(0,0,0,.45); color: #8FCC5F; border: 1px solid rgba(103,171,47,.45); }
 .card-aprovado      { color: rgba(255,255,255,.75) !important; }
 .card-prazo         { color: rgba(255,255,255,.55) !important; }
 .card-prazo.urgente { color: #ffb3a0 !important; font-weight: 700; }
