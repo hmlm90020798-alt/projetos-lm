@@ -1635,14 +1635,14 @@ img   { display: block; max-width: 100%; }
 .modal-msgs-lista      { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; padding: 4px 2px; }
 
 .modal-msg-item        { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; border-radius: 10px; }
-.modal-msg-cliente     { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); }
-.modal-msg-hm          { background: rgba(44,94,26,.08); border: 1px solid rgba(44,94,26,.2); }
+.modal-msg-cliente     { background: var(--cli-bg-soft); border: 1px solid var(--border); }
+.modal-msg-hm          { background: var(--green-pale); border: 1px solid rgba(44,94,26,.2); }
 
 .modal-msg-origem      { font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--ink4); letter-spacing: .5px; }
-.modal-msg-hm .modal-msg-origem { color: var(--green-light); }
+.modal-msg-hm .modal-msg-origem { color: var(--green); }
 
 .modal-msg-texto       { font-size: 13px; line-height: 1.6; color: var(--ink2); }
-.modal-msg-hm .modal-msg-texto  { color: rgba(245,242,236,.85); }
+.modal-msg-hm .modal-msg-texto  { color: var(--ink2); }
 
 .modal-msgs-form       { border-top: 1px solid rgba(255,255,255,.06); padding-top: 12px; }
 .modal-msg-textarea    { width: 100%; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 8px; padding: 10px 12px; font-family: var(--sans); font-size: 13px; color: var(--ink2); resize: none; outline: none; transition: border-color .2s; }
