@@ -1485,3 +1485,174 @@ img   { display: block; max-width: 100%; }
 .bloco-guardar-btn:hover { background: var(--green-mid, #4A8C2A); }
 
 /* btn-card-apresentar removido — substituído pela paleta Pantone 2025 */
+
+/* ══════════════════════════════════════════════════════════════
+   TEMAS DA VISTA DO CLIENTE
+   Aplicados via data-tema="studio|classic" em #view-cliente
+   O tema "escuro" (default) usa as variáveis :root existentes.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────────────────────
+   TEMA: STUDIO — Branco mineral, linhas limpas, moderno
+   Para: clientes jovens, projetos minimalistas, espaços urbanos
+────────────────────────────────────────────────────────────── */
+#view-cliente[data-tema="studio"] {
+
+  /* Nav */
+  .cli-nav {
+    background: rgba(255,255,255,.92);
+    border-bottom: 1px solid #E8E4DF;
+  }
+  .cli-nav-marca       { color: #1A1814; }
+  .cli-nav-marca em    { color: #4A8C2A; }
+  .nav-link            { color: #706A62; }
+  .nav-link:hover      { color: #1A1814; background: #F0ECE4; }
+  .nav-lang            { color: #706A62; border-color: #E4DED4; }
+  .nav-lang:hover      { background: #F0ECE4; color: #1A1814; }
+
+  /* Hero */
+  .cli-hero {
+    background: #F7F5F0;
+    min-height: 90vh;
+  }
+  .cli-hero::before {
+    background: radial-gradient(ellipse 70% 60% at 50% 40%, rgba(44,94,26,.04) 0%, transparent 70%);
+  }
+  .hero-eyebrow        { color: rgba(26,24,20,.35); }
+  .hero-titulo         { color: #1A1814; -webkit-text-stroke: 0; background: none; -webkit-background-clip: unset; -webkit-text-fill-color: #1A1814; }
+  .hero-para           { color: #706A62; }
+  .hero-meta-item      { color: #9C968E; }
+  .hero-meta-dot       { color: #C8C0B4; }
+  .hero-expirada       { color: #B83030; background: rgba(184,48,48,.06); border-color: rgba(184,48,48,.2); }
+
+  /* Countdown */
+  .cd-label            { color: #9C968E; }
+  .cd-num              { color: #1A1814; }
+  .cd-sep              { color: #C8C0B4; }
+
+  /* Secções */
+  .cli-sec             { background: #FFFFFF; }
+  .cli-sec-soft        { background: #F7F5F0; }
+  .cli-sec-dark        { background: #1A2018; }
+  .cli-sec-ink         { background: #0F1610; }
+
+  /* Cabeçalhos de secção (claras) */
+  .sec-num             { color: #E4DED4; }
+  .sec-eyebrow         { color: #4A8C2A; }
+  .sec-titulo          { color: #1A1814; }
+
+  /* Galeria */
+  .galeria-grid > div  { border-radius: 10px; overflow: hidden; box-shadow: 0 2px 16px rgba(26,24,20,.08); }
+
+  /* Elementos */
+  .elem-card           { background: #F7F5F0; border-color: #E4DED4; }
+  .elem-card:hover     { border-color: #4A8C2A; }
+  .elem-nome           { color: #1A1814; }
+  .elem-tipo-label     { color: #9C968E; }
+  .elem-link           { color: #4A8C2A; }
+
+  /* Notas */
+  .nota-card           { background: #FFFFFF; border-color: #E4DED4; box-shadow: 0 1px 8px rgba(26,24,20,.04); }
+  .nota-card:hover     { border-color: #4A8C2A; }
+  .nota-card-titulo    { color: #1A1814; }
+  .nota-card-texto     { color: #706A62; }
+  .nota-card-manual    { background: rgba(196,169,106,.04); border-color: rgba(196,169,106,.25); }
+
+  /* Docs */
+  .doc-card            { background: #FFFFFF; border-color: #E4DED4; }
+  .doc-card:hover      { border-color: #4A8C2A; }
+  .doc-card-icon       { background: #EEF5E8; color: #2C5E1A; }
+  .doc-card-nome       { color: #1A1814; }
+  .doc-card-hint       { color: #4A8C2A; }
+
+  /* Footer */
+  .cli-footer          { background: #F0ECE4; border-top: 1px solid #E4DED4; }
+  .cli-footer-copy     { color: #9C968E; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   TEMA: CLASSIC — Bege quente, mocha, serif dominante
+   Para: clientes tradicionais, projetos familiares, remodelações
+────────────────────────────────────────────────────────────── */
+#view-cliente[data-tema="classic"] {
+
+  /* Nav */
+  .cli-nav {
+    background: rgba(53,23,12,.95);
+    border-bottom: 1px solid rgba(158,121,103,.2);
+  }
+  .cli-nav-marca       { color: #F7E7CE; }
+  .cli-nav-marca em    { color: #CCA98D; font-style: italic; }
+  .nav-link            { color: rgba(247,231,206,.6); }
+  .nav-link:hover      { color: #F7E7CE; background: rgba(158,121,103,.2); }
+  .nav-lang            { color: rgba(247,231,206,.6); border-color: rgba(158,121,103,.3); }
+  .nav-lang:hover      { background: rgba(158,121,103,.2); color: #F7E7CE; }
+
+  /* Hero */
+  .cli-hero {
+    background: #35170C;
+    min-height: 90vh;
+  }
+  .cli-hero::before {
+    background: radial-gradient(ellipse 70% 60% at 50% 40%, rgba(158,121,103,.12) 0%, transparent 70%);
+  }
+  .hero-eyebrow        { color: rgba(247,231,206,.3); }
+  .hero-titulo         { color: #F7E7CE; -webkit-text-stroke: 0; background: none; -webkit-background-clip: unset; -webkit-text-fill-color: #F7E7CE; }
+  .hero-para           { color: rgba(247,231,206,.6); }
+  .hero-meta-item      { color: rgba(204,169,141,.7); }
+  .hero-meta-dot       { color: rgba(204,169,141,.4); }
+  .hero-expirada       { color: #E8A87C; background: rgba(201,125,67,.1); border-color: rgba(201,125,67,.3); }
+
+  /* Countdown */
+  .cd-label            { color: rgba(204,169,141,.6); }
+  .cd-num              { color: #F7E7CE; }
+  .cd-sep              { color: rgba(204,169,141,.4); }
+
+  /* Botões hero */
+  .btn-hero-primary    { background: #9e7967; color: #F7E7CE; }
+  .btn-hero-primary:hover { background: #8a6858; box-shadow: 0 6px 20px rgba(158,121,103,.4); }
+  .btn-hero-approve    { background: #CCA98D; color: #35170C; }
+  .btn-hero-approve:hover { background: #DEC0A8; }
+
+  /* Secções claras */
+  .cli-sec             { background: #FDF5EF; }
+  .cli-sec-soft        { background: #F7E7CE; }
+  .cli-sec-dark        { background: #3D1F12; }
+  .cli-sec-ink         { background: #35170C; }
+
+  /* Cabeçalhos de secção (claros) */
+  .sec-num             { color: #E8D4BA; }
+  .sec-eyebrow         { color: #9e7967; }
+  .sec-titulo          { color: #35170C; font-family: var(--serif); }
+
+  /* Galeria */
+  .galeria-grid > div  { border-radius: 8px; overflow: hidden; box-shadow: 0 2px 16px rgba(53,23,12,.12); }
+
+  /* Elementos */
+  .elem-card           { background: #FDF5EF; border-color: #E8D4BA; }
+  .elem-card:hover     { border-color: #9e7967; }
+  .elem-nome           { color: #35170C; font-family: var(--serif); font-size: 15px; }
+  .elem-tipo-label     { color: #9e7967; }
+  .elem-link           { color: #63291e; }
+
+  /* Notas */
+  .nota-card           { background: #FDF5EF; border-color: #E8D4BA; }
+  .nota-card:hover     { border-color: #9e7967; }
+  .nota-card-titulo    { color: #35170C; font-family: var(--serif); }
+  .nota-card-texto     { color: #63291e; }
+  .nota-card-manual    { background: rgba(158,121,103,.06); border-color: rgba(158,121,103,.3); }
+
+  /* Orçamento — dark sections */
+  .orc-barra-bg        { background: rgba(247,231,206,.08); }
+
+  /* Docs */
+  .doc-card            { background: #FDF5EF; border-color: #E8D4BA; }
+  .doc-card:hover      { border-color: #9e7967; box-shadow: 0 4px 16px rgba(53,23,12,.1); }
+  .doc-card-icon       { background: rgba(158,121,103,.12); color: #63291e; }
+  .doc-card-nome       { color: #35170C; }
+  .doc-card-hint       { color: #9e7967; }
+
+  /* Footer */
+  .cli-footer          { background: #35170C; border-top: 1px solid rgba(158,121,103,.2); }
+  .cli-footer-copy     { color: rgba(204,169,141,.5); }
+}

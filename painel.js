@@ -7,7 +7,6 @@ import { guardar, apagar, iniciarListenerAprovacoes, carregarVisitas } from './f
 import { mostrarToast, setView, fmt, gerarId, dataHoje, formatarData } from './ui.js';
 import { getAlertasReclamacoes } from './reclamacoes.js';
 import { renderHistoricoReunioes } from './modo-apresentacao.js';
-import { esc } from './sanitize.js';
 
 // ── Ordenação ─────────────────────────────────────
 // 'data' = mais recente primeiro (default) | 'az' = A→Z | 'za' = Z→A
@@ -284,16 +283,16 @@ function renderCard(p) {
   return `
     <div class="proj-card ${faseClasse}${temOcorr ? ' card-ocorrencia' : ''}" onclick="window.editarProjeto('${p.id}')">
       <div class="card-top">
-        <div class="card-tipo-badge">${esc(tipo)}</div>
+        <div class="card-tipo-badge">${tipo}</div>
         <div style="display:flex;gap:6px;align-items:center">
           ${temOcorr ? `<span class="badge-ocorr">⚠️ Ocorrência</span>` : ''}
           <span class="proj-badge ${classe}">${label}</span>
         </div>
       </div>
-      <div class="card-nome">${esc(p.nome) || '—'}</div>
-      <div class="card-local">${esc(p.localidade) || ''}${(p.refPc||p.refOs) ? `<span class="card-refs">
-        ${p.refPc ? `<span class="card-ref-badge" onclick="event.stopPropagation();window.copiarRef(this,'${p.refPc}')" title="Clica para copiar">PC: ${esc(p.refPc)}</span>` : ''}
-        ${p.refOs  ? `<span class="card-ref-badge" onclick="event.stopPropagation();window.copiarRef(this,'${p.refOs}')"  title="Clica para copiar">OS: ${esc(p.refOs)}</span>`  : ''}
+      <div class="card-nome">${p.nome || '—'}</div>
+      <div class="card-local">${p.localidade || ''}${(p.refPc||p.refOs) ? `<span class="card-refs">
+        ${p.refPc ? `<span class="card-ref-badge" onclick="event.stopPropagation();window.copiarRef(this,'${p.refPc}')" title="Clica para copiar">PC: ${p.refPc}</span>` : ''}
+        ${p.refOs  ? `<span class="card-ref-badge" onclick="event.stopPropagation();window.copiarRef(this,'${p.refOs}')"  title="Clica para copiar">OS: ${p.refOs}</span>`  : ''}
       </span>` : ''}</div>
       <div class="card-financeiro">
         <div class="card-total">${total > 0 ? fmt(total) : '—'}</div>
@@ -365,6 +364,7 @@ function limparForm() {
   document.getElementById('f-tipo').value = 'cozinha';
   document.getElementById('f-fase').value = 'proposta';
   document.getElementById('f-tipo-outro-wrap').style.display = 'none';
+  const elTema = document.getElementById('f-tema'); if (elTema) elTema.value = 'escuro';
   document.getElementById('img-thumbs-preview').innerHTML = '';
 
   ['sec-elem-tampos','sec-elem-eletros','sec-elem-acessorios','sec-elem-extras',
@@ -391,6 +391,7 @@ export function editarProjeto(id) {
   sv('f-notas', p.notas);
   sv('f-ref-pc', p.refPc);
   sv('f-ref-os', p.refOs);
+  sv('f-tema', p.tema || 'escuro');
 
   // Pack Projeto
   const elPack = document.getElementById('inc-pack');
@@ -542,6 +543,7 @@ export async function guardarProjeto() {
     notas:       notas,
     refPc:       gv('f-ref-pc').trim(),
     refOs:       gv('f-ref-os').trim(),
+    tema:        gv('f-tema') || 'escuro',
     docs,
     // Elementos (com URL)
     elem_tampos:        recolherLinhasElem(document.getElementById('sec-elem-tampos')),
@@ -1132,8 +1134,8 @@ export function renderAlertas() {
     <div class="alerta-card alerta-${a.cor}">
       <div class="alerta-card-inner" onclick="window.abrirProjetoDoAlerta('${a.id}')" style="cursor:pointer;flex:1">
         <div class="alerta-tipo alerta-tipo-${a.cor}">${a.tipo}</div>
-        <div class="alerta-nome">${esc(a.nome)}</div>
-        <div class="alerta-detalhe">${esc(a.sub)}</div>
+        <div class="alerta-nome">${a.nome}</div>
+        <div class="alerta-detalhe">${a.sub}</div>
         ${a.data ? `<div class="alerta-data">${a.data}</div>` : ''}
       </div>
       <button class="alerta-dispensar" onclick="event.stopPropagation();window.dispensarAlerta('${chave}')" title="Dispensar alerta">×</button>
@@ -1150,7 +1152,7 @@ export function renderAlertas() {
         <div class="agenda-dia">${diaLabel}</div>
         <div class="agenda-dot" style="background:${a.cor}"></div>
         <div class="agenda-info">
-          <div class="agenda-proj">${esc(a.nome)}</div>
+          <div class="agenda-proj">${a.nome}</div>
           <div class="agenda-evento">${a.evento}</div>
         </div>
       </div>`;
@@ -1177,7 +1179,7 @@ export function renderAlertas() {
             return `
               <div class="alerta-card" onclick="window.setTab(document.querySelector('[onclick*=reclamacoes]'),'reclamacoes')" style="cursor:pointer;border-left:3px solid ${cor}">
                 <div class="alerta-header">
-                  <span class="alerta-titulo">🚨 ${esc(r.nomeDisplay)}</span>
+                  <span class="alerta-titulo">🚨 ${r.nomeDisplay}</span>
                   <span class="alerta-badge" style="background:${cor}20;color:${cor};border:1px solid ${cor}40">${txt}</span>
                 </div>
                 <div class="alerta-desc">${probs || 'Reclamação pendente'}</div>
@@ -1236,14 +1238,14 @@ export function renderOcorrenciasTab() {
     return `
       <div class="oc-card" onclick="window.editarProjeto('${o.projId}')">
         <div class="oc-card-header">
-          <div class="oc-card-proj">${esc(o.projNome)} · ${esc(o.projTipo)}</div>
+          <div class="oc-card-proj">${o.projNome} · ${o.projTipo}</div>
           ${diasReg !== null ? `<div class="oc-card-dias">Há ${diasReg} dia${diasReg!==1?'s':''}</div>` : ''}
           <span class="oc-estado-badge ${estadoCls}">${estadoLabels[o.estado]||o.estado}</span>
         </div>
         <div class="oc-items">
           <div class="oc-item">
-            <div class="oc-item-tipo oc-tipo-${o.estado==='detectada'?'d':'r'}">${esc(tipoLabels[o.tipo]||o.tipo)}</div>
-            <div class="oc-item-desc">${esc(o.descricao)}</div>
+            <div class="oc-item-tipo oc-tipo-${o.estado==='detectada'?'d':'r'}">${tipoLabels[o.tipo]||o.tipo}</div>
+            <div class="oc-item-desc">${o.descricao||''}</div>
             <div class="oc-item-data">${o.data||''}</div>
           </div>
         </div>
@@ -1254,8 +1256,8 @@ export function renderOcorrenciasTab() {
   const resolvidasHtml = resolvidas.slice(0,10).map(o => `
     <div class="hist-item" onclick="window.editarProjeto('${o.projId}')">
       <div class="hist-check">✓</div>
-      <div class="hist-proj">${esc(o.projNome)}</div>
-      <div class="hist-tipo">${esc(tipoLabels[o.tipo]||o.tipo)}</div>
+      <div class="hist-proj">${o.projNome}</div>
+      <div class="hist-tipo">${tipoLabels[o.tipo]||o.tipo}</div>
       <div class="hist-data">Resolvida ${o.data||''}</div>
     </div>`).join('');
 

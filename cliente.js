@@ -502,6 +502,11 @@ function renderDocumentos(docs, lang) {
 
 export function renderPaginaCliente(p) {
   setState({ projCache: p });
+
+  // Aplicar tema visual — 'escuro' (default) | 'studio' | 'classic'
+  const viewCliente = document.getElementById('view-cliente');
+  if (viewCliente) viewCliente.setAttribute('data-tema', p.tema || 'escuro');
+
   const t   = T[getLang()];
   const tH  = t.hero;
   const tC  = t.contacto;
