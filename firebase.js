@@ -239,3 +239,20 @@ export async function marcarMensagensLidas(projId) {
     await Promise.all(promises);
   } catch (_) {}
 }
+
+export function iniciarListenerMensagens(projetos, onNovaMensagem) {
+  // Listener realtime por projeto — reage instantaneamente a novas mensagens
+  // Usa onSnapshot — mesma abordagem das aprovações
+  // Retorna função de cancelamento
+  const unsubscribes = projetos.map(p => {
+    const ref = collection(_db, 'mensagens', p.id, 'msgs');
+    const q   = query(ref, orderBy('ts', 'asc'));
+    return onSnapshot(q, snap => {
+      const msgs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      const clienteMsgs = msgs.filter(m => m.origem === 'cliente');
+      if (clienteMsgs.length) onNovaMensagem(p.id, p.nome || '', clienteMsgs);
+    }, () => {});
+  });
+
+  return () => unsubscribes.forEach(u => u());
+}

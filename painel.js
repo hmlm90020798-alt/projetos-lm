@@ -4,7 +4,7 @@
 
 import { getState, setState, getProjects, getEditId } from './state.js';
 import { guardar, apagar, iniciarListenerAprovacoes, carregarVisitas,
-         carregarMensagens, responderMensagem } from './firebase.js';
+         carregarMensagens, responderMensagem, iniciarListenerMensagens } from './firebase.js';
 import { mostrarToast, setView, fmt, gerarId, dataHoje, formatarData } from './ui.js';
 import { getAlertasReclamacoes } from './reclamacoes.js';
 import { renderHistoricoReunioes } from './modo-apresentacao.js';
@@ -1026,43 +1026,30 @@ export function iniciarPollingAprovacoes() {
   if (window._cancelarListeners) window._cancelarListeners();
   window._cancelarListeners = iniciarListenerAprovacoes(handler);
 
-  // Polling de mensagens — verifica novas mensagens de clientes a cada 60s
-  if (window._msgPollingTimer) clearInterval(window._msgPollingTimer);
-  window._msgPollingTimer = setInterval(verificarMensagensNovas, 60000);
-  verificarMensagensNovas(); // verificar imediatamente ao iniciar
-}
-
-// ── Verificação de mensagens novas ────────────────
-// Guarda o último timestamp visto por projeto em memória
-const _ultimaMsgVista = {};
-
-async function verificarMensagensNovas() {
+  // Listener realtime de mensagens — substitui polling, reage instantaneamente
+  if (window._cancelarListenerMensagens) window._cancelarListenerMensagens();
   const projetos = getState('projetos') || [];
-  for (const p of projetos) {
-    try {
-      const msgs = await carregarMensagens(p.id);
-      // Filtra só mensagens do cliente — não depende do campo lida (pode ser stale)
-      const clienteMsgs = msgs.filter(m => m.origem === 'cliente');
-      if (!clienteMsgs.length) continue;
-
-      // Notificar apenas se há mensagens mais recentes que a última vista em memória
+  window._cancelarListenerMensagens = iniciarListenerMensagens(
+    projetos,
+    (projId, projNome, clienteMsgs) => {
       const ultimaTs = clienteMsgs[clienteMsgs.length - 1].ts?.toMillis?.() || 0;
-      const anterior = _ultimaMsgVista[p.id] || 0;
-
+      const anterior = _ultimaMsgVista[projId] || 0;
       if (ultimaTs > anterior) {
-        _ultimaMsgVista[p.id] = ultimaTs;
-        const nomeProjeto = esc(p.nome || 'Cliente');
+        _ultimaMsgVista[projId] = ultimaTs;
         const total = clienteMsgs.length;
         mostrarToast(
-          `💬 ${nomeProjeto}`,
+          `💬 ${esc(projNome || 'Cliente')}`,
           total === 1 ? '1 mensagem por responder' : `${total} mensagens por responder`
         );
-        // Atualizar badge de mensagens no painel se existir
-        atualizarBadgeMensagens(p.id, total);
+        atualizarBadgeMensagens(projId, total);
       }
-    } catch (_) {}
-  }
+    }
+  );
 }
+
+// ── Cache de timestamps de mensagens vistas ─────────
+// Usado pelo listener realtime para evitar notificações duplicadas
+const _ultimaMsgVista = {};
 
 function atualizarBadgeMensagens(projId, total) {
   // Badge no card do projeto

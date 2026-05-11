@@ -12,7 +12,8 @@
 
 import { getState, setState }    from './state.js';
 import { carregar, doLogin, doLogout, onAuth, registarVisita, carregarGroqKey, guardarGroqKey,
-         carregarMensagens, enviarMensagemCliente, responderMensagem, marcarMensagensLidas } from './firebase.js';
+         carregarMensagens, enviarMensagemCliente, responderMensagem, marcarMensagensLidas,
+         iniciarListenerMensagens } from './firebase.js';
 import { setView, mostrarToast } from './ui.js';
 import {
   renderPainel, abrirModalNovo, fecharModal, guardarProjeto,
@@ -99,6 +100,7 @@ window.enviarMensagem           = async () => {
 window.responderMensagem        = responderMensagem;
 window.marcarMensagensLidas     = marcarMensagensLidas;
 window.carregarMensagens        = carregarMensagens;
+window.iniciarListenerMensagens  = iniciarListenerMensagens;
 window.ativarModoApresentacao   = ativarModoApresentacao;
 window.sairModoApresentacao     = sairModoApresentacao;
 
@@ -259,7 +261,13 @@ function popularTiposSelect() {
   }
 
   const isCliente = await checkUrlParam();
-  if (isCliente) { ov.remove(); return; }
+  if (isCliente) {
+    // Garantir remoção completa do overlay em modo cliente
+    ov.style.transition = 'opacity .3s';
+    ov.style.opacity = '0';
+    setTimeout(() => { if (ov.parentNode) ov.remove(); }, 350);
+    return;
+  }
 
   window._loginFallbackTimer = setTimeout(() => {
     const o = document.getElementById('loading-overlay');
