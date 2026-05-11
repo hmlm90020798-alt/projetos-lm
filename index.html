@@ -231,14 +231,6 @@
             </select>
           </div>
           <div class="form-campo">
-            <label class="form-label">Tema da Proposta <span class="label-hint">(página do cliente)</span></label>
-            <select id="f-tema" class="f-select">
-              <option value="escuro">✦ Signature — Escuro Premium</option>
-              <option value="studio">◻ Studio — Branco Mineral</option>
-              <option value="classic">◈ Classic — Bege Quente</option>
-            </select>
-          </div>
-          <div class="form-campo">
             <label class="form-label">Validade da Proposta</label>
             <div class="prazo-wrap">
               <input type="date" id="f-prazo" class="f-input">
@@ -529,6 +521,34 @@
     <div class="cli-sec-inner" id="sec-aprovacao"></div>
   </section>
 
+  <!-- Mensagens -->
+  <section id="mensagens" class="cli-sec cli-sec-soft">
+    <div class="cli-sec-inner">
+      <div class="sec-header" style="display:flex;align-items:flex-end;gap:20px;margin-bottom:40px">
+        <span class="sec-num">07</span>
+        <div>
+          <div class="sec-eyebrow">Comunicação Direta</div>
+          <h2 class="sec-titulo">Fale Comigo</h2>
+        </div>
+      </div>
+      <div class="msg-wrap">
+        <div class="msg-lista" id="sec-mensagens"></div>
+        <div class="msg-form">
+          <textarea
+            id="msg-input"
+            class="msg-textarea"
+            placeholder="Escreva a sua dúvida, comentário ou pedido de alteração…"
+            rows="3"
+            onkeydown="if(event.key==='Enter'&&event.ctrlKey)window.enviarMensagem()"></textarea>
+          <div class="msg-form-footer">
+            <span class="msg-hint">Ctrl+Enter para enviar</span>
+            <button class="btn-msg-enviar" id="btn-enviar-msg" onclick="window.enviarMensagem()">Enviar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Contacto -->
   <section id="contacto" class="cli-sec cli-sec-ink">
     <div class="cli-sec-inner">
@@ -572,11 +592,32 @@
 
 <!-- ══ EXPIRADA ══ -->
 <div id="view-expirada" class="view">
-  <div class="exp-wrap">
-    <div class="exp-icon">⌛</div>
-    <h1 class="exp-titulo">Proposta Expirada</h1>
-    <p class="exp-sub">O prazo de validade desta proposta terminou.<br>Contacte-nos para retomar o processo.</p>
-    <a href="tel:917880364" class="btn-hero-primary" style="margin-top:28px;display:inline-flex">📞 917 880 364</a>
+  <div class="exp-bg"></div>
+  <div class="exp-wrap" id="exp-contacto-wrap">
+
+    <!-- Estado: expirado mas dentro dos 5 dias -->
+    <div class="exp-icon" id="exp-icon">⌛</div>
+    <div class="exp-badge" id="exp-dias-restantes"></div>
+    <h1 class="exp-titulo" id="exp-titulo">Proposta Expirada</h1>
+    <p class="exp-nome" id="exp-nome"></p>
+    <p class="exp-sub" id="exp-msg">O prazo de validade desta proposta terminou.<br>Entre em contacto para retomar o processo.</p>
+
+    <!-- Cartão de contacto -->
+    <div class="exp-contacto-card">
+      <div class="exp-contacto-avatar">HM</div>
+      <div class="exp-contacto-info">
+        <div class="exp-contacto-nome">Hélder Melo</div>
+        <div class="exp-contacto-cargo">Vendedor Projeto Renovação · Leroy Merlin Viseu</div>
+      </div>
+    </div>
+
+    <div class="exp-acoes">
+      <a href="tel:917880364" class="btn-exp-primary">📞 917 880 364</a>
+      <a href="https://wa.me/351917880364" target="_blank" rel="noopener" class="btn-exp-secondary">💬 WhatsApp</a>
+      <a href="mailto:helder.melo@leroymerlin.pt" class="btn-exp-secondary">✉️ Email</a>
+    </div>
+
+    <p class="exp-nota">Estou disponível para retomar este projeto e apresentar uma nova proposta actualizada.</p>
   </div>
 </div>
 

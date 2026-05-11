@@ -4,7 +4,8 @@
 
 import { T }                                    from './i18n.js';
 import { getState, setState, getLang }          from './state.js';
-import { _db, registarVisita, aprovarClienteFirebase, carregarUm } from './firebase.js';
+import { _db, registarVisita, aprovarClienteFirebase, carregarUm,
+         enviarMensagemCliente, carregarMensagens } from './firebase.js';
 import { mostrarToast }                         from './ui.js';
 import { doc, getDoc }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { esc, safeUrl, nl2br }                  from './sanitize.js';
@@ -500,6 +501,73 @@ function renderDocumentos(docs, lang) {
 
 // ── Render principal ──────────────────────────────
 
+
+// ── Mensagens do Cliente ─────────────────────────
+// Sistema de comunicação direto entre cliente e Hélder Melo
+
+export async function renderMensagens(projId) {
+  const wrap = document.getElementById('sec-mensagens');
+  if (!wrap) return;
+
+  wrap.innerHTML = '<div class="msg-loading">A carregar mensagens…</div>';
+
+  const msgs = await carregarMensagens(projId);
+  const lang = getLang();
+
+  if (!msgs.length) {
+    wrap.innerHTML = `
+      <div class="msg-vazio">
+        <div class="msg-vazio-icon">💬</div>
+        <p>${lang === 'en' ? 'No messages yet. Send us a question or comment below.' : 'Ainda sem mensagens. Envie-nos uma dúvida ou comentário.'}</p>
+      </div>`;
+  } else {
+    wrap.innerHTML = msgs.map(m => {
+      const isHM   = m.origem === 'hm';
+      const tsDate = m.ts?.toDate ? m.ts.toDate().toLocaleDateString('pt-PT') : '';
+      const tsTime = m.ts?.toDate ? m.ts.toDate().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : '';
+      return `
+        <div class="msg-item ${isHM ? 'msg-item-hm' : 'msg-item-cliente'}">
+          <div class="msg-avatar">${isHM ? 'HM' : '👤'}</div>
+          <div class="msg-balao">
+            <div class="msg-origem">${isHM ? 'Hélder Melo' : (lang === 'en' ? 'You' : 'Você')}</div>
+            <div class="msg-texto">${nl2br(m.texto)}</div>
+            ${tsDate ? `<div class="msg-ts">${tsDate} · ${tsTime}</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Scroll to bottom of messages
+  wrap.scrollTop = wrap.scrollHeight;
+}
+
+export async function enviarMensagem() {
+  const projId = getState('projAtualId');
+  const input  = document.getElementById('msg-input');
+  if (!projId || !input) return;
+
+  const texto = input.value.trim();
+  if (!texto) return;
+
+  const btn = document.getElementById('btn-enviar-msg');
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  input.disabled = true;
+
+  try {
+    await enviarMensagemCliente(projId, texto);
+    input.value = '';
+    await renderMensagens(projId);
+    mostrarToast('✓ Mensagem enviada', 'Hélder Melo responderá em breve.');
+  } catch (e) {
+    mostrarToast('⚠️ Erro ao enviar', 'Tente novamente.');
+    console.error(e);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = getLang() === 'en' ? 'Send' : 'Enviar'; }
+    input.disabled = false;
+    input.focus();
+  }
+}
+
 export function renderPaginaCliente(p) {
   setState({ projCache: p });
 
@@ -536,6 +604,7 @@ export function renderPaginaCliente(p) {
     <a href="#wrap-notas"     class="nav-link">${t.nav.notas}</a>
     <a href="#timeline"       class="nav-link">${t.nav.timeline}</a>
     <a href="#wrap-docs"      class="nav-link">${lang==='pt'?'Documentos':'Documents'}</a>
+    <a href="#mensagens"      class="nav-link">💬 ${lang==='pt'?'Mensagens':'Messages'}</a>
     <a href="#contacto"       class="nav-link">${t.nav.contacto}</a>
     <button class="nav-lang" onclick="window.setLang(window._LANG==='pt'?'en':'pt')">${lang==='pt'?'EN':'PT'}</button>`;
 
@@ -635,6 +704,10 @@ export function renderPaginaCliente(p) {
 
   // ── 05 Timeline
   document.getElementById('sec-timeline').innerHTML = renderTimeline(p);
+
+  // ── 07 Mensagens — carregar e renderizar
+  const projId = getState('projAtualId');
+  if (projId) renderMensagens(projId);
 
   // ── 06 Documentos
   const wrapDocs = document.getElementById('wrap-docs');

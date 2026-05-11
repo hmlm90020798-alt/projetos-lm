@@ -11,7 +11,8 @@
 // ════════════════════════════════════════════════
 
 import { getState, setState }    from './state.js';
-import { carregar, doLogin, doLogout, onAuth, registarVisita, carregarGroqKey, guardarGroqKey } from './firebase.js';
+import { carregar, doLogin, doLogout, onAuth, registarVisita, carregarGroqKey, guardarGroqKey,
+         carregarMensagens, enviarMensagemCliente, responderMensagem, marcarMensagensLidas } from './firebase.js';
 import { setView, mostrarToast } from './ui.js';
 import {
   renderPainel, abrirModalNovo, fecharModal, guardarProjeto,
@@ -90,6 +91,14 @@ window.copiarRef                = copiarRef;
 window.mostrarToast             = mostrarToast;
 window.renderReclamacoes        = renderReclamacoes;
 window.guardarGroqKey           = guardarGroqKey;
+window.enviarMensagemCliente    = enviarMensagemCliente;
+window.enviarMensagem           = async () => {
+  const { enviarMensagem: _env } = await import('./cliente.js');
+  return _env();
+};
+window.responderMensagem        = responderMensagem;
+window.marcarMensagensLidas     = marcarMensagensLidas;
+window.carregarMensagens        = carregarMensagens;
 window.ativarModoApresentacao   = ativarModoApresentacao;
 window.sairModoApresentacao     = sairModoApresentacao;
 
@@ -121,23 +130,76 @@ async function checkUrlParam() {
   try {
     const { carregarUm } = await import('./firebase.js');
     const p = await carregarUm(id);
-    if (p) {
-      renderPaginaCliente(p);
-      setView('cliente');
-      const btn = document.getElementById('btn-voltar-painel');
-      if (btn) btn.style.display = 'none';
-      if (!isPrint) registarVisita(id);
-      if (isPrint) { setTimeout(() => { window.print(); }, 800); }
-    } else {
-      // Projeto não existe — proposta expirada ou link inválido
+
+    if (!p) {
+      // Projeto não existe — link inválido
       setView('expirada');
+      return true;
     }
+
+    // ── Verificação 1: link revogado manualmente
+    if (p.linkAtivo === false) {
+      setView('expirada');
+      return true;
+    }
+
+    // ── Verificação 2: expiração automática
+    const fasesNaoAprovadas = ['proposta', 'retificacao'];
+    const jaAprovado = !fasesNaoAprovadas.includes(p.fase || 'proposta') || !!p.aprovacao?.data;
+
+    if (p.prazo && !jaAprovado) {
+      const prazoDate   = new Date(p.prazo + 'T23:59:59');
+      const agora       = new Date();
+      const diasPassados = Math.floor((agora - prazoDate) / (1000 * 60 * 60 * 24));
+
+      if (diasPassados > 5) {
+        // Mais de 5 dias após expiração — link completamente inativo
+        setView('expirada');
+        return true;
+      }
+
+      if (diasPassados >= 0) {
+        // Expirado mas dentro dos 5 dias — mostrar página de contacto
+        mostrarExpiradaContacto(p, diasPassados);
+        return true;
+      }
+    }
+
+    // ── Projeto válido — renderizar normalmente
+    renderPaginaCliente(p);
+    setView('cliente');
+    const btn = document.getElementById('btn-voltar-painel');
+    if (btn) btn.style.display = 'none';
+    if (!isPrint) registarVisita(id);
+    if (isPrint) { setTimeout(() => { window.print(); }, 800); }
+
   } catch (err) {
-    // Erro de rede ou Firestore indisponível — mostra página de erro com retry
+    // Erro de rede ou Firestore indisponível
     const isOffline = !navigator.onLine || err?.code === 'unavailable';
     mostrarErroRede(id, isOffline);
   }
   return true;
+}
+
+// ── Expirada com contacto (0-5 dias após prazo) ───
+function mostrarExpiradaContacto(p, diasPassados) {
+  const el = document.getElementById('exp-contacto-wrap');
+  if (!el) { setView('expirada'); return; }
+
+  const diasRestantes = 5 - diasPassados;
+  const nome = p.nome ? p.nome.split('·')[0].trim() : '';
+
+  document.getElementById('exp-icon').textContent        = diasPassados === 0 ? '⌛' : '📋';
+  document.getElementById('exp-titulo').textContent      = 'Proposta Expirada';
+  document.getElementById('exp-nome').textContent        = nome ? `Proposta de ${nome}` : 'Proposta';
+  document.getElementById('exp-msg').textContent         = diasRestantes > 1
+    ? `O prazo desta proposta terminou. Este link estará disponível por mais ${diasRestantes} dias.`
+    : `O prazo desta proposta terminou. Este link expira amanhã.`;
+  document.getElementById('exp-dias-restantes').textContent = diasRestantes > 1
+    ? `${diasRestantes} dias restantes`
+    : '1 dia restante';
+
+  setView('expirada');
 }
 
 // ── Erro de rede na vista do cliente ──────────────

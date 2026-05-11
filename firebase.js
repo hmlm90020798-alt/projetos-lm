@@ -27,7 +27,8 @@
 
 import { initializeApp }                                        from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, doc, setDoc, getDoc, getDocs,
-         collection, deleteDoc, updateDoc, onSnapshot }         from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+         collection, deleteDoc, updateDoc, onSnapshot,
+         addDoc, query, orderBy, serverTimestamp }              from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { getAuth, signInWithEmailAndPassword,
          signOut, onAuthStateChanged }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
 import { getState, setState }                                   from './state.js';
@@ -191,4 +192,50 @@ export async function carregarGroqKey() {
     }
   } catch (_) {}
   return '';
+}
+
+// ── Mensagens do Cliente ──────────────────────────
+// Subcoleção: mensagens/{projId}/msgs/{msgId}
+// Leitura pública — escrita pública (cliente sem auth)
+// Resposta — só autenticado (painel)
+
+export async function enviarMensagemCliente(projId, texto) {
+  const ref = collection(_db, 'mensagens', projId, 'msgs');
+  await addDoc(ref, {
+    texto:     texto.trim(),
+    origem:    'cliente',
+    ts:        serverTimestamp(),
+    lida:      false,
+  });
+}
+
+export async function carregarMensagens(projId) {
+  try {
+    const ref  = collection(_db, 'mensagens', projId, 'msgs');
+    const q    = query(ref, orderBy('ts', 'asc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (_) { return []; }
+}
+
+export async function responderMensagem(projId, texto) {
+  const ref = collection(_db, 'mensagens', projId, 'msgs');
+  await addDoc(ref, {
+    texto:  texto.trim(),
+    origem: 'hm',
+    ts:     serverTimestamp(),
+    lida:   true,
+  });
+}
+
+export async function marcarMensagensLidas(projId) {
+  try {
+    const ref  = collection(_db, 'mensagens', projId, 'msgs');
+    const q    = query(ref, orderBy('ts', 'asc'));
+    const snap = await getDocs(q);
+    const promises = snap.docs
+      .filter(d => !d.data().lida && d.data().origem === 'cliente')
+      .map(d => updateDoc(d.ref, { lida: true }));
+    await Promise.all(promises);
+  } catch (_) {}
 }
