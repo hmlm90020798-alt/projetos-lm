@@ -738,6 +738,7 @@ export function renderPaginaCliente(p) {
     <a href="#timeline"       class="nav-link">${t.nav.timeline}</a>
     <a href="#wrap-docs"      class="nav-link">${lang==='pt'?'Documentos':'Documents'}</a>
     <a href="#mensagens"      class="nav-link">💬 ${lang==='pt'?'Mensagens':'Messages'}</a>
+    <a href="#reclamacao"     class="nav-link">⚠️ ${lang==='pt'?'Reclamação':'Complaint'}</a>
     <a href="#contacto"       class="nav-link">${t.nav.contacto}</a>
     <button class="nav-lang" onclick="window.setLang(window._LANG==='pt'?'en':'pt')">${lang==='pt'?'EN':'PT'}</button>`;
 
@@ -876,6 +877,9 @@ export function renderPaginaCliente(p) {
   // ── Verificar notificações para o cliente (mensagens novas + proposta atualizada)
   const _projId = getState('projAtualId');
   if (_projId) verificarNotificacoesCliente(_projId, p);
+
+  // ── Iniciar formulário de reclamação — mostrar secção e pré-preencher
+  iniciarFormReclamacao(p);
 }
 
 // ── Lightbox ──────────────────────────────────────
@@ -898,6 +902,155 @@ export function lightboxNav(dir) {
   const imgs = getState('lbImgs');
   const idx  = ((getState('lbIdx') + dir) + imgs.length) % imgs.length;
   abrirLightbox(idx);
+}
+
+
+// ── Formulário de Reclamação ──────────────────────
+// EmailJS — envio sem backend, emails internos nunca expostos ao cliente
+
+// IDs do EmailJS — configurar após criar conta em emailjs.com
+const EMAILJS_SERVICE_ID  = 'service_ijgsl8w';
+const EMAILJS_TEMPLATE_HM = 'template_xr3958i';       // só para Hélder Melo
+const EMAILJS_TEMPLATE_ALL = 'template_5j5erdi';      // Hélder + Serviços
+
+const TIPOS_REC = {
+  revisao:    { label: 'Revisão ou alteração ao projeto', soHM: true  },
+  entrega:    { label: 'Problema na entrega',             soHM: false },
+  instalacao: { label: 'Problema na instalação',          soHM: false },
+  posvenda:   { label: 'Pós-venda',                       soHM: false },
+};
+
+const URGENCIA_LABEL = {
+  normal:      'Normal',
+  urgente:     'Urgente',
+  obra_parada: '⚠️ OBRA PARADA',
+};
+
+export function iniciarFormReclamacao(p) {
+  // Mostrar secção
+  const sec = document.getElementById('reclamacao');
+  if (sec) sec.style.display = '';
+
+  // Pré-preencher nome com o do projeto se disponível
+  const nomeCliente = p?.nome ? p.nome.split('·')[0].trim() : '';
+  const inputNome = document.getElementById('rec-nome');
+  if (inputNome && nomeCliente) inputNome.placeholder = nomeCliente;
+
+  // Guardar refs do projeto para incluir no email
+  if (p) {
+    window._recProjRef = {
+      nome:      p.nome || '—',
+      refPc:     p.refPc || '—',
+      refOs:     p.refOs || '—',
+      localidade: p.localidade || '—',
+      fase:      p.fase || '—',
+      id:        p.id || '',
+    };
+  }
+}
+
+// Chamado pelo onchange do select de tipo
+window._recTipoChange = function() {
+  const tipo = document.getElementById('rec-tipo')?.value;
+  const info = TIPOS_REC[tipo];
+  if (!info) return;
+
+  // Mostrar indicação discreta de quem vai receber
+  const estado = document.getElementById('rec-form-estado');
+  if (estado) {
+    if (info.soHM) {
+      estado.style.display = '';
+      estado.className = 'rec-form-estado rec-estado-info';
+      estado.textContent = 'ℹ️ Esta reclamação será tratada diretamente por Hélder Melo.';
+    } else {
+      estado.style.display = '';
+      estado.className = 'rec-form-estado rec-estado-info';
+      estado.textContent = 'ℹ️ Esta reclamação será encaminhada para os serviços competentes.';
+    }
+  }
+};
+
+export async function enviarReclamacao() {
+  const btn = document.getElementById('btn-rec-enviar');
+  const estado = document.getElementById('rec-form-estado');
+
+  // Recolher campos
+  const nome     = document.getElementById('rec-nome')?.value.trim();
+  const email    = document.getElementById('rec-email')?.value.trim();
+  const telefone = document.getElementById('rec-telefone')?.value.trim() || '—';
+  const prefCtc  = document.getElementById('rec-contacto-pref')?.value || 'email';
+  const tipo     = document.getElementById('rec-tipo')?.value;
+  const urgencia = document.querySelector('input[name="rec-urgencia"]:checked')?.value || 'normal';
+  const descricao = document.getElementById('rec-descricao')?.value.trim();
+
+  // Validação
+  if (!nome || !email || !tipo || !descricao) {
+    if (estado) {
+      estado.style.display = '';
+      estado.className = 'rec-form-estado rec-estado-erro';
+      estado.textContent = '⚠️ Por favor preencha todos os campos obrigatórios.';
+    }
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'A enviar…'; }
+  if (estado) { estado.style.display = 'none'; }
+
+  const proj = window._recProjRef || {};
+  const tipoInfo = TIPOS_REC[tipo] || { label: tipo, soHM: true };
+  const urgLabel = URGENCIA_LABEL[urgencia] || urgencia;
+  const dataHora = new Date().toLocaleString('pt-PT', {
+    day: '2-digit', month: '2-digit', year: 'numeric',
+    hour: '2-digit', minute: '2-digit'
+  });
+
+  const templateParams = {
+    // Cliente
+    cliente_nome:     nome,
+    cliente_email:    email,
+    cliente_telefone: telefone,
+    cliente_pref_ctc: prefCtc === 'email' ? 'Email' : prefCtc === 'telefone' ? 'Telefone' : 'Qualquer',
+    // Reclamação
+    tipo_reclamacao:  tipoInfo.label,
+    urgencia:         urgLabel,
+    descricao:        descricao,
+    // Projeto
+    proj_nome:        proj.nome,
+    proj_refPc:       proj.refPc,
+    proj_refOs:       proj.refOs,
+    proj_localidade:  proj.localidade,
+    proj_fase:        proj.fase,
+    proj_link:        proj.id ? `https://hmlm90020798-alt.github.io/projetos-lm/?p=${proj.id}` : '—',
+    // Meta
+    data_hora:        dataHora,
+  };
+
+  try {
+    // Escolher template conforme tipo — soHM = só Hélder, senão vai para ambos
+    const templateId = tipoInfo.soHM ? EMAILJS_TEMPLATE_HM : EMAILJS_TEMPLATE_ALL;
+    await emailjs.send(EMAILJS_SERVICE_ID, templateId, templateParams);
+
+    // Sucesso
+    if (estado) {
+      estado.style.display = '';
+      estado.className = 'rec-form-estado rec-estado-ok';
+      estado.textContent = '✓ Reclamação enviada com sucesso. Receberá uma resposta em breve.';
+    }
+    // Limpar formulário
+    document.getElementById('form-reclamacao')?.reset();
+    window._recTipoChange(); // reset estado info
+
+    if (btn) { btn.disabled = false; btn.textContent = 'Enviar Reclamação'; }
+
+  } catch (err) {
+    console.error('EmailJS error:', err);
+    if (estado) {
+      estado.style.display = '';
+      estado.className = 'rec-form-estado rec-estado-erro';
+      estado.textContent = '✗ Erro ao enviar. Por favor tente novamente ou contacte directamente por telefone.';
+    }
+    if (btn) { btn.disabled = false; btn.textContent = 'Enviar Reclamação'; }
+  }
 }
 
 // ── Língua ─────────────────────────────────────────

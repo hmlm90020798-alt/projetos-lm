@@ -34,6 +34,11 @@
     });
   }
 </script>
+  <!-- EmailJS — envio de formulário de reclamação sem backend -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function(){ emailjs.init({ publicKey: 'QLD6uqUtgHRmBgjt4' }); })();
+  </script>
 </head>
 <body>
 
@@ -574,6 +579,99 @@
   </section>
 
   <!-- Contacto -->
+  <!-- Reclamação -->
+  <section id="reclamacao" class="cli-sec cli-sec-dark" style="display:none">
+    <div class="cli-sec-inner">
+      <div class="sec-header" style="display:flex;align-items:flex-end;gap:20px;margin-bottom:40px">
+        <span class="sec-num">08</span>
+        <div>
+          <div class="sec-eyebrow">Apoio ao Cliente</div>
+          <h2 class="sec-titulo">Registar Reclamação</h2>
+        </div>
+      </div>
+
+      <div class="rec-form-wrap">
+        <p class="rec-form-intro">Preencha o formulário abaixo. A sua reclamação será recebida e tratada com a maior brevidade possível.</p>
+
+        <form class="rec-form" id="form-reclamacao" onsubmit="return false">
+
+          <!-- Identificação — pré-preenchida -->
+          <div class="rec-form-grupo">
+            <div class="rec-form-campo">
+              <label class="rec-form-label">Nome</label>
+              <input type="text" id="rec-nome" class="rec-form-input" placeholder="O seu nome" required>
+            </div>
+            <div class="rec-form-campo">
+              <label class="rec-form-label">Email de contacto</label>
+              <input type="email" id="rec-email" class="rec-form-input" placeholder="para@email.com" required>
+            </div>
+          </div>
+
+          <div class="rec-form-grupo">
+            <div class="rec-form-campo">
+              <label class="rec-form-label">Telefone <span class="rec-form-opcional">(opcional)</span></label>
+              <input type="tel" id="rec-telefone" class="rec-form-input" placeholder="9XX XXX XXX">
+            </div>
+            <div class="rec-form-campo">
+              <label class="rec-form-label">Preferência de contacto</label>
+              <select id="rec-contacto-pref" class="rec-form-select">
+                <option value="email">Email</option>
+                <option value="telefone">Telefone</option>
+                <option value="qualquer">Qualquer</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tipo de reclamação -->
+          <div class="rec-form-campo">
+            <label class="rec-form-label">Tipo de reclamação</label>
+            <select id="rec-tipo" class="rec-form-select" onchange="window._recTipoChange()" required>
+              <option value="">Selecione o tipo…</option>
+              <option value="revisao">🔄 Revisão ou alteração ao projeto</option>
+              <option value="entrega">🚚 Problema na entrega</option>
+              <option value="instalacao">🔧 Problema na instalação</option>
+              <option value="posvenda">⭐ Pós-venda</option>
+            </select>
+          </div>
+
+          <!-- Urgência -->
+          <div class="rec-form-campo">
+            <label class="rec-form-label">Urgência</label>
+            <div class="rec-urgencia-group">
+              <label class="rec-urgencia-opt">
+                <input type="radio" name="rec-urgencia" value="normal" checked>
+                <span class="rec-urgencia-label rec-urg-normal">Normal</span>
+              </label>
+              <label class="rec-urgencia-opt">
+                <input type="radio" name="rec-urgencia" value="urgente">
+                <span class="rec-urgencia-label rec-urg-urgente">Urgente</span>
+              </label>
+              <label class="rec-urgencia-opt">
+                <input type="radio" name="rec-urgencia" value="obra_parada">
+                <span class="rec-urgencia-label rec-urg-critico">⚠️ Obra parada</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Descrição -->
+          <div class="rec-form-campo">
+            <label class="rec-form-label">Descrição do problema</label>
+            <textarea id="rec-descricao" class="rec-form-textarea" rows="5"
+              placeholder="Descreva o problema com o máximo de detalhe possível — artigos afetados, datas, o que aconteceu…" required></textarea>
+          </div>
+
+          <!-- Estado de envio -->
+          <div id="rec-form-estado" class="rec-form-estado" style="display:none"></div>
+
+          <button type="button" class="btn-rec-enviar" id="btn-rec-enviar" onclick="window.enviarReclamacao()">
+            Enviar Reclamação
+          </button>
+
+        </form>
+      </div>
+    </div>
+  </section>
+
   <section id="contacto" class="cli-sec cli-sec-ink">
     <div class="cli-sec-inner">
       <div class="contacto-layout">

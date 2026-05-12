@@ -1665,3 +1665,51 @@ img   { display: block; max-width: 100%; }
 
 /* Badge de mensagens não lidas */
 .card-msg-badge        { background: var(--green); color: #fff; font-size: 10px; font-weight: 700; font-family: var(--mono); min-width: 18px; height: 18px; border-radius: 99px; display: inline-flex; align-items: center; justify-content: center; padding: 0 5px; margin-left: 6px; vertical-align: middle; }
+
+/* ══════════════════════════════════════════════════════════════
+   FORMULÁRIO DE RECLAMAÇÃO — VISTA DO CLIENTE
+   ══════════════════════════════════════════════════════════════ */
+
+.rec-form-wrap       { max-width: 640px; margin: 0 auto; }
+.rec-form-intro      { font-size: 15px; color: rgba(245,242,236,.55); line-height: 1.7; margin-bottom: 32px; }
+.rec-form            { display: flex; flex-direction: column; gap: 20px; }
+
+.rec-form-grupo      { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 600px) { .rec-form-grupo { grid-template-columns: 1fr; } }
+
+.rec-form-campo      { display: flex; flex-direction: column; gap: 7px; }
+.rec-form-label      { font-family: var(--mono); font-size: 11px; font-weight: 600; color: rgba(245,242,236,.45); letter-spacing: .8px; text-transform: uppercase; }
+.rec-form-opcional   { font-weight: 400; color: rgba(245,242,236,.25); }
+
+.rec-form-input,
+.rec-form-select,
+.rec-form-textarea   { background: rgba(255,255,255,.05); border: 1.5px solid rgba(255,255,255,.1); border-radius: 10px; padding: 12px 14px; font-family: var(--sans); font-size: 14px; color: #F5F2EC; outline: none; transition: border-color .2s; width: 100%; }
+.rec-form-input:focus,
+.rec-form-select:focus,
+.rec-form-textarea:focus  { border-color: rgba(103,171,47,.5); background: rgba(255,255,255,.07); }
+.rec-form-input::placeholder,
+.rec-form-textarea::placeholder { color: rgba(245,242,236,.25); }
+.rec-form-select     { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(245,242,236,0.4)' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+.rec-form-select option { background: #1A2018; color: #F5F2EC; }
+.rec-form-textarea   { resize: vertical; min-height: 120px; line-height: 1.6; }
+
+/* Urgência */
+.rec-urgencia-group  { display: flex; gap: 10px; flex-wrap: wrap; }
+.rec-urgencia-opt    { cursor: pointer; }
+.rec-urgencia-opt input { display: none; }
+.rec-urgencia-label  { display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 99px; border: 1.5px solid rgba(255,255,255,.12); font-size: 13px; font-weight: 500; color: rgba(245,242,236,.6); cursor: pointer; transition: all .2s; }
+.rec-urgencia-opt input:checked + .rec-urg-normal   { background: rgba(16,185,129,.12); border-color: rgba(16,185,129,.4); color: #6EE7B7; }
+.rec-urgencia-opt input:checked + .rec-urg-urgente  { background: rgba(245,158,11,.12); border-color: rgba(245,158,11,.4); color: #FCD34D; }
+.rec-urgencia-opt input:checked + .rec-urg-critico  { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.4); color: #FCA5A5; }
+.rec-urgencia-label:hover { border-color: rgba(255,255,255,.25); color: #F5F2EC; }
+
+/* Estado do formulário */
+.rec-form-estado     { padding: 12px 16px; border-radius: 8px; font-size: 13px; line-height: 1.5; }
+.rec-estado-info     { background: rgba(103,171,47,.08); border: 1px solid rgba(103,171,47,.2); color: rgba(245,242,236,.6); }
+.rec-estado-ok       { background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.3); color: #6EE7B7; }
+.rec-estado-erro     { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); color: #FCA5A5; }
+
+/* Botão enviar */
+.btn-rec-enviar      { background: var(--green); border: none; border-radius: 10px; color: #fff; font-family: var(--sans); font-size: 14px; font-weight: 600; padding: 14px 28px; cursor: pointer; transition: all .2s; align-self: flex-start; }
+.btn-rec-enviar:hover { background: var(--green-mid); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(44,94,26,.35); }
+.btn-rec-enviar:disabled { opacity: .5; cursor: not-allowed; transform: none; }

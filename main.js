@@ -12,8 +12,7 @@
 
 import { getState, setState }    from './state.js';
 import { carregar, doLogin, doLogout, onAuth, registarVisita, carregarGroqKey, guardarGroqKey,
-         carregarMensagens, enviarMensagemCliente, responderMensagem, marcarMensagensLidas,
-         iniciarListenerMensagens } from './firebase.js';
+         carregarMensagens, enviarMensagemCliente, responderMensagem, marcarMensagensLidas } from './firebase.js';
 import { setView, mostrarToast } from './ui.js';
 import {
   renderPainel, abrirModalNovo, fecharModal, guardarProjeto,
@@ -30,6 +29,7 @@ import {
 import {
   renderPaginaCliente, renderEstadoAprovacao, aprovarProposta,
   abrirLightbox, fecharLightbox, lightboxNav, setLang,
+  enviarReclamacao,
 } from './cliente.js';
 import {
   abrirResumoIA, fecharResumoIA, regenerarResumoIA, copiarResumoIA,
@@ -81,6 +81,7 @@ window.aprovarProposta          = aprovarProposta;
 window.atualizarTipoProjeto     = atualizarTipoProjeto;
 window.reiniciarPrazoForm       = reiniciarPrazoForm;
 window.setLang                  = setLang;
+window.enviarReclamacao         = enviarReclamacao;
 window.abrirLightbox            = abrirLightbox;
 window.fecharLightbox           = fecharLightbox;
 window.lightboxNav              = lightboxNav;
@@ -100,7 +101,6 @@ window.enviarMensagem           = async () => {
 window.responderMensagem        = responderMensagem;
 window.marcarMensagensLidas     = marcarMensagensLidas;
 window.carregarMensagens        = carregarMensagens;
-window.iniciarListenerMensagens  = iniciarListenerMensagens;
 window.ativarModoApresentacao   = ativarModoApresentacao;
 window.sairModoApresentacao     = sairModoApresentacao;
 
@@ -261,13 +261,7 @@ function popularTiposSelect() {
   }
 
   const isCliente = await checkUrlParam();
-  if (isCliente) {
-    // Garantir remoção completa do overlay em modo cliente
-    ov.style.transition = 'opacity .3s';
-    ov.style.opacity = '0';
-    setTimeout(() => { if (ov.parentNode) ov.remove(); }, 350);
-    return;
-  }
+  if (isCliente) { ov.remove(); return; }
 
   window._loginFallbackTimer = setTimeout(() => {
     const o = document.getElementById('loading-overlay');
