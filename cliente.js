@@ -505,7 +505,57 @@ function renderDocumentos(docs, lang) {
 // ── Mensagens do Cliente ─────────────────────────
 // Sistema de comunicação direto entre cliente e Hélder Melo
 
-export async function renderMensagens(projId) {
+const MSG_POR_PAGINA = 10;
+
+// Cache de mensagens em memória para paginação sem re-fetch
+let _msgsCache = [];
+
+function _renderMsgItem(m, lang) {
+  const isHM   = m.origem === 'hm';
+  const tsDate = m.ts?.toDate ? m.ts.toDate().toLocaleDateString('pt-PT') : '';
+  const tsTime = m.ts?.toDate ? m.ts.toDate().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : '';
+  return `
+    <div class="msg-item ${isHM ? 'msg-item-hm' : 'msg-item-cliente'}">
+      <div class="msg-avatar">${isHM ? 'HM' : '👤'}</div>
+      <div class="msg-balao">
+        <div class="msg-origem">${isHM ? 'Hélder Melo' : (lang === 'en' ? 'You' : 'Você')}</div>
+        <div class="msg-texto">${nl2br(m.texto)}</div>
+        ${tsDate ? `<div class="msg-ts">${tsDate} · ${tsTime}</div>` : ''}
+      </div>
+    </div>`;
+}
+
+function _renderListaMsgs(wrap, msgsVisiveis, totalMsgs, lang) {
+  const anteriorCount = totalMsgs - msgsVisiveis.length;
+  const verMaisHtml = anteriorCount > 0
+    ? `<div class="msg-ver-mais-wrap">
+         <button class="btn-msg-ver-mais" onclick="window._verMaisMsgs()">
+           ↑ ${lang === 'en' ? `See ${anteriorCount} earlier message${anteriorCount > 1 ? 's' : ''}` : `Ver ${anteriorCount} mensagem${anteriorCount > 1 ? 's' : ''} anterior${anteriorCount > 1 ? 'es' : ''}`}
+         </button>
+       </div>`
+    : '';
+  wrap.innerHTML = verMaisHtml + msgsVisiveis.map(m => _renderMsgItem(m, lang)).join('');
+  // Scroll para o fim apenas se não há "ver mais" (primeira carga mostra últimas)
+  if (!verMaisHtml) wrap.scrollTop = wrap.scrollHeight;
+}
+
+// Quantas mensagens estão actualmente visíveis
+let _msgsVisiveis = MSG_POR_PAGINA;
+
+// Expor globalmente para o onclick inline
+window._verMaisMsgs = function() {
+  const wrap = document.getElementById('sec-mensagens');
+  if (!wrap || !_msgsCache.length) return;
+  _msgsVisiveis = Math.min(_msgsVisiveis + MSG_POR_PAGINA, _msgsCache.length);
+  const lang = getLang();
+  const slice = _msgsCache.slice(_msgsCache.length - _msgsVisiveis);
+  _renderListaMsgs(wrap, slice, _msgsCache.length, lang);
+  // Scroll para o topo do bloco carregado (primeira mensagem nova)
+  const primeiraNova = wrap.querySelector('.msg-ver-mais-wrap + .msg-item');
+  if (primeiraNova) primeiraNova.scrollIntoView({ behavior: 'smooth', block: 'start' });
+};
+
+export async function renderMensagens(projId, forcarScroll = false) {
   const wrap = document.getElementById('sec-mensagens');
   if (!wrap) return;
 
@@ -514,31 +564,25 @@ export async function renderMensagens(projId) {
   const msgs = await carregarMensagens(projId);
   const lang = getLang();
 
+  // Guardar cache e reiniciar contagem visível
+  _msgsCache     = msgs;
+  _msgsVisiveis  = MSG_POR_PAGINA;
+
   if (!msgs.length) {
     wrap.innerHTML = `
       <div class="msg-vazio">
         <div class="msg-vazio-icon">💬</div>
         <p>${lang === 'en' ? 'No messages yet. Send us a question or comment below.' : 'Ainda sem mensagens. Envie-nos uma dúvida ou comentário.'}</p>
       </div>`;
-  } else {
-    wrap.innerHTML = msgs.map(m => {
-      const isHM   = m.origem === 'hm';
-      const tsDate = m.ts?.toDate ? m.ts.toDate().toLocaleDateString('pt-PT') : '';
-      const tsTime = m.ts?.toDate ? m.ts.toDate().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) : '';
-      return `
-        <div class="msg-item ${isHM ? 'msg-item-hm' : 'msg-item-cliente'}">
-          <div class="msg-avatar">${isHM ? 'HM' : '👤'}</div>
-          <div class="msg-balao">
-            <div class="msg-origem">${isHM ? 'Hélder Melo' : (lang === 'en' ? 'You' : 'Você')}</div>
-            <div class="msg-texto">${nl2br(m.texto)}</div>
-            ${tsDate ? `<div class="msg-ts">${tsDate} · ${tsTime}</div>` : ''}
-          </div>
-        </div>`;
-    }).join('');
+    return;
   }
 
-  // Scroll to bottom of messages
-  wrap.scrollTop = wrap.scrollHeight;
+  // Mostrar as últimas MSG_POR_PAGINA mensagens
+  const slice = msgs.slice(msgs.length - _msgsVisiveis);
+  _renderListaMsgs(wrap, slice, msgs.length, lang);
+
+  // Scroll para o fim após envio de mensagem nova
+  if (forcarScroll) wrap.scrollTop = wrap.scrollHeight;
 }
 
 export async function enviarMensagem() {
@@ -556,7 +600,7 @@ export async function enviarMensagem() {
   try {
     await enviarMensagemCliente(projId, texto);
     input.value = '';
-    await renderMensagens(projId);
+    await renderMensagens(projId, true); // forcarScroll após envio
     mostrarToast('✓ Mensagem enviada', 'Hélder Melo responderá em breve.');
   } catch (e) {
     mostrarToast('⚠️ Erro ao enviar', 'Tente novamente.');
@@ -586,15 +630,15 @@ async function verificarNotificacoesCliente(projId, p) {
     const vistoMsgsTs = parseInt(localStorage.getItem(LS_VISTO_MSGS(projId)) || '0', 10);
 
     if (ultimaMsgTs > vistoMsgsTs) {
-      // Há mensagens novas — mostrar notificação clicável
+      // Marcar como visto IMEDIATAMENTE — não esperar pelo clique
+      // Assim na próxima abertura não volta a notificar
+      localStorage.setItem(LS_VISTO_MSGS(projId), ultimaMsgTs.toString());
+
+      // Mostrar notificação clicável
       setTimeout(() => mostrarNotifCliente(
         '💬 Tem uma resposta',
         'Hélder Melo respondeu à sua mensagem.',
-        () => {
-          document.getElementById('mensagens')?.scrollIntoView({ behavior: 'smooth' });
-          // Marcar como visto
-          localStorage.setItem(LS_VISTO_MSGS(projId), ultimaMsgTs.toString());
-        }
+        () => document.getElementById('mensagens')?.scrollIntoView({ behavior: 'smooth' })
       ), 1200);
       return; // uma notificação de cada vez
     }
@@ -612,10 +656,10 @@ async function verificarNotificacoesCliente(projId, p) {
       ), 1200);
     }
 
-    // Registar timestamp desta visita para o projeto
-    if (projTs > 0) {
-      localStorage.setItem(LS_VISTO_PROJ(projId), projTs.toString());
-    }
+    // Registar SEMPRE o timestamp desta visita — mesmo que não haja notificação
+    // Assim na próxima abertura compara corretamente
+    const tsParaGuardar = projTs > 0 ? projTs : Date.now();
+    localStorage.setItem(LS_VISTO_PROJ(projId), tsParaGuardar.toString());
 
   } catch (_) {}
 }
@@ -647,7 +691,7 @@ function mostrarNotifCliente(titulo, sub, onClicar) {
       const msgs = document.querySelectorAll('.msg-item-hm');
       if (msgs.length) {
         // Aproximação: usar timestamp atual como "visto"
-        localStorage.setItem(LS_VISTO_MSGS(projId), Date.now().toString());
+        // Já marcado como visto quando a notificação foi detectada
       }
     }
   };

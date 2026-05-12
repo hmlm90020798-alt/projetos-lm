@@ -1033,9 +1033,9 @@ export function iniciarPollingAprovacoes() {
     projetos,
     (projId, projNome, clienteMsgs) => {
       const ultimaTs = clienteMsgs[clienteMsgs.length - 1].ts?.toMillis?.() || 0;
-      const anterior = _ultimaMsgVista[projId] || 0;
+      const anterior = _getMsgVisto(projId);
       if (ultimaTs > anterior) {
-        _ultimaMsgVista[projId] = ultimaTs;
+        _setMsgVisto(projId, ultimaTs);
         const total = clienteMsgs.length;
         mostrarToast(
           `💬 ${esc(projNome || 'Cliente')}`,
@@ -1048,7 +1048,22 @@ export function iniciarPollingAprovacoes() {
 }
 
 // ── Cache de timestamps de mensagens vistas ─────────
-// Usado pelo listener realtime para evitar notificações duplicadas
+// Persistido em localStorage para sobreviver a recarregamentos de sessão
+const _LS_MSG_KEY = projId => `lm_painel_msg_visto_${projId}`;
+
+function _getMsgVisto(projId) {
+  // Primeiro verifica memória, depois localStorage
+  if (_ultimaMsgVista[projId]) return _ultimaMsgVista[projId];
+  const val = parseInt(localStorage.getItem(_LS_MSG_KEY(projId)) || '0', 10);
+  _ultimaMsgVista[projId] = val;
+  return val;
+}
+
+function _setMsgVisto(projId, ts) {
+  _ultimaMsgVista[projId] = ts;
+  try { localStorage.setItem(_LS_MSG_KEY(projId), ts.toString()); } catch(_) {}
+}
+
 const _ultimaMsgVista = {};
 
 function atualizarBadgeMensagens(projId, total) {
@@ -1076,7 +1091,7 @@ async function renderMensagensModal(projId) {
   const clienteMsgs = msgs.filter(m => m.origem === 'cliente');
   if (clienteMsgs.length) {
     const ultimaTs = clienteMsgs[clienteMsgs.length - 1].ts?.toMillis?.() || 0;
-    _ultimaMsgVista[projId] = ultimaTs;
+    _setMsgVisto(projId, ultimaTs);
   }
   atualizarBadgeMensagens(projId, 0);
 
