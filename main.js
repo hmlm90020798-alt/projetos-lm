@@ -17,7 +17,7 @@ import { setView, mostrarToast } from './ui.js';
 import {
   renderPainel, abrirModalNovo, fecharModal, guardarProjeto,
   editarProjeto, apagarProjeto, verCliente, partilharCliente, gerarPDF,
-  setFiltro, setTab, renderAlertas, renderOcorrenciasTab, abrirProjetoDoAlerta,
+  setFiltro, abrirProjetoDoAlerta,
   addLinhaElem, addCatElemExtra, addLinhaElemExtra,
   addCatOrcamento, addNota, addDoc, processarImagens, removerImagem, renderThumbs,
   atualizarTotalPreview, reiniciarPrazoForm, atualizarTipoProjeto,
@@ -26,6 +26,7 @@ import {
   toggleOrdem,
   toggleValorCard,
 } from './painel.js';
+import { setTab, renderAlertas, renderOcorrenciasTab } from './painel-alertas.js';
 import {
   renderPaginaCliente, renderEstadoAprovacao, aprovarProposta,
   abrirLightbox, fecharLightbox, lightboxNav, setLang,
