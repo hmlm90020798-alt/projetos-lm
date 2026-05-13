@@ -3,11 +3,19 @@
 // Cache dos assets estáticos para instalação PWA
 // ════════════════════════════════════════════════
 
-const CACHE = 'projetos-lm-v2'; // incrementar a cada deploy significativo
+const CACHE = 'projetos-lm-v3'; // incrementar a cada deploy significativo
 
-const ASSETS = [
+// Assets estáticos — cache-first (imagens, fontes, html)
+const ASSETS_STATIC = [
   '/projetos-lm/',
   '/projetos-lm/index.html',
+  '/projetos-lm/icon-192.png',
+  '/projetos-lm/icon-512.png',
+  'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap',
+];
+
+// Ficheiros de código — network-first para garantir versão mais recente
+const ASSETS_CODE = [
   '/projetos-lm/style.css',
   '/projetos-lm/main.js',
   '/projetos-lm/firebase.js',
@@ -21,23 +29,20 @@ const ASSETS = [
   '/projetos-lm/ui.js',
   '/projetos-lm/i18n.js',
   '/projetos-lm/sanitize.js',
-  '/projetos-lm/icon-192.png',
-  '/projetos-lm/icon-512.png',
-  'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap',
 ];
+
+const ASSETS = [...ASSETS_STATIC, ...ASSETS_CODE];
 
 // Instalar — cache dos assets
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE).then(cache =>
-      // addAll falha tudo-ou-nada; usamos Promise.allSettled por asset
-      // para que uma fonte externa em baixo (ex: Google Fonts) não bloqueie a instalação
       Promise.allSettled(ASSETS.map(url => cache.add(url)))
     ).then(() => self.skipWaiting())
   );
 });
 
-// Ativar — limpar caches antigas
+// Ativar — limpar caches antigas e tomar controlo imediato
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -46,25 +51,41 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch — network first para Firebase/API, cache first para assets estáticos
+// Fetch — estratégia diferenciada por tipo de asset
 self.addEventListener('fetch', e => {
   const url = new URL(e.request.url);
 
-  // Firebase, Groq e APIs externas — sempre network, nunca cache
+  // APIs externas — sempre network, nunca cache
   if (
     url.hostname.includes('firestore.googleapis.com') ||
     url.hostname.includes('firebase') ||
     url.hostname.includes('groq.com') ||
-    url.hostname.includes('gstatic.com')
+    url.hostname.includes('gstatic.com') ||
+    url.hostname.includes('emailjs.com')
   ) {
-    return; // deixa o browser tratar normalmente
+    return;
   }
 
-  // Assets estáticos — cache first, fallback network
+  // Ficheiros de código (.js, .css) — network-first
+  // Garante sempre a versão mais recente; fallback para cache se offline
+  const isCode = ASSETS_CODE.some(a => url.pathname === new URL(a, self.location.origin).pathname);
+  if (isCode) {
+    e.respondWith(
+      fetch(e.request).then(response => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE).then(cache => cache.put(e.request, clone));
+        }
+        return response;
+      }).catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // Assets estáticos (imagens, fontes, html) — cache-first, fallback network
   e.respondWith(
     caches.match(e.request).then(cached => {
       return cached || fetch(e.request).then(response => {
-        // Cache respostas válidas de assets próprios
         if (response.ok && url.origin === self.location.origin) {
           const clone = response.clone();
           caches.open(CACHE).then(cache => cache.put(e.request, clone));
