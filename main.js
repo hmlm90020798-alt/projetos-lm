@@ -18,15 +18,16 @@ import {
   renderPainel, abrirModalNovo, fecharModal, guardarProjeto,
   editarProjeto, apagarProjeto, verCliente, partilharCliente, gerarPDF,
   setFiltro, abrirProjetoDoAlerta,
-  addLinhaElem, addCatElemExtra, addLinhaElemExtra,
-  addCatOrcamento, addNota, addDoc, processarImagens, removerImagem, renderThumbs,
-  atualizarTotalPreview, reiniciarPrazoForm, atualizarTipoProjeto,
-  iniciarPollingAprovacoes, addInteracao, addOcorrencia,
-  atualizarEstadoOcorrencia, copiarEmail, copiarRef, TIPOS_PROJETO,
-  toggleOrdem,
-  toggleValorCard,
+  reiniciarPrazoForm, atualizarTipoProjeto,
+  iniciarPollingAprovacoes, copiarEmail, copiarRef, TIPOS_PROJETO,
+  toggleOrdem, toggleValorCard,
 } from './painel.js';
 import { setTab, renderAlertas, renderOcorrenciasTab } from './painel-alertas.js';
+import {
+  addLinhaElem, addCatElemExtra, addLinhaElemExtra,
+  addCatOrcamento, addNota, addDoc, processarImagens, removerImagem, renderThumbs,
+  atualizarTotalPreview, addInteracao, addOcorrencia, atualizarEstadoOcorrencia,
+} from './painel-form-extras.js';
 import {
   renderPaginaCliente, renderEstadoAprovacao, aprovarProposta,
   abrirLightbox, fecharLightbox, lightboxNav, setLang,
