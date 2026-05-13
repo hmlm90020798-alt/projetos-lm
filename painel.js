@@ -12,10 +12,6 @@ import { esc } from './sanitize.js';
 import { getMsgVisto, setMsgVisto, atualizarBadgeMensagens, renderMensagensModal } from './painel-mensagens.js';
 import { initAlertasModule, setTab, renderAlertas, renderOcorrenciasTab } from './painel-alertas.js';
 
-// ── Inicializar módulo de alertas ────────────────────
-// Passa TIPOS_PROJETO e faseOrdem para evitar import circular
-initAlertasModule(TIPOS_PROJETO, faseOrdem);
-
 // ── Ordenação ─────────────────────────────────────
 // 'data' = mais recente primeiro (default) | 'az' = A→Z | 'za' = Z→A
 let _ordemAtual = 'data';
@@ -157,6 +153,8 @@ function calcDashboard(lista) {
 // ── Render painel ─────────────────────────────────
 
 export function renderPainel() {
+  // Inicializar módulo de alertas com TIPOS_PROJETO e faseOrdem (definidos acima)
+  initAlertasModule(TIPOS_PROJETO, faseOrdem);
   const lista    = getProjects();
   const filtro   = getState('filtroAtivo');
   const pesquisa = (document.getElementById('painel-pesquisa')?.value || '').toLowerCase().trim();
