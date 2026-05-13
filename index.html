@@ -201,8 +201,12 @@
             <input type="text" id="f-tipo-outro" class="f-input" placeholder="Descrição do projeto">
           </div>
           <div class="form-campo">
-            <label class="form-label">Contacto</label>
+            <label class="form-label">Contacto <span class="label-hint">(telefone)</span></label>
             <input type="text" id="f-contacto" class="f-input" placeholder="Nº de telefone">
+          </div>
+          <div class="form-campo">
+            <label class="form-label">Email do cliente</label>
+            <input type="email" id="f-email" class="f-input" placeholder="cliente@email.com">
           </div>
           <div class="form-campo">
             <label class="form-label">Localidade</label>
@@ -632,6 +636,12 @@
               <option value="instalacao">🔧 Problema na instalação</option>
               <option value="posvenda">⭐ Pós-venda</option>
             </select>
+          </div>
+
+          <!-- Subtipo — aparece dinamicamente após selecionar tipo -->
+          <div class="rec-form-campo" id="rec-subtipo-wrap" style="display:none">
+            <label class="rec-form-label">Detalhe do problema</label>
+            <select id="rec-subtipo" class="rec-form-select"></select>
           </div>
 
           <!-- Urgência -->

@@ -920,6 +920,35 @@ const TIPOS_REC = {
   posvenda:   { label: 'Pós-venda',                       soHM: false },
 };
 
+const SUBTIPOS_REC = {
+  revisao: [
+    'Atraso ou demora na retificação do projeto',
+    'Erro no projeto',
+    'Outros',
+  ],
+  entrega: [
+    'Material danificado',
+    'Material em falta',
+    'Entrega não efetuada',
+    'Artigo trocado',
+    'Outros',
+  ],
+  instalacao: [
+    'Material em falta no momento da instalação',
+    'Material danificado na instalação',
+    'Problema com o técnico',
+    'Qualidade do trabalho',
+    'Prazo de instalação não cumprido',
+    'Outros',
+  ],
+  posvenda: [
+    'Avaria de equipamento',
+    'Desafinação de porta/gaveta',
+    'Defeito estético',
+    'Outros',
+  ],
+};
+
 const URGENCIA_LABEL = {
   normal:      'Normal',
   urgente:     'Urgente',
@@ -931,42 +960,57 @@ export function iniciarFormReclamacao(p) {
   const sec = document.getElementById('reclamacao');
   if (sec) sec.style.display = '';
 
-  // Pré-preencher nome com o do projeto se disponível
-  const nomeCliente = p?.nome ? p.nome.split('·')[0].trim() : '';
-  const inputNome = document.getElementById('rec-nome');
-  if (inputNome && nomeCliente) inputNome.placeholder = nomeCliente;
+  if (!p) return;
+
+  // Pré-preencher campos com dados do projeto
+  const nomeCliente = p.nome ? p.nome.split('·')[0].trim() : '';
+  const inputNome  = document.getElementById('rec-nome');
+  const inputEmail = document.getElementById('rec-email');
+  const inputTel   = document.getElementById('rec-telefone');
+
+  if (inputNome  && nomeCliente) { inputNome.value  = nomeCliente; }
+  if (inputEmail && p.email)     { inputEmail.value = p.email; }
+  if (inputTel   && p.contacto)  { inputTel.value   = p.contacto; }
 
   // Guardar refs do projeto para incluir no email
-  if (p) {
-    window._recProjRef = {
-      nome:      p.nome || '—',
-      refPc:     p.refPc || '—',
-      refOs:     p.refOs || '—',
-      localidade: p.localidade || '—',
-      fase:      p.fase || '—',
-      id:        p.id || '',
-    };
-  }
+  window._recProjRef = {
+    nome:       p.nome       || '—',
+    refPc:      p.refPc      || '—',
+    refOs:      p.refOs      || '—',
+    localidade: p.localidade || '—',
+    fase:       p.fase       || '—',
+    id:         p.id         || '',
+  };
 }
 
 // Chamado pelo onchange do select de tipo
 window._recTipoChange = function() {
-  const tipo = document.getElementById('rec-tipo')?.value;
-  const info = TIPOS_REC[tipo];
-  if (!info) return;
+  const tipo   = document.getElementById('rec-tipo')?.value;
+  const info   = TIPOS_REC[tipo];
+  const subWrap = document.getElementById('rec-subtipo-wrap');
+  const subSel  = document.getElementById('rec-subtipo');
+  const estado  = document.getElementById('rec-form-estado');
 
-  // Mostrar indicação discreta de quem vai receber
-  const estado = document.getElementById('rec-form-estado');
+  if (!info) {
+    if (subWrap) subWrap.style.display = 'none';
+    if (estado)  estado.style.display  = 'none';
+    return;
+  }
+
+  // Popular subtipos
+  const subs = SUBTIPOS_REC[tipo] || [];
+  if (subSel && subs.length) {
+    subSel.innerHTML = subs.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+    if (subWrap) subWrap.style.display = '';
+  }
+
+  // Indicação de quem recebe
   if (estado) {
-    if (info.soHM) {
-      estado.style.display = '';
-      estado.className = 'rec-form-estado rec-estado-info';
-      estado.textContent = 'ℹ️ Esta reclamação será tratada diretamente por Hélder Melo.';
-    } else {
-      estado.style.display = '';
-      estado.className = 'rec-form-estado rec-estado-info';
-      estado.textContent = 'ℹ️ Esta reclamação será encaminhada para os serviços competentes.';
-    }
+    estado.style.display = '';
+    estado.className = 'rec-form-estado rec-estado-info';
+    estado.textContent = info.soHM
+      ? 'ℹ️ Esta reclamação será tratada diretamente por Hélder Melo.'
+      : 'ℹ️ Esta reclamação será encaminhada para os serviços competentes.';
   }
 };
 
@@ -980,6 +1024,7 @@ export async function enviarReclamacao() {
   const telefone = document.getElementById('rec-telefone')?.value.trim() || '—';
   const prefCtc  = document.getElementById('rec-contacto-pref')?.value || 'email';
   const tipo     = document.getElementById('rec-tipo')?.value;
+  const subtipo  = document.getElementById('rec-subtipo')?.value || '—';
   const urgencia = document.querySelector('input[name="rec-urgencia"]:checked')?.value || 'normal';
   const descricao = document.getElementById('rec-descricao')?.value.trim();
 
@@ -1012,6 +1057,7 @@ export async function enviarReclamacao() {
     cliente_pref_ctc: prefCtc === 'email' ? 'Email' : prefCtc === 'telefone' ? 'Telefone' : 'Qualquer',
     // Reclamação
     tipo_reclamacao:  tipoInfo.label,
+    subtipo:          subtipo,
     urgencia:         urgLabel,
     descricao:        descricao,
     // Projeto

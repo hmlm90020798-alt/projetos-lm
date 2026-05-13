@@ -382,7 +382,7 @@ export function fecharModal() {
 }
 
 function limparForm() {
-  ['f-nome','f-contacto','f-localidade','f-prazo','f-entrega',
+  ['f-nome','f-contacto','f-email','f-localidade','f-prazo','f-entrega',
    'f-data-entrega-mat','f-data-instalacao','f-data-conclusao',
    'f-tipo-outro','f-ref-pc','f-ref-os',
    'f-orc-moveis','f-orc-tampos','f-orc-eletros','f-orc-acessorios'].forEach(id => {
@@ -416,7 +416,7 @@ export function editarProjeto(id) {
   limparForm();
 
   const sv = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val || ''; };
-  sv('f-nome', p.nome);           sv('f-contacto', p.contacto);
+  sv('f-nome', p.nome);           sv('f-contacto', p.contacto);  sv('f-email', p.email || '');
   sv('f-localidade', p.localidade); sv('f-fase', p.fase);
   sv('f-prazo', p.prazo);         sv('f-entrega', p.entrega);
   sv('f-data-entrega-mat', p.dataEntregaMat);
@@ -570,6 +570,7 @@ export async function guardarProjeto() {
     nome, tipo,
     tipoOutro:   tipo === 'outro' ? (document.getElementById('f-tipo-outro')?.value?.trim()||'') : '',
     contacto:    gv('f-contacto').trim(),
+    email:       gv('f-email').trim(),
     localidade:  gv('f-localidade').trim(),
     fase:        gv('f-fase'),
     prazo:       gv('f-prazo'),
