@@ -599,32 +599,11 @@
 
         <form class="rec-form" id="form-reclamacao" onsubmit="return false">
 
-          <!-- Identificação — pré-preenchida -->
-          <div class="rec-form-grupo">
-            <div class="rec-form-campo">
-              <label class="rec-form-label">Nome</label>
-              <input type="text" id="rec-nome" class="rec-form-input" placeholder="O seu nome" required>
-            </div>
-            <div class="rec-form-campo">
-              <label class="rec-form-label">Email de contacto</label>
-              <input type="email" id="rec-email" class="rec-form-input" placeholder="para@email.com" required>
-            </div>
-          </div>
-
-          <div class="rec-form-grupo">
-            <div class="rec-form-campo">
-              <label class="rec-form-label">Telefone <span class="rec-form-opcional">(opcional)</span></label>
-              <input type="tel" id="rec-telefone" class="rec-form-input" placeholder="9XX XXX XXX">
-            </div>
-            <div class="rec-form-campo">
-              <label class="rec-form-label">Preferência de contacto</label>
-              <select id="rec-contacto-pref" class="rec-form-select">
-                <option value="email">Email</option>
-                <option value="telefone">Telefone</option>
-                <option value="qualquer">Qualquer</option>
-              </select>
-            </div>
-          </div>
+          <!-- Campos ocultos — preenchidos automaticamente com dados do projeto -->
+          <input type="hidden" id="rec-nome">
+          <input type="hidden" id="rec-email">
+          <input type="hidden" id="rec-telefone">
+          <input type="hidden" id="rec-contacto-pref" value="email">
 
           <!-- Tipo de reclamação -->
           <div class="rec-form-campo">

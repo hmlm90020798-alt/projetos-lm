@@ -1028,12 +1028,12 @@ export async function enviarReclamacao() {
   const urgencia = document.querySelector('input[name="rec-urgencia"]:checked')?.value || 'normal';
   const descricao = document.getElementById('rec-descricao')?.value.trim();
 
-  // Validação
-  if (!nome || !email || !tipo || !descricao) {
+  // Validação — só tipo e descrição são obrigatórios (resto vem do projeto)
+  if (!tipo || !descricao) {
     if (estado) {
       estado.style.display = '';
       estado.className = 'rec-form-estado rec-estado-erro';
-      estado.textContent = '⚠️ Por favor preencha todos os campos obrigatórios.';
+      estado.textContent = '⚠️ Por favor selecione o tipo de reclamação e descreva o problema.';
     }
     return;
   }
