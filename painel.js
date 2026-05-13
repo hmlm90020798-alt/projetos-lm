@@ -11,7 +11,7 @@ import { renderHistoricoReunioes } from './modo-apresentacao.js';
 import { esc } from './sanitize.js';
 import { getMsgVisto, setMsgVisto, atualizarBadgeMensagens, renderMensagensModal } from './painel-mensagens.js';
 import { initAlertasModule, setTab, renderAlertas, renderOcorrenciasTab } from './painel-alertas.js';
-import { toggleOrdem, toggleValorCard, renderPainel } from './painel-dashboard.js';
+import { toggleOrdem, toggleValorCard, renderPainel, TIPOS_PROJETO, faseOrdem } from './painel-dashboard.js';
 import {
   addLinhaElem, addCatElemExtra, addLinhaElemExtra, addLinhaElemNoCat,
   addLinhaOrc, addCatOrcamento, atualizarTotalPreview,

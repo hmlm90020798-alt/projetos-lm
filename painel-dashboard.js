@@ -91,7 +91,7 @@ const FASE_CLASSE = {
   concluido:   'badge-concluido',
 };
 
-function faseOrdem(f) {
+export function faseOrdem(f) {
   return ['proposta','retificacao','aprovado','encomenda','entrega','montagem','concluido'].indexOf(f);
 }
 

@@ -19,11 +19,11 @@ import {
   editarProjeto, apagarProjeto, verCliente, partilharCliente, gerarPDF,
   setFiltro, abrirProjetoDoAlerta,
   reiniciarPrazoForm, atualizarTipoProjeto,
-  iniciarPollingAprovacoes, copiarEmail, copiarRef, TIPOS_PROJETO,
+  iniciarPollingAprovacoes, copiarEmail, copiarRef,
   inicializarPainel,
 } from './painel.js';
 import { setTab, renderAlertas, renderOcorrenciasTab } from './painel-alertas.js';
-import { renderPainel, toggleOrdem, toggleValorCard } from './painel-dashboard.js';
+import { renderPainel, toggleOrdem, toggleValorCard, TIPOS_PROJETO } from './painel-dashboard.js';
 import {
   addLinhaElem, addCatElemExtra, addLinhaElemExtra,
   addCatOrcamento, addNota, addDoc, processarImagens, removerImagem, renderThumbs,
