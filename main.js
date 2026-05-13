@@ -15,14 +15,15 @@ import { carregar, doLogin, doLogout, onAuth, registarVisita, carregarGroqKey, g
          carregarMensagens, enviarMensagemCliente, responderMensagem, marcarMensagensLidas } from './firebase.js';
 import { setView, mostrarToast } from './ui.js';
 import {
-  renderPainel, abrirModalNovo, fecharModal, guardarProjeto,
+  abrirModalNovo, fecharModal, guardarProjeto,
   editarProjeto, apagarProjeto, verCliente, partilharCliente, gerarPDF,
   setFiltro, abrirProjetoDoAlerta,
   reiniciarPrazoForm, atualizarTipoProjeto,
   iniciarPollingAprovacoes, copiarEmail, copiarRef, TIPOS_PROJETO,
-  toggleOrdem, toggleValorCard,
+  inicializarPainel,
 } from './painel.js';
 import { setTab, renderAlertas, renderOcorrenciasTab } from './painel-alertas.js';
+import { renderPainel, toggleOrdem, toggleValorCard } from './painel-dashboard.js';
 import {
   addLinhaElem, addCatElemExtra, addLinhaElemExtra,
   addCatOrcamento, addNota, addDoc, processarImagens, removerImagem, renderThumbs,
@@ -280,6 +281,7 @@ function popularTiposSelect() {
       await carregarReclamacoesFirebase(); // pré-carrega reclamações do Firebase
       await carregarGroqKey(); // carrega chave Groq do Firebase para localStorage
       window._LANG = 'pt';
+      inicializarPainel();
       renderPainel();
       setView('painel');
       iniciarPollingAprovacoes();
