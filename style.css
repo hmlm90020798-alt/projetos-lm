@@ -364,8 +364,8 @@ img   { display: block; max-width: 100%; }
 /* PDF, Link e Danger */
 .btn-card.pdf    { background: rgba(255,255,255,.12); color: rgba(255,255,255,.75); border-color: rgba(255,255,255,.2); }
 .btn-card.danger { background: rgba(192,57,43,.35);   color: #ffb3a0;              border-color: rgba(255,100,80,.3); }
-.btn-card.acomp       { background: rgba(196,169,106,.22); color: #f0d898; border-color: rgba(196,169,106,.45); font-weight: 700; }
-.btn-card.acomp:hover { background: rgba(196,169,106,.38); border-color: rgba(196,169,106,.7); }
+.btn-card.acomp       { background: rgba(196,169,106,.28); color: #f5e4a0; border-color: rgba(196,169,106,.6); font-weight: 700; letter-spacing: .02em; }
+.btn-card.acomp:hover { background: rgba(196,169,106,.45); border-color: rgba(196,169,106,.85); color: #fff; }
 
 /* ══ DRAWER DE ACOMPANHAMENTO ══ */
 .acomp-overlay {
@@ -514,7 +514,53 @@ img   { display: block; max-width: 100%; }
   padding: 20px 0;
   text-align: center;
 }
-.empty-state        { text-align: center; padding: 80px 20px; color: rgba(255,255,255,.5); }
+/* ── Inputs no modal e drawer — fundo branco, não parchment ── */
+.modal-box .f-input,
+.modal-box .f-select,
+.modal-box .f-textarea,
+.acomp-drawer .f-input,
+.acomp-drawer .f-select,
+.acomp-drawer .f-textarea {
+  background: #fff;
+  border-color: var(--border-mid);
+  color: var(--ink);
+}
+.modal-box .f-input:focus,
+.modal-box .f-select:focus,
+.modal-box .f-textarea:focus,
+.acomp-drawer .f-input:focus,
+.acomp-drawer .f-select:focus,
+.acomp-drawer .f-textarea:focus {
+  border-color: var(--green);
+  background: #fff;
+}
+.modal-box .form-bloco-titulo { color: var(--ink2); border-bottom-color: var(--border); }
+.modal-box .form-bloco-titulo.accordion-titulo:hover { color: var(--green); }
+
+/* Interacções no drawer */
+.acomp-drawer .interacao-item {
+  background: var(--cli-bg-soft);
+  border: 1px solid var(--border);
+}
+.acomp-drawer .int-tipo { font-weight: 600; }
+.acomp-drawer .int-texto { color: var(--ink2); }
+.acomp-drawer .int-data  { color: var(--ink4); }
+
+/* Ocorrências no drawer */
+.acomp-drawer .ocorr-item { background: #fff; border-color: rgba(186,117,23,.25); }
+.acomp-drawer .ocorr-desc { color: var(--ink3); }
+.acomp-drawer .ocorr-act-nota { color: var(--ink3); }
+.acomp-drawer .ocorr-act-data { color: var(--ink4); }
+
+/* Mensagens no drawer */
+.acomp-drawer .modal-msgs-wrap { background: var(--cli-bg-soft); border-radius: 10px; padding: 16px; }
+.acomp-drawer .modal-msg-item  { background: #fff; border: 1px solid var(--border); }
+.acomp-drawer .modal-msg-origem { color: var(--ink3); }
+.acomp-drawer .modal-msg-texto  { color: var(--ink); }
+.acomp-drawer .modal-msg-hm    { border-left: 3px solid var(--green); }
+.acomp-drawer .modal-msg-cliente { border-left: 3px solid var(--champ); }
+.acomp-drawer .modal-msg-textarea { background: #fff; color: var(--ink); border-color: var(--border-mid); }
+.acomp-drawer .modal-msg-footer { background: transparent; }
 .empty-icon         { font-size: 48px; margin-bottom: 16px; }
 .empty-titulo       { font-family: var(--serif); font-size: 22px; color: rgba(255,255,255,.75); margin-bottom: 8px; }
 .empty-sub          { font-size: 14px; color: rgba(255,255,255,.55); }
