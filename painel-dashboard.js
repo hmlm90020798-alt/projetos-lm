@@ -333,7 +333,6 @@ function renderCard(p) {
       ${p.prazo ? `<div class="card-prazo${urg ? ' urgente' : ''}">
         ${urg ? '⚠️ ' : ''}Válido até ${formatarData(p.prazo)}</div>` : ''}
       <div class="card-actions">
-        <button class="btn-card ver" onclick="event.stopPropagation();window.verCliente('${p.id}')">👁 Ver</button>
         <button class="btn-card apresentar" onclick="event.stopPropagation();window.ativarModoApresentacao('${p.id}')" title="Abrir Modo Apresentação numa nova janela">⛶ Apresentar</button>
         <button class="btn-card ia" onclick="event.stopPropagation();window.abrirResumoIA('${p.id}')" title="Resumo gerado por IA">✦ IA</button>
         <button class="btn-card pdf" onclick="event.stopPropagation();window.gerarPDF('${p.id}')" title="Gerar PDF da proposta">📄 PDF</button>

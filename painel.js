@@ -399,11 +399,222 @@ export function copiarEmail(btnEl) {
 }
 
 export function gerarPDF(id) {
-  // Abre a página do cliente num novo separador com ?print=1
-  // O cliente vê a proposta e pode imprimir/guardar como PDF
-  const base = window.location.origin + window.location.pathname;
-  const url  = `${base}?p=${id}&print=1`;
-  window.open(url, '_blank');
+  const p = getProjects().find(x => x.id === id);
+  if (!p) return;
+
+  const fmt = v => {
+    const n = parseFloat(String(v || '0').replace(',', '.')) || 0;
+    return n.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+  };
+  const esc = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // Total
+  const n = v => parseFloat(String(v || '0').replace(',', '.')) || 0;
+  let total = 0;
+  total += n(p.orc_moveis); total += n(p.orc_tampos);
+  total += n(p.orc_eletros); total += n(p.orc_acessorios);
+  (p.orcamento||[]).forEach(c => { total += n(c.valor); });
+
+  // Categorias do orçamento
+  const cats = [];
+  const addCat = (label, val, desc, artigos) => {
+    if (n(val) > 0) cats.push({ label, val: n(val), desc, artigos: artigos || [] });
+  };
+  addCat('Móveis',           p.orc_moveis,    p.orc_moveis_desc,    p.elem_moveis    || []);
+  addCat('Tampos',           p.orc_tampos,    p.orc_tampos_desc,    p.elem_tampos    || []);
+  addCat('Eletrodomésticos', p.orc_eletros,   p.orc_eletros_desc,   p.elem_eletros   || []);
+  addCat('Acessórios',       p.orc_acessorios,p.orc_acessorios_desc,p.elem_acessorios|| []);
+  (p.orcamento||[]).forEach(c => {
+    if (n(c.valor) > 0) cats.push({ label: c.categoria, val: n(c.valor), desc: c.desc, artigos: [] });
+  });
+
+  // Incluídos
+  const inc = p.incluido || {};
+  const opcoes = [
+    { key:'iva23',        label:'IVA à taxa legal em vigor (23%)' },
+    { key:'entrega',      label:'Entrega na morada do cliente' },
+    { key:'loja',         label:'Levantamento em loja (pelo cliente)' },
+    { key:'instalacao',   label:'Instalação incluída' },
+    { key:'inst-cliente', label:'Instalação a cargo do cliente' },
+    { key:'iva6',         label:'IVA taxa reduzida 6% (mão de obra — renovação)' },
+  ];
+  const incluidos = opcoes.filter(o => inc[o.key]);
+
+  // Notas
+  const notas = Array.isArray(p.notas)
+    ? p.notas.filter(n => n && (n.texto || typeof n === 'string'))
+    : (p.notas ? [{ titulo: '', texto: p.notas }] : []);
+
+  const dataHoje = new Date().toLocaleDateString('pt-PT');
+  const prazoFmt = p.prazo
+    ? new Date(p.prazo + 'T12:00:00').toLocaleDateString('pt-PT') : null;
+
+  const html = `<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Proposta — ${esc(p.nome)}</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: #fff; color: #1A1814; font-size: 11pt; line-height: 1.6; }
+  @page { margin: 18mm 16mm; size: A4; }
+  @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
+
+  /* Header */
+  .pdf-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20pt; border-bottom: 1.5pt solid #1A1814; margin-bottom: 20pt; }
+  .pdf-marca { font-family: 'DM Serif Display', serif; font-size: 22pt; color: #1A1814; }
+  .pdf-marca span { color: #C4A96A; font-style: italic; }
+  .pdf-meta { text-align: right; font-family: 'DM Mono', monospace; font-size: 8pt; color: #706A62; line-height: 1.8; }
+  .pdf-meta strong { color: #1A1814; font-size: 9pt; }
+
+  /* Hero */
+  .pdf-hero { margin-bottom: 24pt; padding: 18pt 20pt; background: #F7F5F0; border-radius: 6pt; border-left: 3pt solid #C4A96A; }
+  .pdf-eyebrow { font-family: 'DM Mono', monospace; font-size: 7.5pt; letter-spacing: .2em; text-transform: uppercase; color: #9C968E; margin-bottom: 6pt; }
+  .pdf-titulo { font-family: 'DM Serif Display', serif; font-size: 22pt; color: #1A1814; line-height: 1.1; margin-bottom: 10pt; }
+  .pdf-titulo span { color: #C4A96A; }
+  .pdf-cliente-label { font-family: 'DM Mono', monospace; font-size: 7pt; letter-spacing: .2em; text-transform: uppercase; color: #9C968E; }
+  .pdf-cliente-nome { font-family: 'DM Serif Display', serif; font-size: 16pt; color: #1A1814; margin-top: 2pt; }
+  .pdf-tags { display: flex; gap: 8pt; margin-top: 10pt; flex-wrap: wrap; }
+  .pdf-tag { font-family: 'DM Mono', monospace; font-size: 8pt; padding: 2pt 8pt; border: .5pt solid #C8C0B4; border-radius: 99pt; color: #706A62; }
+
+  /* Secção */
+  .pdf-sec { margin-bottom: 22pt; page-break-inside: avoid; }
+  .pdf-sec-titulo { font-family: 'DM Mono', monospace; font-size: 8pt; letter-spacing: .2em; text-transform: uppercase; color: #9C968E; border-bottom: .5pt solid #E4DED4; padding-bottom: 5pt; margin-bottom: 12pt; }
+
+  /* Orçamento */
+  .pdf-total { display: flex; justify-content: space-between; align-items: center; padding: 14pt 16pt; background: #1A1814; border-radius: 6pt; margin-bottom: 14pt; }
+  .pdf-total-label { font-family: 'DM Mono', monospace; font-size: 8pt; letter-spacing: .2em; text-transform: uppercase; color: #C4A96A; }
+  .pdf-total-val { font-family: 'DM Serif Display', serif; font-size: 22pt; color: #F5F2EC; }
+  .pdf-cat { display: flex; justify-content: space-between; align-items: baseline; padding: 7pt 0; border-bottom: .5pt solid #F0ECE4; }
+  .pdf-cat:last-child { border-bottom: none; }
+  .pdf-cat-nome { font-size: 11pt; color: #1A1814; font-weight: 500; }
+  .pdf-cat-desc { font-size: 9pt; color: #9C968E; margin-top: 1pt; }
+  .pdf-cat-val { font-family: 'DM Mono', monospace; font-size: 11pt; color: #1A1814; font-weight: 600; }
+  .pdf-cat-pct { font-family: 'DM Mono', monospace; font-size: 8pt; color: #9C968E; margin-left: 8pt; }
+  .pdf-artigos { margin-top: 4pt; padding-left: 8pt; }
+  .pdf-artigo { font-size: 9pt; color: #706A62; padding: 2pt 0; border-bottom: .5pt dotted #F0ECE4; display: flex; justify-content: space-between; }
+  .pdf-artigo:last-child { border-bottom: none; }
+
+  /* Incluído */
+  .pdf-inc-lista { display: flex; flex-direction: column; gap: 4pt; }
+  .pdf-inc-item { display: flex; align-items: center; gap: 7pt; font-size: 10pt; color: #3D3930; }
+  .pdf-inc-check { width: 10pt; height: 10pt; border: 1pt solid #C4A96A; border-radius: 2pt; background: #C4A96A; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 7pt; flex-shrink: 0; }
+
+  /* Notas */
+  .pdf-nota { padding: 10pt 12pt; background: #F7F5F0; border-radius: 4pt; border-left: 2pt solid #C4A96A; margin-bottom: 8pt; page-break-inside: avoid; }
+  .pdf-nota-titulo { font-weight: 600; font-size: 10pt; color: #1A1814; margin-bottom: 4pt; }
+  .pdf-nota-texto { font-size: 10pt; color: #706A62; line-height: 1.6; }
+
+  /* Footer */
+  .pdf-footer { margin-top: 28pt; padding-top: 14pt; border-top: .5pt solid #E4DED4; display: flex; justify-content: space-between; align-items: flex-end; }
+  .pdf-footer-hm { font-family: 'DM Serif Display', serif; font-size: 13pt; color: #1A1814; }
+  .pdf-footer-cargo { font-family: 'DM Mono', monospace; font-size: 8pt; color: #9C968E; margin-top: 2pt; }
+  .pdf-footer-contacto { font-family: 'DM Mono', monospace; font-size: 9pt; color: #706A62; text-align: right; line-height: 1.8; }
+  .pdf-validade { font-family: 'DM Mono', monospace; font-size: 8pt; color: #9C968E; margin-top: 10pt; padding-top: 8pt; border-top: .5pt dotted #E4DED4; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="pdf-header">
+  <div class="pdf-marca">Projetos <span>LM</span></div>
+  <div class="pdf-meta">
+    <strong>${esc(p.nome)}</strong><br>
+    ${esc(p.localidade || '')}<br>
+    ${p.refPc ? `PC: ${esc(p.refPc)}` : ''}${p.refPc && p.refOs ? ' · ' : ''}${p.refOs ? `OS: ${esc(p.refOs)}` : ''}<br>
+    Emitido em ${dataHoje}
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="pdf-hero">
+  <div class="pdf-eyebrow">Proposta Personalizada</div>
+  <div class="pdf-titulo">Um espaço pensado<br>para <span>viver.</span></div>
+  <div class="pdf-cliente-label">Desenvolvido exclusivamente para</div>
+  <div class="pdf-cliente-nome">${esc(p.nome)}</div>
+  <div class="pdf-tags">
+    ${p.tipo ? `<span class="pdf-tag">${esc(p.tipo === 'outro' ? (p.tipoOutro || 'Outro') : p.tipo)}</span>` : ''}
+    ${p.localidade ? `<span class="pdf-tag">${esc(p.localidade)}</span>` : ''}
+    ${prazoFmt ? `<span class="pdf-tag">Válido até ${prazoFmt}</span>` : ''}
+  </div>
+</div>
+
+<!-- ORÇAMENTO -->
+<div class="pdf-sec">
+  <div class="pdf-sec-titulo">Proposta Financeira — O seu Orçamento</div>
+  <div class="pdf-total">
+    <div class="pdf-total-label">Total do Projeto</div>
+    <div class="pdf-total-val">${fmt(total)}</div>
+  </div>
+  ${cats.map(c => `
+    <div class="pdf-cat">
+      <div>
+        <div class="pdf-cat-nome">${esc(c.label)}</div>
+        ${c.desc ? `<div class="pdf-cat-desc">${esc(c.desc)}</div>` : ''}
+        ${c.artigos.length ? `<div class="pdf-artigos">${c.artigos.map(a => `
+          <div class="pdf-artigo">
+            <span>${esc(a.nome)}</span>
+            ${a.preco && parseFloat(a.preco) > 0 ? `<span>${fmt(a.preco)}</span>` : ''}
+          </div>`).join('')}</div>` : ''}
+      </div>
+      <div style="text-align:right;flex-shrink:0;padding-left:16pt">
+        <span class="pdf-cat-val">${fmt(c.val)}</span>
+        ${total > 0 ? `<span class="pdf-cat-pct">${Math.round((c.val/total)*100)}%</span>` : ''}
+      </div>
+    </div>`).join('')}
+</div>
+
+${incluidos.length ? `
+<!-- INCLUÍDO -->
+<div class="pdf-sec">
+  <div class="pdf-sec-titulo">O que está incluído</div>
+  <div class="pdf-inc-lista">
+    ${incluidos.map(o => `
+      <div class="pdf-inc-item">
+        <span class="pdf-inc-check">✓</span>
+        ${esc(o.label)}
+      </div>`).join('')}
+  </div>
+</div>` : ''}
+
+${notas.length ? `
+<!-- NOTAS -->
+<div class="pdf-sec">
+  <div class="pdf-sec-titulo">Notas Importantes</div>
+  ${notas.map(nota => {
+    const titulo = typeof nota === 'string' ? '' : (nota.titulo || '');
+    const texto  = typeof nota === 'string' ? nota : (nota.texto || '');
+    return `<div class="pdf-nota">
+      ${titulo ? `<div class="pdf-nota-titulo">${esc(titulo)}</div>` : ''}
+      <div class="pdf-nota-texto">${esc(texto)}</div>
+    </div>`;
+  }).join('')}
+</div>` : ''}
+
+<!-- FOOTER -->
+<div class="pdf-footer">
+  <div>
+    <div class="pdf-footer-hm">Hélder Melo</div>
+    <div class="pdf-footer-cargo">Assessor Projeto (AP) · Leroy Merlin Portugal</div>
+    ${prazoFmt ? `<div class="pdf-validade">Proposta válida até ${prazoFmt}</div>` : ''}
+  </div>
+  <div class="pdf-footer-contacto">
+    917 880 364<br>
+    helder.melo@leroymerlin.pt
+  </div>
+</div>
+
+<script>window.onload = () => { window.print(); }</script>
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  if (win) {
+    win.document.write(html);
+    win.document.close();
+  }
 }
 
 export function exportarProjetos() {
