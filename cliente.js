@@ -59,7 +59,19 @@ function iniciarCountdown(prazo) {
   function tick() {
     const diff = fim - new Date();
     if (diff <= 0) {
-      wrap.innerHTML = `<div class="cd-expirada">${T[getLang()].hero.expirada}</div>`;
+      // Verificar se já foi aprovado entretanto
+      const cache = getState('projCache');
+      const jaAprov = cache && faseOrdem(cache.fase) >= faseOrdem('aprovado');
+      if (!jaAprov) {
+        // Fechar acesso — mostrar vista expirada
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        const exp = document.getElementById('view-expirada');
+        if (exp) exp.classList.add('active');
+      } else {
+        wrap.innerHTML = '';
+      }
+      const old = getState('cdInterval');
+      if (old) clearInterval(old);
       return;
     }
     const d  = Math.floor(diff / 86400000);
