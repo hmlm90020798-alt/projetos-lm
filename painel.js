@@ -459,60 +459,67 @@ export function gerarPDF(id) {
   @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'DM Sans', sans-serif; background: #fff; color: #1A1814; font-size: 11pt; line-height: 1.6; }
-  @page { margin: 18mm 16mm; size: A4; }
+  @page { margin: 14mm 16mm; size: A4; }
   @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } }
 
   /* Header */
-  .pdf-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 20pt; border-bottom: 1.5pt solid #1A1814; margin-bottom: 20pt; }
-  .pdf-marca { font-family: 'DM Serif Display', serif; font-size: 22pt; color: #1A1814; }
+  .pdf-header { display: flex; justify-content: space-between; align-items: flex-start; padding-bottom: 12pt; border-bottom: 1.5pt solid #1A1814; margin-bottom: 14pt; }
+  .pdf-marca { font-family: 'DM Serif Display', serif; font-size: 20pt; color: #1A1814; }
   .pdf-marca span { color: #C4A96A; font-style: italic; }
-  .pdf-meta { text-align: right; font-family: 'DM Mono', monospace; font-size: 8pt; color: #706A62; line-height: 1.8; }
+  .pdf-meta { text-align: right; font-family: 'DM Mono', monospace; font-size: 8pt; color: #706A62; line-height: 1.7; }
   .pdf-meta strong { color: #1A1814; font-size: 9pt; }
 
   /* Hero */
-  .pdf-hero { margin-bottom: 24pt; padding: 18pt 20pt; background: #F7F5F0; border-radius: 6pt; border-left: 3pt solid #C4A96A; }
-  .pdf-eyebrow { font-family: 'DM Mono', monospace; font-size: 7.5pt; letter-spacing: .2em; text-transform: uppercase; color: #9C968E; margin-bottom: 6pt; }
-  .pdf-titulo { font-family: 'DM Serif Display', serif; font-size: 22pt; color: #1A1814; line-height: 1.1; margin-bottom: 10pt; }
+  .pdf-hero { margin-bottom: 14pt; padding: 12pt 16pt; background: #F7F5F0; border-radius: 6pt; border-left: 3pt solid #C4A96A; display: flex; align-items: center; justify-content: space-between; gap: 16pt; }
+  .pdf-hero-left { flex: 1; }
+  .pdf-eyebrow { font-family: 'DM Mono', monospace; font-size: 7pt; letter-spacing: .2em; text-transform: uppercase; color: #9C968E; margin-bottom: 4pt; }
+  .pdf-titulo { font-family: 'DM Serif Display', serif; font-size: 16pt; color: #1A1814; line-height: 1.15; margin-bottom: 8pt; }
   .pdf-titulo span { color: #C4A96A; }
   .pdf-cliente-label { font-family: 'DM Mono', monospace; font-size: 7pt; letter-spacing: .2em; text-transform: uppercase; color: #9C968E; }
-  .pdf-cliente-nome { font-family: 'DM Serif Display', serif; font-size: 16pt; color: #1A1814; margin-top: 2pt; }
-  .pdf-tags { display: flex; gap: 8pt; margin-top: 10pt; flex-wrap: wrap; }
-  .pdf-tag { font-family: 'DM Mono', monospace; font-size: 8pt; padding: 2pt 8pt; border: .5pt solid #C8C0B4; border-radius: 99pt; color: #706A62; }
+  .pdf-cliente-nome { font-family: 'DM Serif Display', serif; font-size: 13pt; color: #1A1814; margin-top: 1pt; }
+  .pdf-tags { display: flex; gap: 6pt; margin-top: 8pt; flex-wrap: wrap; }
+  .pdf-tag { font-family: 'DM Mono', monospace; font-size: 7.5pt; padding: 1.5pt 7pt; border: .5pt solid #C8C0B4; border-radius: 99pt; color: #706A62; }
+
+  /* Imagens */
+  .pdf-imgs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6pt; margin-bottom: 14pt; }
+  .pdf-imgs.cols-1 { grid-template-columns: 1fr; }
+  .pdf-imgs.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .pdf-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 4pt; display: block; }
 
   /* Secção */
-  .pdf-sec { margin-bottom: 22pt; page-break-inside: avoid; }
-  .pdf-sec-titulo { font-family: 'DM Mono', monospace; font-size: 8pt; letter-spacing: .2em; text-transform: uppercase; color: #9C968E; border-bottom: .5pt solid #E4DED4; padding-bottom: 5pt; margin-bottom: 12pt; }
+  .pdf-sec { margin-bottom: 14pt; page-break-inside: avoid; }
+  .pdf-sec-titulo { font-family: 'DM Mono', monospace; font-size: 7.5pt; letter-spacing: .2em; text-transform: uppercase; color: #9C968E; border-bottom: .5pt solid #E4DED4; padding-bottom: 4pt; margin-bottom: 10pt; }
 
   /* Orçamento */
-  .pdf-total { display: flex; justify-content: space-between; align-items: center; padding: 14pt 16pt; background: #1A1814; border-radius: 6pt; margin-bottom: 14pt; }
-  .pdf-total-label { font-family: 'DM Mono', monospace; font-size: 8pt; letter-spacing: .2em; text-transform: uppercase; color: #C4A96A; }
-  .pdf-total-val { font-family: 'DM Serif Display', serif; font-size: 22pt; color: #F5F2EC; }
-  .pdf-cat { display: flex; justify-content: space-between; align-items: baseline; padding: 7pt 0; border-bottom: .5pt solid #F0ECE4; }
+  .pdf-total { display: flex; justify-content: space-between; align-items: center; padding: 11pt 14pt; background: #1A1814; border-radius: 6pt; margin-bottom: 10pt; }
+  .pdf-total-label { font-family: 'DM Mono', monospace; font-size: 7.5pt; letter-spacing: .2em; text-transform: uppercase; color: #C4A96A; }
+  .pdf-total-val { font-family: 'DM Serif Display', serif; font-size: 20pt; color: #F5F2EC; }
+  .pdf-cat { display: flex; justify-content: space-between; align-items: baseline; padding: 5pt 0; border-bottom: .5pt solid #F0ECE4; }
   .pdf-cat:last-child { border-bottom: none; }
-  .pdf-cat-nome { font-size: 11pt; color: #1A1814; font-weight: 500; }
-  .pdf-cat-desc { font-size: 9pt; color: #9C968E; margin-top: 1pt; }
-  .pdf-cat-val { font-family: 'DM Mono', monospace; font-size: 11pt; color: #1A1814; font-weight: 600; }
-  .pdf-cat-pct { font-family: 'DM Mono', monospace; font-size: 8pt; color: #9C968E; margin-left: 8pt; }
-  .pdf-artigos { margin-top: 4pt; padding-left: 8pt; }
-  .pdf-artigo { font-size: 9pt; color: #706A62; padding: 2pt 0; border-bottom: .5pt dotted #F0ECE4; display: flex; justify-content: space-between; }
+  .pdf-cat-nome { font-size: 10.5pt; color: #1A1814; font-weight: 500; }
+  .pdf-cat-desc { font-size: 8.5pt; color: #9C968E; margin-top: 1pt; }
+  .pdf-cat-val { font-family: 'DM Mono', monospace; font-size: 10.5pt; color: #1A1814; font-weight: 600; }
+  .pdf-cat-pct { font-family: 'DM Mono', monospace; font-size: 7.5pt; color: #9C968E; margin-left: 6pt; }
+  .pdf-artigos { margin-top: 3pt; padding-left: 8pt; }
+  .pdf-artigo { font-size: 8.5pt; color: #706A62; padding: 1.5pt 0; border-bottom: .5pt dotted #F0ECE4; display: flex; justify-content: space-between; }
   .pdf-artigo:last-child { border-bottom: none; }
 
   /* Incluído */
-  .pdf-inc-lista { display: flex; flex-direction: column; gap: 4pt; }
-  .pdf-inc-item { display: flex; align-items: center; gap: 7pt; font-size: 10pt; color: #3D3930; }
-  .pdf-inc-check { width: 10pt; height: 10pt; border: 1pt solid #C4A96A; border-radius: 2pt; background: #C4A96A; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 7pt; flex-shrink: 0; }
+  .pdf-inc-lista { display: flex; flex-direction: column; gap: 3pt; }
+  .pdf-inc-item { display: flex; align-items: center; gap: 6pt; font-size: 9.5pt; color: #3D3930; }
+  .pdf-inc-check { width: 9pt; height: 9pt; border-radius: 2pt; background: #C4A96A; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 6.5pt; flex-shrink: 0; }
 
   /* Notas */
-  .pdf-nota { padding: 10pt 12pt; background: #F7F5F0; border-radius: 4pt; border-left: 2pt solid #C4A96A; margin-bottom: 8pt; page-break-inside: avoid; }
-  .pdf-nota-titulo { font-weight: 600; font-size: 10pt; color: #1A1814; margin-bottom: 4pt; }
-  .pdf-nota-texto { font-size: 10pt; color: #706A62; line-height: 1.6; }
+  .pdf-nota { padding: 8pt 10pt; background: #F7F5F0; border-radius: 4pt; border-left: 2pt solid #C4A96A; margin-bottom: 6pt; page-break-inside: avoid; }
+  .pdf-nota-titulo { font-weight: 600; font-size: 9.5pt; color: #1A1814; margin-bottom: 3pt; }
+  .pdf-nota-texto { font-size: 9.5pt; color: #706A62; line-height: 1.55; }
 
   /* Footer */
-  .pdf-footer { margin-top: 28pt; padding-top: 14pt; border-top: .5pt solid #E4DED4; display: flex; justify-content: space-between; align-items: flex-end; }
-  .pdf-footer-hm { font-family: 'DM Serif Display', serif; font-size: 13pt; color: #1A1814; }
-  .pdf-footer-cargo { font-family: 'DM Mono', monospace; font-size: 8pt; color: #9C968E; margin-top: 2pt; }
-  .pdf-footer-contacto { font-family: 'DM Mono', monospace; font-size: 9pt; color: #706A62; text-align: right; line-height: 1.8; }
-  .pdf-validade { font-family: 'DM Mono', monospace; font-size: 8pt; color: #9C968E; margin-top: 10pt; padding-top: 8pt; border-top: .5pt dotted #E4DED4; }
+  .pdf-footer { margin-top: 18pt; padding-top: 10pt; border-top: .5pt solid #E4DED4; display: flex; justify-content: space-between; align-items: flex-end; }
+  .pdf-footer-hm { font-family: 'DM Serif Display', serif; font-size: 12pt; color: #1A1814; }
+  .pdf-footer-cargo { font-family: 'DM Mono', monospace; font-size: 7.5pt; color: #9C968E; margin-top: 2pt; }
+  .pdf-footer-contacto { font-family: 'DM Mono', monospace; font-size: 8.5pt; color: #706A62; text-align: right; line-height: 1.8; }
+  .pdf-validade { font-family: 'DM Mono', monospace; font-size: 7.5pt; color: #9C968E; margin-top: 8pt; padding-top: 6pt; border-top: .5pt dotted #E4DED4; }
 </style>
 </head>
 <body>
@@ -530,16 +537,24 @@ export function gerarPDF(id) {
 
 <!-- HERO -->
 <div class="pdf-hero">
-  <div class="pdf-eyebrow">Proposta Personalizada</div>
-  <div class="pdf-titulo">Um espaço pensado<br>para <span>viver.</span></div>
-  <div class="pdf-cliente-label">Desenvolvido exclusivamente para</div>
-  <div class="pdf-cliente-nome">${esc(p.nome)}</div>
-  <div class="pdf-tags">
-    ${p.tipo ? `<span class="pdf-tag">${esc(p.tipo === 'outro' ? (p.tipoOutro || 'Outro') : p.tipo)}</span>` : ''}
-    ${p.localidade ? `<span class="pdf-tag">${esc(p.localidade)}</span>` : ''}
-    ${prazoFmt ? `<span class="pdf-tag">Válido até ${prazoFmt}</span>` : ''}
+  <div class="pdf-hero-left">
+    <div class="pdf-eyebrow">Proposta Personalizada</div>
+    <div class="pdf-titulo">Um espaço pensado para <span>viver.</span></div>
+    <div class="pdf-cliente-label">Desenvolvido exclusivamente para</div>
+    <div class="pdf-cliente-nome">${esc(p.nome)}</div>
+    <div class="pdf-tags">
+      ${p.tipo ? `<span class="pdf-tag">${esc(p.tipo === 'outro' ? (p.tipoOutro || 'Outro') : p.tipo)}</span>` : ''}
+      ${p.localidade ? `<span class="pdf-tag">${esc(p.localidade)}</span>` : ''}
+      ${prazoFmt ? `<span class="pdf-tag">Válido até ${prazoFmt}</span>` : ''}
+    </div>
   </div>
 </div>
+
+${(p.imagens||[]).length ? `
+<!-- IMAGENS -->
+<div class="pdf-imgs${p.imagens.length === 1 ? ' cols-1' : p.imagens.length === 2 ? ' cols-2' : ''}">
+  ${p.imagens.slice(0,6).map(src => `<img class="pdf-img" src="${src}" alt="">`).join('')}
+</div>` : ''}
 
 <!-- ORÇAMENTO -->
 <div class="pdf-sec">
@@ -559,7 +574,7 @@ export function gerarPDF(id) {
             ${a.preco && parseFloat(a.preco) > 0 ? `<span>${fmt(a.preco)}</span>` : ''}
           </div>`).join('')}</div>` : ''}
       </div>
-      <div style="text-align:right;flex-shrink:0;padding-left:16pt">
+      <div style="text-align:right;flex-shrink:0;padding-left:14pt">
         <span class="pdf-cat-val">${fmt(c.val)}</span>
         ${total > 0 ? `<span class="pdf-cat-pct">${Math.round((c.val/total)*100)}%</span>` : ''}
       </div>
