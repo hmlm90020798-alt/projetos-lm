@@ -805,7 +805,6 @@ export function renderPaginaCliente(p) {
     <a href="#orcamento"      class="nav-link">${t.nav.orcamento}</a>
     <a href="#wrap-notas"     class="nav-link">${t.nav.notas}</a>
     <a href="#timeline"       class="nav-link">${t.nav.timeline}</a>
-    <a href="#wrap-docs"      class="nav-link">${lang==='pt'?'Documentos':'Documents'}</a>
     <a href="#mensagens"      class="nav-link">💬 ${lang==='pt'?'Mensagens':'Messages'}</a>
 
     <a href="#contacto"       class="nav-link">${t.nav.contacto}</a>
@@ -1394,7 +1393,7 @@ function _iniciarCascataOrcamento() {
   io.observe(secOrc);
 }
 
-// ── Reveal progressivo das secções ──
+// ── Neon de entrada/saída por secção ──
 function _iniciarSecaoActiva() {
   setTimeout(() => {
     const secs = Array.from(document.querySelectorAll('.cli-sec')).filter(s => {
@@ -1403,20 +1402,21 @@ function _iniciarSecaoActiva() {
         if (window.getComputedStyle(el).display === 'none') return false;
         el = el.parentElement;
       }
-      return true;
+      return s.offsetHeight > 0;
     });
     if (!secs.length) return;
 
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) {
-          e.target.classList.add('sec-revealed');
-          io.unobserve(e.target); // revela só uma vez
+          e.target.classList.add('sec-ativa');
+        } else {
+          e.target.classList.remove('sec-ativa');
         }
       });
     }, {
-      threshold: 0.12,
-      rootMargin: '-40px 0px 0px 0px'
+      threshold: 0.15,
+      rootMargin: '-48px 0px -15% 0px'
     });
 
     secs.forEach(s => io.observe(s));
