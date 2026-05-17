@@ -583,12 +583,10 @@ function renderNotasCartoes(p) {
   const tN  = T[getLang()].notas.cartoes;
   const lang = getLang();
 
-  // Data de validade formatada
   const prazoFmt = p.prazo
     ? new Date(p.prazo + 'T12:00:00').toLocaleDateString(lang === 'en' ? 'en-GB' : 'pt-PT')
     : null;
 
-  // Data de entrega formatada
   const entregaFmt = p.entrega || (p.dataEntregaMat
     ? new Date(p.dataEntregaMat + 'T12:00:00').toLocaleDateString(lang === 'en' ? 'en-GB' : 'pt-PT')
     : null);
@@ -601,7 +599,6 @@ function renderNotasCartoes(p) {
     { ...tN.transp },
   ].filter(Boolean);
 
-  // Notas manuais — array de {titulo, texto} ou strings legadas
   const notasArr = Array.isArray(p.notas)
     ? p.notas.filter(n => n && (n.texto || typeof n === 'string'))
     : (p.notas ? [{ titulo: '', texto: p.notas }] : []);
@@ -609,27 +606,30 @@ function renderNotasCartoes(p) {
   const notasExtra = notasArr.map(n => {
     const titulo = typeof n === 'string' ? '' : (n.titulo || '');
     const texto  = typeof n === 'string' ? n  : (n.texto  || '');
-    return `
-    <div class="nota-card nota-card-manual">
-      <div class="nota-card-titulo">
-        <span class="nota-card-icon">📌</span>
-        ${titulo || (lang === 'en' ? 'Important Note' : 'Nota Importante')}
-      </div>
-      <p class="nota-card-texto">${nl2br(texto)}</p>
-    </div>`;
+    return _notaCardHtml('📌', titulo || (lang === 'en' ? 'Important Note' : 'Nota Importante'), nl2br(texto), true);
   }).join('');
 
+  const cartoesHtml = cartoes.map(c =>
+    _notaCardHtml(c.icon, c.titulo, nl2br(c.texto), false)
+  ).join('');
+
+  return `<div class="notas-grid">${cartoesHtml}${notasExtra}</div>`;
+}
+
+function _notaCardHtml(icon, titulo, textoHtml, isManual) {
+  const uid = 'nc-' + Math.random().toString(36).slice(2, 7);
   return `
-    <div class="notas-grid">
-      ${cartoes.map(c => `
-        <div class="nota-card">
-          <div class="nota-card-titulo">
-            <span class="nota-card-icon">${c.icon}</span>
-            ${c.titulo}
-          </div>
-          <p class="nota-card-texto">${nl2br(c.texto)}</p>
-        </div>`).join('')}
-      ${notasExtra}
+    <div class="nota-card${isManual ? ' nota-card-manual' : ''}" onclick="window._toggleNota(this)" role="button" tabindex="0" aria-expanded="false">
+      <div class="nota-card-header">
+        <span class="nota-card-icon">${icon}</span>
+        <span class="nota-card-titulo">${titulo}</span>
+        <span class="nota-card-chevron">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </span>
+      </div>
+      <div class="nota-card-corpo" id="${uid}">
+        <p class="nota-card-texto">${textoHtml}</p>
+      </div>
     </div>`;
 }
 
@@ -1560,6 +1560,20 @@ function _iniciarCascataOrcamento() {
   }, { threshold: 0.6 });
   io.observe(secOrc);
 }
+
+// ── Toggle cards de notas ──
+window._toggleNota = function(card) {
+  const corpo = card.querySelector('.nota-card-corpo');
+  const isOpen = card.classList.toggle('nota-aberta');
+  card.setAttribute('aria-expanded', isOpen);
+  if (isOpen) {
+    corpo.style.maxHeight = corpo.scrollHeight + 'px';
+    corpo.style.opacity   = '1';
+  } else {
+    corpo.style.maxHeight = '0';
+    corpo.style.opacity   = '0';
+  }
+};
 
 // ── FAB Falar Comigo ──
 function _criarFAB() {
