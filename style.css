@@ -682,6 +682,7 @@ img   { display: block; max-width: 100%; }
 .sec-eyebrow-light  { color: var(--green-light); }
 .sec-titulo         { font-family: var(--serif); font-size: 36px; color: rgba(240,235,224,.55); line-height: 1.05; transition: color .4s ease; }
 .sec-titulo-light   { color: rgba(240,235,224,.55); }
+.sec-desc           { font-family: var(--sans); font-size: 14px; line-height: 1.7; color: rgba(240,235,224,.38); margin-top: 12px; max-width: 480px; }
 .sec-vazio          { color: var(--ink4); font-style: italic; font-size: 14px; }
 
 /* ──────────────────────────────────────────────

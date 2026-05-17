@@ -978,7 +978,7 @@ export function renderPaginaCliente(p) {
     'sec-header-galeria':   { num: '01', eyebrow: t.galeria.eyebrow,   titulo: t.galeria.titulo,   light: false },
     'sec-header-orcamento': { num: '02', eyebrow: t.orcamento.eyebrow, titulo: t.orcamento.titulo, light: true  },
     'sec-header-notas':     { num: '03', eyebrow: t.notas.eyebrow,     titulo: t.notas.titulo,     light: false },
-    'sec-header-timeline':  { num: '04', eyebrow: t.timeline.eyebrow,  titulo: t.timeline.titulo,  light: true  },
+    'sec-header-timeline':  { num: '04', eyebrow: t.timeline.eyebrow,  titulo: t.timeline.titulo, desc: lang==='pt' ? 'Cada fase é gerida com rigor e transparência, para que tudo aconteça como planeado.' : 'Every phase is managed with rigour and transparency, so everything happens as planned.', light: true  },
     'sec-header-docs':      { num: '05', eyebrow: lang==='pt'?'Documentos':'Documents', titulo: lang==='pt'?'Plantas & Documentos':'Plans & Documents', light: false },
   };
   Object.entries(secTitulos).forEach(([id, s]) => {
@@ -989,6 +989,7 @@ export function renderPaginaCliente(p) {
       <div>
         <div class="sec-eyebrow${s.light?' sec-eyebrow-light':''}">${s.eyebrow}</div>
         <h2 class="sec-titulo${s.light?' sec-titulo-light':''}">${s.titulo}</h2>
+        ${s.desc ? `<p class="sec-desc">${s.desc}</p>` : ''}
       </div>`;
   });
 
