@@ -828,6 +828,16 @@ img   { display: block; max-width: 100%; }
   color: rgba(200,165,100,.8);
   background: rgba(200,165,100,.06);
 }
+.tl-btn-rec {
+  background: transparent;
+  color: rgba(186,117,23,.6);
+  border: .5px solid rgba(186,117,23,.2);
+}
+.tl-btn-rec:hover {
+  border-color: rgba(186,117,23,.5);
+  color: rgba(186,117,23,.9);
+  background: rgba(186,117,23,.07);
+}
 
 
 .tl-ocorrencia      { background: rgba(186,117,23,.08); border: 1px solid rgba(186,117,23,.25); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }

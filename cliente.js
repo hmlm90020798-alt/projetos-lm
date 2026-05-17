@@ -385,47 +385,41 @@ function renderTimeline(p) {
 
   // Botões de acção por fase
   function botoesAcao(marcFase) {
+    const btnFalar = `<button class="tl-btn tl-btn-ghost" onclick="window._abrirMensagens()">💬 Falar Comigo</button>`;
+    const btnReclamar = `<button class="tl-btn tl-btn-rec" onclick="window._abrirReclamacao('reclamacao')">⚠ Reclamação</button>`;
+
     if (marcFase === 'analise' && !jaAprov) {
       return `
         <div class="tl-acoes">
-          <button class="tl-btn tl-btn-primary" onclick="window.aprovarProposta()">
-            ✓ Aprovar Proposta
-          </button>
-          <button class="tl-btn tl-btn-secondary" onclick="window._abrirReclamacao('ajuste')">
-            ↩ Solicitar Ajustes
-          </button>
+          <button class="tl-btn tl-btn-primary" onclick="window.aprovarProposta()">✓ Aprovar Proposta</button>
+          ${btnFalar}
         </div>`;
     }
     if (marcFase === 'entrega' && fase === 'entrega') {
       return `
         <div class="tl-acoes">
-          <button class="tl-btn tl-btn-primary" onclick="window._confirmarEntrega()">
-            ✓ Confirmar Entrega
-          </button>
-          <button class="tl-btn tl-btn-secondary" onclick="window._abrirReclamacao('reclamacao')">
-            ⚠ Reclamar
-          </button>
+          <button class="tl-btn tl-btn-primary" onclick="window._confirmarEntrega()">✓ Confirmar Entrega</button>
+          ${btnFalar}
+          ${btnReclamar}
         </div>`;
     }
     if (marcFase === 'instalacao' && fase === 'montagem') {
       return `
         <div class="tl-acoes">
-          <button class="tl-btn tl-btn-primary" onclick="window._confirmarInstalacao()">
-            ✓ Confirmar Instalação
-          </button>
-          <button class="tl-btn tl-btn-secondary" onclick="window._abrirReclamacao('reclamacao')">
-            ⚠ Reclamar
-          </button>
+          <button class="tl-btn tl-btn-primary" onclick="window._confirmarInstalacao()">✓ Confirmar Instalação</button>
+          ${btnFalar}
+          ${btnReclamar}
         </div>`;
     }
     if (marcFase === 'conclusao' && fase === 'concluido') {
       return `
         <div class="tl-acoes">
-          <button class="tl-btn tl-btn-secondary" onclick="window._abrirReclamacao('reclamacao')">
-            ⚠ Reclamar
-          </button>
+          ${btnFalar}
+          ${btnReclamar}
         </div>`;
     }
+    // Fases pós-aprovação sem acção primária (encomenda)
+    if (jaAprov && marcFase === null) return '';
     return '';
   }
 
