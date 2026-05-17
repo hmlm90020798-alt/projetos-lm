@@ -10,14 +10,15 @@ import { esc }               from './sanitize.js';
 
 // ── Linhas de elementos (com URL) ─────────────────
 
-export function addLinhaElem(secId, nome = '', url = '') {
+export function addLinhaElem(secId, nome = '', url = '', preco = '') {
   const sec = document.getElementById(`sec-elem-${secId}`);
   if (!sec) return;
   const d = document.createElement('div');
   d.className = 'elem-line';
   d.innerHTML = `
-    <input type="text" class="elem-line-nome" placeholder="Nome do artigo" value="${nome}">
-    <input type="url"  class="elem-line-url"  placeholder="https://leroymerlin.pt/..." value="${url}">
+    <input type="text"   class="elem-line-nome"  placeholder="Nome do artigo" value="${nome}">
+    <input type="url"    class="elem-line-url"   placeholder="https://leroymerlin.pt/..." value="${url}">
+    <input type="number" class="elem-line-preco" placeholder="Preço (€)" value="${preco}" style="width:100px">
     <button class="prod-line-del" onclick="this.closest('.elem-line').remove()">×</button>`;
   sec.appendChild(d);
 }
@@ -41,12 +42,13 @@ export function addLinhaElemExtra(btnEl) {
   if (c) addLinhaElemNoCat(c, '', '');
 }
 
-export function addLinhaElemNoCat(c, nome = '', url = '') {
+export function addLinhaElemNoCat(c, nome = '', url = '', preco = '') {
   const d = document.createElement('div');
   d.className = 'elem-line';
   d.innerHTML = `
-    <input type="text" class="elem-line-nome" placeholder="Nome do artigo" value="${nome}">
-    <input type="url"  class="elem-line-url"  placeholder="https://leroymerlin.pt/..." value="${url}">
+    <input type="text"   class="elem-line-nome"  placeholder="Nome do artigo" value="${nome}">
+    <input type="url"    class="elem-line-url"   placeholder="https://leroymerlin.pt/..." value="${url}">
+    <input type="number" class="elem-line-preco" placeholder="Preço (€)" value="${preco}" style="width:100px">
     <button class="prod-line-del" onclick="this.closest('.elem-line').remove()">×</button>`;
   c.appendChild(d);
 }

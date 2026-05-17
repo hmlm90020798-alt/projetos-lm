@@ -181,6 +181,7 @@ function renderOrcamento(p) {
           <div class="orc-artigo-item">
             <span class="orc-artigo-nome">${esc(a.nome)}</span>
             <div class="orc-artigo-direita">
+              ${a.preco && parseFloat(a.preco) > 0 ? `<span class="orc-artigo-preco">${fmt(a.preco)}</span>` : ''}
               ${a.url ? `<a href="${safeUrl(a.url)}" target="_blank" rel="noopener noreferrer" class="elem-link">${lang==='en'?'View':'VER ARTIGO'}</a>` : ''}
             </div>
           </div>`).join('')}

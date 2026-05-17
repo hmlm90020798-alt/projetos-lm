@@ -127,13 +127,13 @@ export function editarProjeto(id) {
     ['tampos','elem_tampos'], ['eletros','elem_eletros'], ['acessorios','elem_acessorios'],
   ];
   elemCats.forEach(([secId, campo]) => {
-    (p[campo]||[]).forEach(i => addLinhaElem(secId, i.nome, i.url));
+    (p[campo]||[]).forEach(i => addLinhaElem(secId, i.nome, i.url, i.preco||''));
   });
   (p.elem_extras||[]).forEach(cat => {
     addCatElemExtra(cat.categoria);
     const grupos = document.getElementById('sec-elem-extras').querySelectorAll('[data-elem-grupo]');
     const ult = grupos[grupos.length - 1];
-    if (ult) (cat.itens||[]).forEach(i => addLinhaElemNoCat(ult.querySelector('[data-elem-itens]'), i.nome, i.url));
+    if (ult) (cat.itens||[]).forEach(i => addLinhaElemNoCat(ult.querySelector('[data-elem-itens]'), i.nome, i.url, i.preco||''));
   });
 
   // Orçamento — valor único por categoria
@@ -194,8 +194,9 @@ export async function guardarProjeto() {
   const recolherLinhasElem = c => {
     if (!c) return [];
     return Array.from(c.querySelectorAll('.elem-line')).map(r => ({
-      nome: r.querySelector('.elem-line-nome')?.value?.trim() || '',
-      url:  r.querySelector('.elem-line-url')?.value?.trim()  || '',
+      nome:  r.querySelector('.elem-line-nome')?.value?.trim()  || '',
+      url:   r.querySelector('.elem-line-url')?.value?.trim()   || '',
+      preco: r.querySelector('.elem-line-preco')?.value?.trim() || '',
     })).filter(i => i.nome);
   };
 
