@@ -1498,10 +1498,26 @@ function _iniciarSecaoActiva() {
     });
     if (!secs.length) return;
 
+    // Mapa secção-id → href do link na navbar
+    // Cada secção pode ter um id próprio ou estar dentro de um wrap com id
+    const navLinks = Array.from(document.querySelectorAll('.cli-nav-links .nav-link[href^="#"]'));
+
+    function _actualizarNavActiva(secId) {
+      navLinks.forEach(a => {
+        const href = a.getAttribute('href').replace('#', '');
+        // Link activo se o href corresponde ao id da secção ou ao id do seu pai wrap
+        a.classList.toggle('nav-ativa', href === secId || secId.startsWith(href.replace('wrap-','')) || href.replace('wrap-','') === secId.replace('wrap-',''));
+      });
+    }
+
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) {
           e.target.classList.add('sec-ativa');
+          // Subir ao wrap pai para obter o id de navegação
+          const wrap = e.target.closest('[id]');
+          const secId = (wrap && wrap.id) ? wrap.id : e.target.id;
+          if (secId) _actualizarNavActiva(secId);
         } else {
           e.target.classList.remove('sec-ativa');
         }
