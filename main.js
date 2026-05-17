@@ -154,23 +154,24 @@ async function checkUrlParam() {
     const jaAprovado = fasesAprovadas.includes(p.fase) || !!p.aprovacao?.data;
 
     if (p.prazo && !jaAprovado) {
-      const prazoDate    = new Date(p.prazo + 'T23:59:59');
-      const agora        = new Date();
-      // diasPassados > 0 significa que o prazo já terminou
-      const diasPassados = Math.floor((agora - prazoDate) / (1000 * 60 * 60 * 24));
+      const prazoDate = new Date(p.prazo + 'T23:59:59');
+      const agora     = new Date();
+      const expirado  = agora > prazoDate;
+      const msPassados = agora - prazoDate;
+      const diasPassados = Math.floor(msPassados / (1000 * 60 * 60 * 24));
 
-      if (diasPassados > 5) {
+      if (expirado && diasPassados > 5) {
         // Mais de 5 dias após expiração — link completamente inativo
         setView('expirada');
         return true;
       }
 
-      if (diasPassados > 0) {
-        // Expirado 1-5 dias — mostrar página de contacto com countdown
-        mostrarExpiradaContacto(p, diasPassados);
+      if (expirado) {
+        // Expirado (0-5 dias) — mostrar página de contacto
+        mostrarExpiradaContacto(p, Math.max(1, diasPassados));
         return true;
       }
-      // diasPassados <= 0 significa prazo futuro ou hoje — continua normalmente
+      // Prazo futuro — continua normalmente
     }
 
     // ── Projeto válido — renderizar normalmente
