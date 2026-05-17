@@ -885,11 +885,10 @@ export function renderPaginaCliente(p) {
   // ── Títulos das secções (todos renderizados via JS para suportar tradução)
   const secTitulos = {
     'sec-header-galeria':   { num: '01', eyebrow: t.galeria.eyebrow,   titulo: t.galeria.titulo,   light: false },
-    'sec-header-elementos': { num: '02', eyebrow: t.elementos.eyebrow, titulo: t.elementos.titulo, light: false },
-    'sec-header-orcamento': { num: '03', eyebrow: t.orcamento.eyebrow, titulo: t.orcamento.titulo, light: true  },
-    'sec-header-notas':     { num: '04', eyebrow: t.notas.eyebrow,     titulo: t.notas.titulo,     light: false },
-    'sec-header-timeline':  { num: '05', eyebrow: t.timeline.eyebrow,  titulo: t.timeline.titulo,  light: true  },
-    'sec-header-docs':      { num: '06', eyebrow: lang==='pt'?'Documentos':'Documents', titulo: lang==='pt'?'Plantas & Documentos':'Plans & Documents', light: false },
+    'sec-header-orcamento': { num: '02', eyebrow: t.orcamento.eyebrow, titulo: t.orcamento.titulo, light: true  },
+    'sec-header-notas':     { num: '03', eyebrow: t.notas.eyebrow,     titulo: t.notas.titulo,     light: false },
+    'sec-header-timeline':  { num: '04', eyebrow: t.timeline.eyebrow,  titulo: t.timeline.titulo,  light: true  },
+    'sec-header-docs':      { num: '05', eyebrow: lang==='pt'?'Documentos':'Documents', titulo: lang==='pt'?'Plantas & Documentos':'Plans & Documents', light: false },
   };
   Object.entries(secTitulos).forEach(([id, s]) => {
     const el = document.getElementById(id);
@@ -1305,19 +1304,26 @@ function _iniciarCascataOrcamento() {
     });
   };
 
-  // Disparar quando a secção ficar visível
+  // Disparar apenas quando pelo menos 60% da secção está visível
   const io = new IntersectionObserver(entries => {
     if (entries[0].isIntersecting) {
       disparar();
       io.disconnect();
     }
-  }, { threshold: 0.1 });
+  }, { threshold: 0.6 });
   io.observe(secOrc);
 }
 
 // ── Iluminação de secção activa por scroll ──
 function _iniciarSecaoActiva() {
-  const secs = Array.from(document.querySelectorAll('.cli-sec[id]'));
+  // Incluir também secções dentro de wrap-divs (galeria, notas, docs)
+  const secs = Array.from(document.querySelectorAll('.cli-sec[id], .cli-sec'))
+    .filter((s, i, arr) => arr.indexOf(s) === i) // deduplicar
+    .filter(s => {
+      // Excluir secções ocultas
+      const wrap = s.closest('[style*="display:none"]');
+      return !wrap && s.offsetHeight > 0;
+    });
   if (!secs.length) return;
 
   // Usar scroll para determinar qual secção ocupa mais espaço no viewport
