@@ -472,8 +472,9 @@ export function gerarPDF(id) {
   .pdf-meta strong { color: #1A1814; font-size: 9pt; }
 
   /* Hero */
-  .pdf-hero { margin-bottom: 14pt; padding: 12pt 16pt; background: #F7F5F0; border-radius: 6pt; border-left: 3pt solid #C4A96A; display: flex; align-items: center; justify-content: space-between; gap: 16pt; }
-  .pdf-hero-left { flex: 1; }
+  .pdf-hero { margin-bottom: 14pt; padding: 12pt 16pt; background: #F7F5F0; border-radius: 6pt; border-left: 3pt solid #C4A96A; }
+  .pdf-hero-com-imgs { padding-bottom: 0; }
+  .pdf-hero-left { margin-bottom: 8pt; }
   .pdf-eyebrow { font-family: 'DM Mono', monospace; font-size: 7pt; letter-spacing: .2em; text-transform: uppercase; color: #9C968E; margin-bottom: 4pt; }
   .pdf-titulo { font-family: 'DM Serif Display', serif; font-size: 16pt; color: #1A1814; line-height: 1.15; margin-bottom: 8pt; }
   .pdf-titulo span { color: #C4A96A; }
@@ -482,13 +483,13 @@ export function gerarPDF(id) {
   .pdf-tags { display: flex; gap: 6pt; margin-top: 8pt; flex-wrap: wrap; }
   .pdf-tag { font-family: 'DM Mono', monospace; font-size: 7.5pt; padding: 1.5pt 7pt; border: .5pt solid #C8C0B4; border-radius: 99pt; color: #706A62; }
 
-  /* Imagens */
-  .pdf-imgs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6pt; margin-bottom: 0; }
-  .pdf-imgs.cols-1 { grid-template-columns: 1fr; }
-  .pdf-imgs.cols-2 { grid-template-columns: repeat(2, 1fr); }
-  .pdf-img { width: 100%; height: 160pt; object-fit: cover; border-radius: 4pt; display: block; }
-  .pdf-imgs.cols-1 .pdf-img { height: 220pt; }
-  .pdf-imgs.cols-2 .pdf-img { height: 190pt; }
+  /* Imagens dentro do hero */
+  .pdf-imgs-hero { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin: 0 -16pt; border-radius: 0 0 6pt 6pt; overflow: hidden; }
+  .pdf-imgs-hero.cols-1 { grid-template-columns: 1fr; }
+  .pdf-imgs-hero.cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .pdf-img-hero { width: 100%; height: 155pt; object-fit: cover; display: block; }
+  .pdf-imgs-hero.cols-1 .pdf-img-hero { height: 200pt; }
+  .pdf-imgs-hero.cols-2 .pdf-img-hero { height: 175pt; }
 
   /* Secção */
   .pdf-sec { margin-bottom: 14pt; margin-top: 14pt; page-break-inside: avoid; }
@@ -539,8 +540,8 @@ export function gerarPDF(id) {
   </div>
 </div>
 
-<!-- HERO -->
-<div class="pdf-hero">
+<!-- HERO + IMAGENS -->
+<div class="pdf-hero${(p.imagens||[]).length ? ' pdf-hero-com-imgs' : ''}">
   <div class="pdf-hero-left">
     <div class="pdf-eyebrow">Proposta Personalizada</div>
     <div class="pdf-titulo">Um espaço pensado para <span>viver.</span></div>
@@ -552,13 +553,11 @@ export function gerarPDF(id) {
       ${prazoFmt ? `<span class="pdf-tag">Válido até ${prazoFmt}</span>` : ''}
     </div>
   </div>
+  ${(p.imagens||[]).length ? `
+  <div class="pdf-imgs-hero${p.imagens.length === 1 ? ' cols-1' : p.imagens.length === 2 ? ' cols-2' : ''}">
+    ${p.imagens.slice(0,6).map(src => `<img class="pdf-img-hero" src="${src}" alt="">`).join('')}
+  </div>` : ''}
 </div>
-
-${(p.imagens||[]).length ? `
-<!-- IMAGENS -->
-<div class="pdf-imgs${p.imagens.length === 1 ? ' cols-1' : p.imagens.length === 2 ? ' cols-2' : ''}">
-  ${p.imagens.slice(0,6).map(src => `<img class="pdf-img" src="${src}" alt="">`).join('')}
-</div>` : ''}
 
 <!-- ORÇAMENTO -->
 <div class="pdf-sec">
