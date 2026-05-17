@@ -320,9 +320,13 @@ function gerarMarcos(p) {
 }
 
 function renderTimeline(p) {
+  const fase   = p.fase || 'proposta';
+  const lang   = getLang();
+  const tOc    = T[lang].ocorrencias;
+  const jaAprov= faseOrdem(fase) >= faseOrdem('aprovado');
+
   // Ocorrências activas
   const ocorrAtivas = (p.ocorrencias||[]).filter(o => o.estado !== 'resolvida');
-  const tOc = T[getLang()].ocorrencias;
   const ocorrHtml = ocorrAtivas.map(o => `
     <div class="tl-ocorrencia">
       <div class="tl-ocorrencia-tipo">⚠️ ${esc(tOc.tipos[o.tipo] || o.tipo)}</div>
@@ -330,18 +334,104 @@ function renderTimeline(p) {
       <div class="tl-ocorrencia-estado">${tOc.emResolucao}</div>
     </div>`).join('');
 
-  const marcosHtml = gerarMarcos(p).map(m => `
+  // Botões de acção por fase
+  function botoesAcao(marcFase) {
+    if (marcFase === 'analise' && !jaAprov) {
+      return `
+        <div class="tl-acoes">
+          <button class="tl-btn tl-btn-primary" onclick="window.aprovarProposta()">
+            ✓ Aprovar Proposta
+          </button>
+          <a href="#reclamacao" class="tl-btn tl-btn-secondary">
+            ↩ Solicitar Ajustes
+          </a>
+        </div>`;
+    }
+    if (marcFase === 'entrega' && fase === 'entrega') {
+      return `
+        <div class="tl-acoes">
+          <button class="tl-btn tl-btn-primary" onclick="window._confirmarEntrega()">
+            ✓ Confirmar Entrega
+          </button>
+          <a href="#reclamacao" class="tl-btn tl-btn-secondary">
+            ⚠ Reclamar
+          </a>
+        </div>`;
+    }
+    if (marcFase === 'instalacao' && fase === 'montagem') {
+      return `
+        <div class="tl-acoes">
+          <button class="tl-btn tl-btn-primary" onclick="window._confirmarInstalacao()">
+            ✓ Confirmar Instalação
+          </button>
+          <a href="#reclamacao" class="tl-btn tl-btn-secondary">
+            ⚠ Reclamar
+          </a>
+        </div>`;
+    }
+    if (marcFase === 'conclusao' && fase === 'concluido') {
+      return `
+        <div class="tl-acoes">
+          <a href="#reclamacao" class="tl-btn tl-btn-secondary">
+            ⚠ Reclamar
+          </a>
+        </div>`;
+    }
+    return '';
+  }
+
+  const marcosHtml = gerarMarcos(p).map(m => {
+    // Determinar a "chave" da fase para os botões
+    const faseKey = m.label === T[lang].timeline.marcos.analise   ? 'analise'
+                  : m.label === T[lang].timeline.marcos.retificacao? 'analise'
+                  : m.label === T[lang].timeline.marcos.entrega    ? 'entrega'
+                  : m.label === T[lang].timeline.marcos.instalacao ? 'instalacao'
+                  : m.label === T[lang].timeline.marcos.conclusao  ? 'conclusao'
+                  : null;
+
+    const acoes = faseKey ? botoesAcao(faseKey) : '';
+
+    return `
     <div class="tl-item${m.done?' done':''}${m.ativo?' ativo':''}${m.retif?' retif':''}">
       <div class="tl-dot"></div>
       <div class="tl-content">
         <div class="tl-label">${m.label}</div>
         ${m.data  ? `<div class="tl-data">${m.data}</div>` : ''}
         ${m.apelo ? `<span class="tl-apelo${m.retif?' tl-apelo-retif':''}">${m.apelo}</span>` : ''}
+        ${acoes}
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 
   return marcosHtml + ocorrHtml;
 }
+
+// Confirmações de entrega e instalação
+window._confirmarEntrega = async function() {
+  const id = getState('projAtualId');
+  if (!id) return;
+  if (!confirm('Confirma a recepção da mercadoria?')) return;
+  try {
+    const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await updateDoc(doc(_db,'projetos',id), { fase: 'montagem', dataConfirmacaoEntrega: new Date().toLocaleDateString('pt-PT') });
+    mostrarToast('✓ Entrega confirmada!', 'Aguarde contacto para agendamento da instalação.');
+    const pAtual = await carregarUm(id);
+    if (pAtual) { setState({ projCache: pAtual }); renderPaginaCliente(pAtual); }
+  } catch(e) { alert('Erro ao confirmar. Tente novamente.'); }
+};
+
+window._confirmarInstalacao = async function() {
+  const id = getState('projAtualId');
+  if (!id) return;
+  if (!confirm('Confirma a conclusão da instalação?')) return;
+  try {
+    const { doc, updateDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await updateDoc(doc(_db,'projetos',id), { fase: 'concluido', dataConclusao: new Date().toLocaleDateString('pt-PT') });
+    mostrarToast('✓ Instalação confirmada!', 'Obrigado pela confiança. O projeto está concluído.');
+    const pAtual = await carregarUm(id);
+    if (pAtual) { setState({ projCache: pAtual }); renderPaginaCliente(pAtual); }
+  } catch(e) { alert('Erro ao confirmar. Tente novamente.'); }
+};
 
 // ── Aprovação ──────────────────────────────────────
 
@@ -367,31 +457,9 @@ export async function renderEstadoAprovacao(projetoId, aprovacao) {
 
   const tA = T[getLang()].aprovacao;
 
-  if (aprovado) {
-    const dataTexto = aprovacao?.data
-      ? `${tA.aprovadaEm}${aprovacao.data}${aprovacao.hora ? ' às ' + aprovacao.hora : ''}`
-      : tA.aprovada;
-    sec.innerHTML = `
-      <div class="aprov-wrap">
-        ${aprovacao?.origem === 'cliente' ? `
-          <div class="aprov-confirmada show">
-            <div class="aprov-confirm-titulo">${tA.confirmTitulo}</div>
-            <div class="aprov-confirm-texto">${tA.confirmTexto}</div>
-          </div>` : ''}
-        <div class="aprov-ja">${dataTexto}</div>
-      </div>`;
-  } else {
-    sec.innerHTML = `
-      <div class="aprov-wrap">
-        <div class="aprov-titulo">${tA.titulo}</div>
-        <div class="aprov-sub">${tA.sub}</div>
-        <button class="btn-aprovar" id="btn-aprovar-proj" onclick="window.aprovarProposta()">${tA.btn}</button>
-        <div class="aprov-confirmada" id="aprov-confirmada">
-          <div class="aprov-confirm-titulo">${tA.confirmTitulo}</div>
-          <div class="aprov-confirm-texto">${tA.confirmTexto}</div>
-        </div>
-      </div>`;
-  }
+  // Secção de aprovação separada removida — botão integrado na timeline
+  sec.style.display = 'none';
+  sec.closest('section')?.style && (sec.closest('section').style.display = 'none');
 }
 
 export async function aprovarProposta() {
