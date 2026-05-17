@@ -1394,46 +1394,33 @@ function _iniciarCascataOrcamento() {
   io.observe(secOrc);
 }
 
-// ── Iluminação de secção activa por scroll ──
+// ── Reveal progressivo das secções ──
 function _iniciarSecaoActiva() {
-  // Pequeno delay para garantir que o DOM está renderizado
   setTimeout(() => {
-    // Seleccionar TODAS as cli-sec visíveis — incluindo as dentro de wrap-divs
-    const todasSecs = Array.from(document.querySelectorAll('.cli-sec'));
-    const secs = todasSecs.filter(s => {
-      // Excluir se o próprio elemento ou qualquer pai tem display:none
+    const secs = Array.from(document.querySelectorAll('.cli-sec')).filter(s => {
       let el = s;
       while (el) {
-        const st = window.getComputedStyle(el);
-        if (st.display === 'none') return false;
+        if (window.getComputedStyle(el).display === 'none') return false;
         el = el.parentElement;
       }
-      return s.offsetHeight > 0;
+      return true;
     });
-
     if (!secs.length) return;
 
-    function actualizarSecAtiva() {
-      const vpH  = window.innerHeight;
-      const navH = document.querySelector('.cli-nav')?.offsetHeight || 56;
-      let melhor    = null;
-      let melhorAlt = 0;
-
-      secs.forEach(sec => {
-        const rect   = sec.getBoundingClientRect();
-        const top    = Math.max(rect.top, navH);
-        const bottom = Math.min(rect.bottom, vpH);
-        const vis    = Math.max(0, bottom - top);
-        if (vis > melhorAlt) { melhorAlt = vis; melhor = sec; }
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('sec-revealed');
+          io.unobserve(e.target); // revela só uma vez
+        }
       });
+    }, {
+      threshold: 0.12,
+      rootMargin: '-40px 0px 0px 0px'
+    });
 
-      secs.forEach(sec => sec.classList.toggle('sec-ativa', sec === melhor));
-    }
-
-    window.addEventListener('scroll', actualizarSecAtiva, { passive: true });
-    window.addEventListener('resize', actualizarSecAtiva, { passive: true });
-    actualizarSecAtiva();
-  }, 300);
+    secs.forEach(s => io.observe(s));
+  }, 200);
 }
 
 // ── Toggle de artigos no orçamento ──
