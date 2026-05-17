@@ -889,6 +889,7 @@ export function renderPaginaCliente(p) {
 
   // ── Animação em cascata do orçamento ──
   _iniciarCascataOrcamento();
+  _iniciarSecaoActiva();
 
   // ── Verificar notificações para o cliente (mensagens novas + proposta atualizada)
   const _projId = getState('projAtualId');
@@ -1243,6 +1244,23 @@ function _iniciarCascataOrcamento() {
     }
   }, { threshold: 0.1 });
   io.observe(secOrc);
+}
+
+// ── Iluminação de secção activa por scroll ──
+function _iniciarSecaoActiva() {
+  const secs = document.querySelectorAll('.cli-sec[id]');
+  if (!secs.length) return;
+
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      e.target.classList.toggle('sec-ativa', e.isIntersecting);
+    });
+  }, {
+    threshold: 0.25,
+    rootMargin: '-48px 0px -20% 0px'
+  });
+
+  secs.forEach(s => io.observe(s));
 }
 
 // ── Toggle de artigos no orçamento ──

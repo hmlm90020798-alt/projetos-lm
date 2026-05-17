@@ -600,12 +600,54 @@ img   { display: block; max-width: 100%; }
 /* ──────────────────────────────────────────────
    7. PÁGINA CLIENTE — SECÇÕES COMUNS
 ────────────────────────────────────────────── */
-.cli-sec            { padding: 80px 0; background: var(--cli-bg); }
-.cli-sec-inner      { max-width: 1100px; margin: 0 auto; padding: 0 60px; }
-.cli-sec-dark       { background: var(--dark2); }
-.cli-sec-soft       { background: var(--cli-bg-soft); }
-.cli-sec-ink        { background: var(--dark); }
-.sec-header         { display: flex; align-items: flex-end; gap: 24px; margin-bottom: 48px; }
+.cli-sec            { padding: 80px 0; background: #0b0908; position: relative; transition: background .5s ease; }
+.cli-sec-inner      { max-width: 1100px; margin: 0 auto; padding: 0 60px; position: relative; z-index: 1; }
+.cli-sec-dark       { background: #0b0908; }
+.cli-sec-soft       { background: #0b0908; }
+.cli-sec-ink        { background: #0b0908; }
+
+/* ── Iluminação da secção activa ── */
+.cli-sec::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 50%,
+    rgba(200,165,100,.06) 0%,
+    transparent 70%
+  );
+  opacity: 0;
+  transition: opacity .7s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+.cli-sec.sec-ativa::before {
+  opacity: 1;
+}
+.cli-sec.sec-ativa {
+  background: #0e0b08;
+}
+
+/* Linha dourada lateral quando activa */
+.cli-sec::after {
+  content: '';
+  position: absolute;
+  left: 0; top: 15%; bottom: 15%;
+  width: 2px;
+  background: linear-gradient(to bottom,
+    transparent,
+    rgba(200,165,100,.5) 30%,
+    rgba(200,165,100,.7) 50%,
+    rgba(200,165,100,.5) 70%,
+    transparent
+  );
+  opacity: 0;
+  transition: opacity .6s ease;
+  pointer-events: none;
+}
+.cli-sec.sec-ativa::after {
+  opacity: 1;
+}
+.sec-header         { display: flex; align-items: flex-end; gap: 24px; margin-bottom: 48px; position: relative; z-index: 1; }
 .sec-num            { font-family: var(--serif); font-size: 72px; color: var(--border); line-height: 1; flex-shrink: 0; opacity: .6; }
 .sec-num-light      { color: rgba(245,242,236,.08); opacity: 1; }
 .sec-eyebrow        { font-family: var(--mono); font-size: 10px; font-weight: 500; letter-spacing: 2.5px; color: var(--green); text-transform: uppercase; margin-bottom: 6px; }
@@ -752,7 +794,7 @@ img   { display: block; max-width: 100%; }
 .btn-copiar-email:hover { color: #F5F2EC; background: rgba(245,242,236,.1); }
 .contacto-email-link { font-size: 16px; color: #F5F2EC !important; font-weight: 500; text-decoration: none !important; transition: color .15s; }
 .contacto-email-link:hover { color: var(--green-light) !important; text-decoration: underline !important; }
-.cli-footer         { background: var(--dark2); padding: 24px 60px; border-top: 1px solid rgba(245,242,236,.04); }
+.cli-footer         { background: #080706; padding: 24px 60px; border-top: .5px solid rgba(200,165,100,.08); }
 .footer-inner       { max-width: 1100px; margin: 0 auto; display: flex; align-items: flex-start; gap: 10px; }
 .footer-lock        { font-size: 12px; opacity: .25; flex-shrink: 0; margin-top: 2px; }
 .footer-inner p     { font-family: var(--sans); font-size: 11px; color: rgba(245,242,236,.18); line-height: 1.6; }
@@ -1700,7 +1742,7 @@ img   { display: block; max-width: 100%; }
 .modal-msgs-lista      { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; padding: 4px 2px; }
 
 .modal-msg-item        { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; border-radius: 10px; }
-.modal-msg-cliente     { background: var(--cli-bg-soft); border: 1px solid var(--border); }
+.modal-msg-cliente     { background: rgba(255,255,255,.04); border: .5px solid rgba(245,242,236,.08); }
 .modal-msg-hm          { background: var(--green-pale); border: 1px solid rgba(44,94,26,.2); }
 
 .modal-msg-origem      { font-family: var(--mono); font-size: 10px; font-weight: 600; color: var(--ink4); letter-spacing: .5px; }
