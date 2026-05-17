@@ -534,33 +534,50 @@ img   { display: block; max-width: 100%; }
   border-color: var(--green);
   background: #fff;
 }
+
+/* Elementos e grupos de categorias no modal */
+.modal-box .elem-line-nome,
+.modal-box .elem-line-url,
+.modal-box .prod-line-nome,
+.modal-box .prod-line-preco { background: #fff; border-color: var(--border-mid); }
+.modal-box .elem-line-nome:focus,
+.modal-box .elem-line-url:focus,
+.modal-box .prod-line-nome:focus,
+.modal-box .prod-line-preco:focus { border-color: var(--green); }
+
+.modal-box .elem-cat-grupo  { background: var(--cli-bg-soft); border-color: var(--border); }
+.modal-box .orc-cat-grupo   { background: var(--cli-bg-soft); border-color: var(--border); }
+.modal-box .nota-form-item  { background: var(--cli-bg-soft); border-color: var(--border); }
+.modal-box .doc-form-item   { background: var(--cli-bg-soft); border-color: var(--border); }
+.modal-box .interacao-item  { background: var(--cli-bg-soft); border-color: var(--border); }
+.modal-box .ocorr-item      { background: var(--cli-bg-soft); }
 .modal-box .form-bloco-titulo { color: var(--ink2); border-bottom-color: var(--border); }
 .modal-box .form-bloco-titulo.accordion-titulo:hover { color: var(--green); }
 
 /* Interacções no drawer */
-.acomp-drawer .interacao-item {
-  background: var(--cli-bg-soft);
-  border: 1px solid var(--border);
-}
+.acomp-drawer .interacao-item { background: var(--cli-bg-soft); border: 1px solid var(--border); }
 .acomp-drawer .int-tipo { font-weight: 600; }
 .acomp-drawer .int-texto { color: var(--ink2); }
 .acomp-drawer .int-data  { color: var(--ink4); }
 
 /* Ocorrências no drawer */
-.acomp-drawer .ocorr-item { background: #fff; border-color: rgba(186,117,23,.25); }
-.acomp-drawer .ocorr-desc { color: var(--ink3); }
+.acomp-drawer .ocorr-item    { background: #fff; border-color: rgba(186,117,23,.25); }
+.acomp-drawer .ocorr-desc    { color: var(--ink3); }
 .acomp-drawer .ocorr-act-nota { color: var(--ink3); }
 .acomp-drawer .ocorr-act-data { color: var(--ink4); }
+.acomp-drawer .ocorr-nova-act { flex-wrap: wrap; }
+.acomp-drawer .ocorr-nova-act .f-textarea { min-height: 60px; resize: vertical; }
 
 /* Mensagens no drawer */
-.acomp-drawer .modal-msgs-wrap { background: var(--cli-bg-soft); border-radius: 10px; padding: 16px; }
-.acomp-drawer .modal-msg-item  { background: #fff; border: 1px solid var(--border); }
-.acomp-drawer .modal-msg-origem { color: var(--ink3); }
-.acomp-drawer .modal-msg-texto  { color: var(--ink); }
-.acomp-drawer .modal-msg-hm    { border-left: 3px solid var(--green); }
-.acomp-drawer .modal-msg-cliente { border-left: 3px solid var(--champ); }
-.acomp-drawer .modal-msg-textarea { background: #fff; color: var(--ink); border-color: var(--border-mid); }
-.acomp-drawer .modal-msg-footer { background: transparent; }
+.acomp-drawer .modal-msgs-wrap    { background: var(--cli-bg-soft); border-radius: 10px; padding: 16px; }
+.acomp-drawer .modal-msg-item     { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+.acomp-drawer .modal-msg-origem   { color: var(--ink3); font-size: 11px; margin-bottom: 4px; }
+.acomp-drawer .modal-msg-texto    { color: var(--ink); font-size: 13px; line-height: 1.6; }
+.acomp-drawer .modal-msg-hm       { border-left: 3px solid var(--green); }
+.acomp-drawer .modal-msg-cliente  { border-left: 3px solid var(--champ); }
+.acomp-drawer .modal-msg-textarea { background: #fff; color: var(--ink); border-color: var(--border-mid); margin-top: 12px; width: 100%; border-radius: 7px; padding: 10px 12px; font-family: var(--sans); font-size: 13px; border: 1.5px solid var(--border-mid); outline: none; resize: vertical; }
+.acomp-drawer .modal-msg-textarea:focus { border-color: var(--green); }
+.acomp-drawer .modal-msg-footer   { background: transparent; display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 8px; }
 .empty-icon         { font-size: 48px; margin-bottom: 16px; }
 .empty-titulo       { font-family: var(--serif); font-size: 22px; color: rgba(255,255,255,.75); margin-bottom: 8px; }
 .empty-sub          { font-size: 14px; color: rgba(255,255,255,.55); }
