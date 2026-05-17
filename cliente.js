@@ -1317,19 +1317,37 @@ function _iniciarCascataOrcamento() {
 
 // ── Iluminação de secção activa por scroll ──
 function _iniciarSecaoActiva() {
-  const secs = document.querySelectorAll('.cli-sec[id]');
+  const secs = Array.from(document.querySelectorAll('.cli-sec[id]'));
   if (!secs.length) return;
 
-  const io = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      e.target.classList.toggle('sec-ativa', e.isIntersecting);
-    });
-  }, {
-    threshold: 0.15,
-    rootMargin: '-48px 0px -10% 0px'
-  });
+  // Usar scroll para determinar qual secção ocupa mais espaço no viewport
+  function actualizarSecAtiva() {
+    const vpH    = window.innerHeight;
+    const navH   = 48; // altura da navbar
+    let melhor   = null;
+    let melhorAlt = 0;
 
-  secs.forEach(s => io.observe(s));
+    secs.forEach(sec => {
+      const rect = sec.getBoundingClientRect();
+      // Área visível da secção no viewport (excluindo navbar)
+      const top    = Math.max(rect.top, navH);
+      const bottom = Math.min(rect.bottom, vpH);
+      const visivel = Math.max(0, bottom - top);
+      if (visivel > melhorAlt) {
+        melhorAlt = visivel;
+        melhor = sec;
+      }
+    });
+
+    secs.forEach(sec => {
+      sec.classList.toggle('sec-ativa', sec === melhor);
+    });
+  }
+
+  // Correr no scroll e no resize
+  window.addEventListener('scroll', actualizarSecAtiva, { passive: true });
+  window.addEventListener('resize', actualizarSecAtiva, { passive: true });
+  actualizarSecAtiva(); // estado inicial
 }
 
 // ── Toggle de artigos no orçamento ──
