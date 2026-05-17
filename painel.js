@@ -65,7 +65,10 @@ function limparForm() {
   ['f-nome','f-contacto','f-email','f-localidade','f-prazo','f-entrega',
    'f-data-entrega-mat','f-data-instalacao','f-data-conclusao',
    'f-tipo-outro','f-ref-pc','f-ref-os',
-   'f-orc-moveis','f-orc-tampos','f-orc-eletros','f-orc-acessorios'].forEach(id => {
+   'f-orc-moveis','f-orc-moveis-desc',
+   'f-orc-tampos','f-orc-tampos-desc',
+   'f-orc-eletros','f-orc-eletros-desc',
+   'f-orc-acessorios','f-orc-acessorios-desc'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   // Reset checkboxes "incluído"
@@ -135,12 +138,16 @@ export function editarProjeto(id) {
 
   // Orçamento — valor único por categoria
   const sv2 = (elId, val) => { const el = document.getElementById(elId); if (el) el.value = val || ''; };
-  sv2('f-orc-moveis',    p.orc_moveis);
-  sv2('f-orc-tampos',    p.orc_tampos);
-  sv2('f-orc-eletros',   p.orc_eletros);
-  sv2('f-orc-acessorios',p.orc_acessorios);
+  sv2('f-orc-moveis',         p.orc_moveis);
+  sv2('f-orc-moveis-desc',    p.orc_moveis_desc);
+  sv2('f-orc-tampos',         p.orc_tampos);
+  sv2('f-orc-tampos-desc',    p.orc_tampos_desc);
+  sv2('f-orc-eletros',        p.orc_eletros);
+  sv2('f-orc-eletros-desc',   p.orc_eletros_desc);
+  sv2('f-orc-acessorios',     p.orc_acessorios);
+  sv2('f-orc-acessorios-desc',p.orc_acessorios_desc);
   (p.orcamento||[]).forEach(cat => {
-    addCatOrcamento(cat.categoria, cat.valor);
+    addCatOrcamento(cat.categoria, cat.valor, cat.desc || '');
   });
 
   // O que está incluído
@@ -205,7 +212,8 @@ export async function guardarProjeto() {
     if (!c) return [];
     return Array.from(c.querySelectorAll('[data-cat-grupo]')).map(g => ({
       categoria: g.querySelector('[data-cat-nome]')?.value?.trim() || 'Categoria',
-      valor: g.querySelector('[data-cat-valor]')?.value?.trim() || '0',
+      valor:     g.querySelector('[data-cat-valor]')?.value?.trim() || '0',
+      desc:      g.querySelector('[data-cat-desc]')?.value?.trim()  || '',
     })).filter(c => c.categoria);
   };
 
@@ -269,11 +277,15 @@ export async function guardarProjeto() {
     elem_acessorios:    recolherLinhasElem(document.getElementById('sec-elem-acessorios')),
     elem_extras:        recolherCatsElem(document.getElementById('sec-elem-extras')),
     // Orçamento — valor único por categoria
-    orc_moveis:    gv('f-orc-moveis')    || '0',
-    orc_tampos:    gv('f-orc-tampos')    || '0',
-    orc_eletros:   gv('f-orc-eletros')   || '0',
-    orc_acessorios:gv('f-orc-acessorios')|| '0',
-    orcamento:     recolherCatsOrc(document.getElementById('sec-orcamento-cats')),
+    orc_moveis:         gv('f-orc-moveis')         || '0',
+    orc_moveis_desc:    gv('f-orc-moveis-desc')    || '',
+    orc_tampos:         gv('f-orc-tampos')         || '0',
+    orc_tampos_desc:    gv('f-orc-tampos-desc')    || '',
+    orc_eletros:        gv('f-orc-eletros')        || '0',
+    orc_eletros_desc:   gv('f-orc-eletros-desc')   || '',
+    orc_acessorios:     gv('f-orc-acessorios')     || '0',
+    orc_acessorios_desc:gv('f-orc-acessorios-desc')|| '',
+    orcamento:          recolherCatsOrc(document.getElementById('sec-orcamento-cats')),
     incluido,
     interacoes, ocorrencias,
     imagens:     getState('editImgs'),

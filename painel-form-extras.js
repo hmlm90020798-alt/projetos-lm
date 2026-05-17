@@ -66,7 +66,7 @@ export function addLinhaOrc(tipo, nome = '', preco = '') {
 }
 
 // Categoria livre no orçamento — valor único
-export function addCatOrcamento(nome = '', valor = '') {
+export function addCatOrcamento(nome = '', valor = '', desc = '') {
   const sec = document.getElementById('sec-orcamento-cats');
   const d   = document.createElement('div');
   d.className = 'orc-cat-grupo'; d.dataset.catGrupo = '1';
@@ -75,7 +75,8 @@ export function addCatOrcamento(nome = '', valor = '') {
       <input type="text"   class="f-input cat-nome"  data-cat-nome  placeholder="Nome da categoria" value="${nome}" style="flex:1">
       <input type="number" class="f-input cat-valor" data-cat-valor placeholder="0,00" value="${valor}" style="width:120px" oninput="window.atualizarTotalPreview()">
       <button class="prod-line-del" onclick="this.closest('[data-cat-grupo]').remove();window.atualizarTotalPreview()">×</button>
-    </div>`;
+    </div>
+    <input type="text" class="f-input cat-desc" data-cat-desc placeholder="Descrição / modelo (ex: Nolte Küchen — Premium Line)" value="${desc}" style="margin-top:4px;font-size:12px">`;
   sec.appendChild(d);
   atualizarTotalPreview();
 }

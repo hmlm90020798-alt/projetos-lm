@@ -102,129 +102,124 @@ function renderGaleria(p) {
 
 // ── Elementos do Projeto ──────────────────────────
 
-function renderElementos(p) {
-  const tE  = T[getLang()].elementos;
-  const cat = tE.categorias;
+// renderElementos mantida internamente mas não chamada directamente
+function renderElementos(p) { return ''; }
 
-  // Construir grupos de elementos com URL
-  const grupos = [];
-
-  const addGrupo = (label, itens) => {
-    const validos = (itens||[]).filter(i => i.nome);
-    if (validos.length) grupos.push({ label, itens: validos });
-  };
-
-  addGrupo(cat.tampos,        p.elem_tampos);
-  addGrupo(cat.eletros,       p.elem_eletros);
-  addGrupo(cat.acessorios,    p.elem_acessorios);
-
-  // Categorias livres de elementos
-  (p.elem_extras||[]).forEach(cat => {
-    const validos = (cat.itens||[]).filter(i => i.nome);
-    if (validos.length) grupos.push({ label: cat.categoria, itens: validos });
-  });
-
-  if (!grupos.length) return `<p class="sec-vazio">${tE.semItens}</p>`;
-
-  return grupos.map(g => `
-    <div class="elem-grupo">
-      <div class="elem-grupo-titulo">${g.label}</div>
-      <div class="elem-lista">
-        ${g.itens.map(i => `
-          <div class="elem-item">
-            <span class="elem-nome">${esc(i.nome)}</span>
-            ${i.url
-              ? `<a href="${safeUrl(i.url)}" target="_blank" rel="noopener noreferrer" class="elem-link">${tE.verArtigo}</a>`
-              : ''}
-          </div>`).join('')}
-      </div>
-    </div>`).join('');
-}
-
-// ── Orçamento — layout gráfico ────────────────────
+// ── Orçamento + Elementos — secção unificada ────────
 
 function renderOrcamento(p) {
   const tO   = T[getLang()].orcamento;
+  const tE   = T[getLang()].elementos;
   const lang = getLang();
 
-  // Cores — escala de verde do mais escuro ao mais claro
   const cores = ['#27500A','#3B6D11','#639922','#97C459','#C0DD97','#D8EABC'];
+  const somaArray = arr => (arr||[]).reduce((a, i) => a + (parseFloat(i.preco)||0), 0);
+  const n = v => parseFloat(String(v||'0').replace(',','.')) || 0;
 
-  // Construir secções — compatível com estrutura nova (orc_*) e antiga (arrays)
-  const secoes = [];
+  // ── Construir categorias unificadas ──
+  const cats = [];
 
-  const addSec = (label, val) => {
-    if (!label) return;
+  const addCat = (label, val, desc, artigos) => {
     const v = parseFloat(val) || 0;
-    if (v > 0) secoes.push({ label, sub: v });
+    if (v > 0) cats.push({ label, val: v, desc: desc || '', artigos: artigos || [] });
   };
 
-  // Estrutura nova: valor único por campo
-  const somaArray = arr => (arr||[]).reduce((a, i) => a + (parseFloat(i.preco)||0), 0);
+  // Elementos fixos — juntar artigos com valor
+  const elemTampos    = (p.elem_tampos    || []).filter(i => i.nome);
+  const elemEletros   = (p.elem_eletros   || []).filter(i => i.nome);
+  const elemAcessorios= (p.elem_acessorios|| []).filter(i => i.nome);
 
-  const vMoveis    = parseFloat(p.orc_moveis)    || somaArray(p.moveis);
-  const vTampos    = parseFloat(p.orc_tampos)    || somaArray(p.tampos);
-  const vEletros   = parseFloat(p.orc_eletros)   || somaArray(p.eletros);
-  const vAcessorios= parseFloat(p.orc_acessorios)|| somaArray(p.acessorios);
+  const vMoveis    = n(p.orc_moveis)    || somaArray(p.moveis);
+  const vTampos    = n(p.orc_tampos)    || somaArray(p.tampos);
+  const vEletros   = n(p.orc_eletros)   || somaArray(p.eletros);
+  const vAcessorios= n(p.orc_acessorios)|| somaArray(p.acessorios);
 
-  if (vMoveis)     addSec(lang === 'en' ? 'Fitted Furniture' : 'Móveis',           vMoveis);
-  if (vTampos)     addSec(lang === 'en' ? 'Worktops'         : 'Tampos',           vTampos);
-  if (vEletros)    addSec(lang === 'en' ? 'Appliances'       : 'Eletrodomésticos', vEletros);
-  if (vAcessorios) addSec(lang === 'en' ? 'Accessories'      : 'Acessórios',       vAcessorios);
+  if (vMoveis)     addCat(lang==='en'?'Fitted Furniture':'Móveis',           vMoveis,     p.orc_moveis_desc    || '', []);
+  if (vTampos)     addCat(lang==='en'?'Worktops'        :'Tampos',           vTampos,     p.orc_tampos_desc    || '', elemTampos);
+  if (vEletros)    addCat(lang==='en'?'Appliances'      :'Eletrodomésticos', vEletros,    p.orc_eletros_desc   || '', elemEletros);
+  if (vAcessorios) addCat(lang==='en'?'Accessories'     :'Acessórios',       vAcessorios, p.orc_acessorios_desc|| '', elemAcessorios);
 
-  // Categorias livres — estrutura nova (valor) e antiga (itens com preço)
+  // Categorias livres
   (p.orcamento||[]).forEach(c => {
-    const v = parseFloat(c.valor) || somaArray(c.itens);
-    addSec(c.categoria, v);
+    const v = n(c.valor) || somaArray(c.itens);
+    if (v > 0) cats.push({ label: c.categoria, val: v, desc: c.desc || '', artigos: (c.itens||[]).filter(i=>i.nome) });
   });
-  // Extras da estrutura antiga
-  (p.extras||[]).forEach(c => addSec(c.categoria, somaArray(c.itens)));
+  (p.extras||[]).forEach(c => {
+    const v = somaArray(c.itens);
+    if (v > 0) cats.push({ label: c.categoria, val: v, desc: '', artigos: (c.itens||[]).filter(i=>i.nome) });
+  });
 
-  if (!secoes.length) return `<p class="sec-vazio">${tO.semItens}</p>`;
+  // Extras de elementos não cobertos por orçamento
+  (p.elem_extras||[]).forEach(c => {
+    const validos = (c.itens||[]).filter(i=>i.nome);
+    if (validos.length && !cats.find(cat=>cat.label===c.categoria)) {
+      cats.push({ label: c.categoria, val: 0, desc: '', artigos: validos });
+    }
+  });
 
-  const total    = secoes.reduce((a, s) => a + s.sub, 0);
-  const maxSub   = Math.max(...secoes.map(s => s.sub), 1);
+  if (!cats.length) return `<p class="sec-vazio">${tO.semItens}</p>`;
 
-  const rows = secoes.map((s, i) => {
-    const pct    = Math.round((s.sub / total)  * 100);
-    const barPct = Math.round((s.sub / maxSub) * 100);
+  const total  = cats.reduce((a, c) => a + c.val, 0);
+  const maxVal = Math.max(...cats.map(c => c.val), 1);
+
+  const rows = cats.map((c, i) => {
+    const pct    = total > 0 ? Math.round((c.val / total) * 100) : 0;
+    const barPct = Math.round((c.val / maxVal) * 100);
     const cor    = cores[Math.min(i, cores.length - 1)];
+
+    const temArtigos = c.artigos.length > 0;
+    const artigosId  = `orc-artigos-${i}`;
+
+    const artigosHtml = temArtigos ? `
+      <div class="orc-artigos" id="${artigosId}">
+        ${c.artigos.map(a => `
+          <div class="orc-artigo-item">
+            <span class="orc-artigo-nome">${esc(a.nome)}</span>
+            <div class="orc-artigo-direita">
+              ${a.preco ? `<span class="orc-artigo-preco">${fmt(a.preco)}</span>` : ''}
+              ${a.url   ? `<a href="${safeUrl(a.url)}" target="_blank" rel="noopener noreferrer" class="elem-link">${lang==='en'?'View':'VER ARTIGO'}</a>` : ''}
+            </div>
+          </div>`).join('')}
+      </div>` : '';
+
     return `
-      <div class="orc-row">
+      <div class="orc-row${temArtigos ? ' orc-row-toggle' : ''}" ${temArtigos ? `onclick="window._orcToggle(this,'${artigosId}')"` : ''}>
         <div class="orc-cor" style="background:${cor}"></div>
         <div class="orc-body">
           <div class="orc-top">
-            <span class="orc-nome">${s.label}</span>
+            <div class="orc-nome-wrap">
+              <span class="orc-nome">${esc(c.label)}</span>
+              ${c.desc ? `<span class="orc-desc">${esc(c.desc)}</span>` : ''}
+            </div>
             <div class="orc-direita">
-              <span class="orc-pct">${pct}% ${tO.doTotal}</span>
-              <span class="orc-val">${fmt(s.sub)}</span>
+              ${c.val > 0 ? `<span class="orc-pct">${pct}% ${tO.doTotal}</span>
+              <span class="orc-val">${fmt(c.val)}</span>` : ''}
+              ${temArtigos ? `<span class="orc-toggle-ic">›</span>` : ''}
             </div>
           </div>
-          <div class="orc-barra-bg">
-            <div class="orc-barra" style="width:0%;background:${cor}" data-pct="${barPct}"></div>
-          </div>
+          ${c.val > 0 ? `<div class="orc-barra-bg"><div class="orc-barra" style="width:0%;background:${cor}" data-pct="${barPct}"></div></div>` : ''}
+          ${artigosHtml}
         </div>
       </div>`;
   }).join('');
 
-  // Bloco "O que está incluído"
+  // Bloco incluído
   const inc = p.incluido || {};
   const opcoes = [
-    { key: 'iva23',        pt: 'IVA à taxa legal em vigor (23%)',                en: 'VAT at legal rate (23%)' },
-    { key: 'entrega',      pt: 'Entrega na morada do cliente',                   en: 'Delivery to client\'s address' },
-    { key: 'loja',         pt: 'Levantamento em loja (pelo cliente)',             en: 'In-store collection (by client)' },
-    { key: 'instalacao',   pt: 'Instalação incluída',                            en: 'Installation included' },
-    { key: 'inst-cliente', pt: 'Instalação a cargo do cliente',                  en: 'Installation by client' },
-    { key: 'iva6',         pt: 'IVA taxa reduzida 6% (mão de obra — renovação)', en: 'Reduced VAT 6% (labour — renovation)' },
+    { key:'iva23',       pt:'IVA à taxa legal em vigor (23%)',                en:'VAT at legal rate (23%)' },
+    { key:'entrega',     pt:'Entrega na morada do cliente',                   en:'Delivery to client\'s address' },
+    { key:'loja',        pt:'Levantamento em loja (pelo cliente)',             en:'In-store collection (by client)' },
+    { key:'instalacao',  pt:'Instalação incluída',                            en:'Installation included' },
+    { key:'inst-cliente',pt:'Instalação a cargo do cliente',                  en:'Installation by client' },
+    { key:'iva6',        pt:'IVA taxa reduzida 6% (mão de obra — renovação)', en:'Reduced VAT 6% (labour — renovation)' },
   ];
   const packActivo = !!inc.pack;
   const ativas = opcoes.filter(o => inc[o.key]);
 
   const packHtml = packActivo ? `
     <div class="orc-pack-bloco">
-      <div class="orc-pack-badge">
-        <span class="orc-pack-icon">✦</span>
-        ${lang === 'en' ? 'Pack Projeto discount (10%) already applied' : 'Desconto Pack Projeto (10%) já aplicado'}
+      <div class="orc-pack-badge"><span class="orc-pack-icon">✦</span>
+        ${lang==='en'?'Pack Projeto discount (10%) already applied':'Desconto Pack Projeto (10%) já aplicado'}
       </div>
     </div>` : '';
 
@@ -232,12 +227,12 @@ function renderOrcamento(p) {
     <div class="orc-incluido">
       ${packHtml}
       ${ativas.length ? `
-        <div class="orc-incluido-titulo">${lang === 'en' ? 'What\'s included' : 'O que está incluído'}</div>
+        <div class="orc-incluido-titulo">${lang==='en'?'What\'s included':'O que está incluído'}</div>
         <div class="orc-incluido-lista">
-          ${ativas.map(o => `
+          ${ativas.map(o=>`
             <div class="orc-incluido-item">
               <span class="orc-incluido-check">✓</span>
-              <span>${lang === 'en' ? o.en : o.pt}</span>
+              <span>${lang==='en'?o.en:o.pt}</span>
             </div>`).join('')}
         </div>` : ''}
     </div>` : '';
@@ -734,7 +729,6 @@ export function renderPaginaCliente(p) {
   document.getElementById('cli-nav-links').innerHTML = `
     <a href="#hero"           class="nav-link nav-link-inicio">↑</a>
     <a href="#wrap-galeria"   class="nav-link">${t.nav.galeria}</a>
-    <a href="#wrap-elementos" class="nav-link">${t.nav.elementos}</a>
     <a href="#orcamento"      class="nav-link">${t.nav.orcamento}</a>
     <a href="#wrap-notas"     class="nav-link">${t.nav.notas}</a>
     <a href="#timeline"       class="nav-link">${t.nav.timeline}</a>
@@ -889,12 +883,8 @@ export function renderPaginaCliente(p) {
   if (secPriv)
     secPriv.innerHTML = `${tP.texto} <a href="mailto:${emailPriv}">${tP.contacto} ${emailPriv}</a>`;
 
-  // ── Animar barras de orçamento
-  requestAnimationFrame(() => {
-    document.querySelectorAll('.orc-barra[data-pct]').forEach(el => {
-      setTimeout(() => { el.style.width = el.dataset.pct + '%'; }, 100);
-    });
-  });
+  // ── Animação em cascata do orçamento ──
+  _iniciarCascataOrcamento();
 
   // ── Verificar notificações para o cliente (mensagens novas + proposta atualizada)
   const _projId = getState('projAtualId');
@@ -1129,3 +1119,133 @@ export function setLang(lang) {
   const cache = getState('projCache');
   if (cache) renderPaginaCliente(cache);
 }
+
+
+// ── Cascata de animação do orçamento ──
+function _iniciarCascataOrcamento() {
+  const secOrc = document.getElementById('orcamento');
+  if (!secOrc) return;
+
+  const rows      = Array.from(secOrc.querySelectorAll('.orc-row'));
+  const totalCard = secOrc.querySelector('.orc-total-card');
+  const totalValEl= secOrc.querySelector('.orc-total-val');
+
+  // Guardar o valor final do total para animar depois
+  const totalFmt  = totalValEl ? totalValEl.textContent.trim() : '';
+  const totalNum  = parseFloat(totalFmt.replace(/[^\d,.]/g,'').replace(',','.')) || 0;
+
+  // Esconder tudo inicialmente
+  rows.forEach(row => {
+    row.style.opacity  = '0';
+    row.style.transform= 'translateY(20px)';
+  });
+  if (totalCard) {
+    totalCard.style.opacity  = '0';
+    totalCard.style.transform= 'translateY(14px)';
+  }
+
+  // Utilitário: animar número de 0 até target em duration ms
+  function animarNumero(el, target, duration, isCurrency) {
+    const start    = performance.now();
+    const fmt2     = v => isCurrency
+      ? v.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
+      : Math.round(v) + '%';
+    const suffix   = isCurrency ? '' : el.textContent.replace(/^[\d]+/, '');
+    function step(now) {
+      const elapsed = now - start;
+      const progress= Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const eased   = 1 - Math.pow(1 - progress, 3);
+      const current = target * eased;
+      el.textContent = isCurrency
+        ? current.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
+        : Math.round(current) + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+      else el.textContent = isCurrency
+        ? target.toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
+        : Math.round(target) + suffix;
+    }
+    requestAnimationFrame(step);
+  }
+
+  const disparar = () => {
+    let acumulado  = 0;
+    const DELAY_BASE    = 150;
+    const DELAY_ENTRE   = 220;
+    const DUR_NUMERO    = 800;
+    const DUR_TOTAL     = 600;
+
+    // Primeiro o total card aparece mas com 0,00 €
+    if (totalCard && totalValEl) {
+      totalValEl.textContent = '0,00 €';
+      setTimeout(() => {
+        totalCard.style.transition = 'opacity .5s ease, transform .5s cubic-bezier(.16,1,.3,1)';
+        totalCard.style.opacity    = '1';
+        totalCard.style.transform  = 'translateY(0)';
+      }, DELAY_BASE);
+    }
+
+    // Categorias em cascata
+    rows.forEach((row, i) => {
+      const delay = DELAY_BASE + 200 + (i * DELAY_ENTRE);
+
+      setTimeout(() => {
+        // Row entra
+        row.style.transition = 'opacity .45s ease, transform .45s cubic-bezier(.16,1,.3,1)';
+        row.style.opacity    = '1';
+        row.style.transform  = 'translateY(0)';
+
+        // Barra cresce
+        setTimeout(() => {
+          const barra = row.querySelector('.orc-barra[data-pct]');
+          if (barra) barra.style.width = barra.dataset.pct + '%';
+        }, 200);
+
+        // Valor da categoria conta de 0 até ao target
+        const valEl = row.querySelector('.orc-val');
+        if (valEl) {
+          const rawTxt = valEl.textContent.trim();
+          const target = parseFloat(rawTxt.replace(/[^\d,.]/g,'').replace(',','.')) || 0;
+          valEl.textContent = '0,00 €';
+          setTimeout(() => {
+            animarNumero(valEl, target, DUR_NUMERO, true);
+            // Acumular no total
+            acumulado += target;
+            const snapTotal = acumulado;
+            if (totalValEl) {
+              animarNumero(totalValEl, snapTotal, DUR_TOTAL, true);
+            }
+          }, 150);
+        }
+
+        // Percentagem conta de 0 até ao valor
+        const pctEl = row.querySelector('.orc-pct');
+        if (pctEl) {
+          const rawPct = parseInt(pctEl.textContent) || 0;
+          const suffix = pctEl.textContent.replace(/^[\d]+/, '');
+          pctEl.textContent = '0' + suffix;
+          setTimeout(() => animarNumero(pctEl, rawPct, DUR_NUMERO, false), 150);
+        }
+
+      }, delay);
+    });
+  };
+
+  // Disparar quando a secção ficar visível
+  const io = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      disparar();
+      io.disconnect();
+    }
+  }, { threshold: 0.1 });
+  io.observe(secOrc);
+}
+
+// ── Toggle de artigos no orçamento ──
+window._orcToggle = function(row, artigosId) {
+  const artigos = document.getElementById(artigosId);
+  if (!artigos) return;
+  const isOpen = row.classList.toggle('orc-open');
+  artigos.style.maxHeight = isOpen ? artigos.scrollHeight + 'px' : '0';
+  artigos.style.opacity   = isOpen ? '1' : '0';
+};
