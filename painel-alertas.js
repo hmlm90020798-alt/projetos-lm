@@ -261,7 +261,7 @@ export function renderOcorrenciasTab() {
     const diasReg = o.data ? Math.round((new Date() - new Date(o.data.split('/').reverse().join('-')+'T12:00:00')) / 86400000) : null;
     const estadoCls = o.estado === 'detectada' ? 'badge-detect' : 'badge-resol';
     return `
-      <div class="oc-card" onclick="window.editarProjeto('${o.projId}')">
+      <div class="oc-card" onclick="window.abrirDrawerAcompanhamento('${o.projId}');setTimeout(()=>window.setAcompTab('ocorrencias',document.querySelectorAll('.acomp-tab')[1]),150)">>
         <div class="oc-card-header">
           <div class="oc-card-proj">${o.projNome} · ${o.projTipo}</div>
           ${diasReg !== null ? `<div class="oc-card-dias">Há ${diasReg} dia${diasReg!==1?'s':''}</div>` : ''}
@@ -279,7 +279,7 @@ export function renderOcorrenciasTab() {
   : `<p class="tab-vazio">✓ Sem ocorrências activas.</p>`;
 
   const resolvidasHtml = resolvidas.slice(0,10).map(o => `
-    <div class="hist-item" onclick="window.editarProjeto('${o.projId}')">
+    <div class="hist-item" onclick="window.abrirDrawerAcompanhamento('${o.projId}');setTimeout(()=>window.setAcompTab('ocorrencias',document.querySelectorAll('.acomp-tab')[1]),150)">>
       <div class="hist-check">✓</div>
       <div class="hist-proj">${o.projNome}</div>
       <div class="hist-tipo">${tipoLabels[o.tipo]||o.tipo}</div>
