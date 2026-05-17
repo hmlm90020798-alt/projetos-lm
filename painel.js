@@ -486,7 +486,7 @@ export function gerarPDF(id) {
   .pdf-imgs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6pt; margin-bottom: 14pt; }
   .pdf-imgs.cols-1 { grid-template-columns: 1fr; }
   .pdf-imgs.cols-2 { grid-template-columns: repeat(2, 1fr); }
-  .pdf-img { width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 4pt; display: block; }
+  .pdf-img { width: 100%; max-height: 200pt; object-fit: cover; border-radius: 4pt; display: block; }
 
   /* Secção */
   .pdf-sec { margin-bottom: 14pt; page-break-inside: avoid; }
