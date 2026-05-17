@@ -616,19 +616,7 @@ function renderNotasCartoes(p) {
     { svg: SVG.warranty, titulo: 'Garantias e Pós-Venda',       texto: 'Todos os produtos fornecidos beneficiam das garantias legais e comerciais aplicáveis. O serviço de instalação tem uma garantia de 3 anos. Qualquer anomalia detetada após a conclusão do projeto pode ser reportada através dos canais de apoio ao cliente da Leroy Merlin — linha telefónica, email ou diretamente com o seu consultor.' },
   ];
 
-  // ── Cards dinâmicos ──
-  const prazoFmt = p.prazo
-    ? new Date(p.prazo + 'T12:00:00').toLocaleDateString(lang === 'en' ? 'en-GB' : 'pt-PT')
-    : null;
-  const entregaFmt = p.entrega || (p.dataEntregaMat
-    ? new Date(p.dataEntregaMat + 'T12:00:00').toLocaleDateString(lang === 'en' ? 'en-GB' : 'pt-PT')
-    : null);
-
-  const dinamicos = [
-    prazoFmt   ? { svg: SVG.validity, titulo: tN.validade.titulo, texto: tN.validade.prefixo + prazoFmt   + '.' } : null,
-    entregaFmt ? { svg: SVG.delivery, titulo: tN.entrega.titulo,  texto: tN.entrega.prefixo  + entregaFmt + '.' } : null,
-  ].filter(Boolean);
-
+  // ── Cards dinâmicos — só notas manuais do painel ──
   const notasArr = Array.isArray(p.notas)
     ? p.notas.filter(n => n && (n.texto || typeof n === 'string'))
     : (p.notas ? [{ titulo: '', texto: p.notas }] : []);
@@ -641,7 +629,6 @@ function renderNotasCartoes(p) {
 
   const todosCards = [
     ...fixos.map(c => _notaCardHtml(c.svg, c.titulo, c.texto, false)),
-    ...dinamicos.map(c => _notaCardHtml(c.svg, c.titulo, c.texto, true)),
     notasExtra,
   ].join('');
 
