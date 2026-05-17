@@ -139,17 +139,22 @@ function renderOrcamento(p) {
   if (vEletros)    addCat(lang==='en'?'Appliances'      :'Eletrodomésticos', vEletros,    p.orc_eletros_desc   || '', elemEletros);
   if (vAcessorios) addCat(lang==='en'?'Accessories'     :'Acessórios',       vAcessorios, p.orc_acessorios_desc|| '', elemAcessorios);
 
-  // Categorias livres
+  // Categorias livres — cruzar orcamento[] com elem_extras[]
   (p.orcamento||[]).forEach(c => {
     const v = n(c.valor) || somaArray(c.itens);
-    if (v > 0) cats.push({ label: c.categoria, val: v, desc: c.desc || '', artigos: (c.itens||[]).filter(i=>i.nome) });
+    // Procurar artigos correspondentes em elem_extras
+    const elemExtra = (p.elem_extras||[]).find(e => e.categoria === c.categoria);
+    const artigos = elemExtra
+      ? (elemExtra.itens||[]).filter(i=>i.nome)
+      : (c.itens||[]).filter(i=>i.nome);
+    cats.push({ label: c.categoria, val: v, desc: c.desc || '', artigos });
   });
   (p.extras||[]).forEach(c => {
     const v = somaArray(c.itens);
     if (v > 0) cats.push({ label: c.categoria, val: v, desc: '', artigos: (c.itens||[]).filter(i=>i.nome) });
   });
 
-  // Extras de elementos não cobertos por orçamento
+  // elem_extras sem entrada no orcamento — mostrar só artigos
   (p.elem_extras||[]).forEach(c => {
     const validos = (c.itens||[]).filter(i=>i.nome);
     if (validos.length && !cats.find(cat=>cat.label===c.categoria)) {
@@ -176,8 +181,7 @@ function renderOrcamento(p) {
           <div class="orc-artigo-item">
             <span class="orc-artigo-nome">${esc(a.nome)}</span>
             <div class="orc-artigo-direita">
-              ${a.preco ? `<span class="orc-artigo-preco">${fmt(a.preco)}</span>` : ''}
-              ${a.url   ? `<a href="${safeUrl(a.url)}" target="_blank" rel="noopener noreferrer" class="elem-link">${lang==='en'?'View':'VER ARTIGO'}</a>` : ''}
+              ${a.url ? `<a href="${safeUrl(a.url)}" target="_blank" rel="noopener noreferrer" class="elem-link">${lang==='en'?'View':'VER ARTIGO'}</a>` : ''}
             </div>
           </div>`).join('')}
       </div>` : '';
