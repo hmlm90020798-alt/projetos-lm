@@ -1257,8 +1257,8 @@ function _iniciarSecaoActiva() {
       e.target.classList.toggle('sec-ativa', e.isIntersecting);
     });
   }, {
-    threshold: 0.25,
-    rootMargin: '-48px 0px -20% 0px'
+    threshold: 0.15,
+    rootMargin: '-48px 0px -10% 0px'
   });
 
   secs.forEach(s => io.observe(s));
