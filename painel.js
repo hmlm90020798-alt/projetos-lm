@@ -483,7 +483,7 @@ export function gerarPDF(id) {
   .pdf-tag { font-family: 'DM Mono', monospace; font-size: 7.5pt; padding: 1.5pt 7pt; border: .5pt solid #C8C0B4; border-radius: 99pt; color: #706A62; }
 
   /* Imagens */
-  .pdf-imgs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6pt; margin-bottom: 0; page-break-after: avoid; }
+  .pdf-imgs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6pt; margin-bottom: 0; }
   .pdf-imgs.cols-1 { grid-template-columns: 1fr; }
   .pdf-imgs.cols-2 { grid-template-columns: repeat(2, 1fr); }
   .pdf-img { width: 100%; height: 160pt; object-fit: cover; border-radius: 4pt; display: block; }
