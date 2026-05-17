@@ -88,7 +88,7 @@ function limparForm() {
   const elTema = document.getElementById('f-tema'); if (elTema) elTema.value = 'escuro';
   document.getElementById('img-thumbs-preview').innerHTML = '';
 
-  ['sec-elem-tampos','sec-elem-eletros','sec-elem-acessorios','sec-elem-extras',
+  ['sec-elem-moveis','sec-elem-tampos','sec-elem-eletros','sec-elem-acessorios','sec-elem-extras',
    'sec-orcamento-cats','f-interacoes-lista','f-ocorrencias-lista','f-notas-lista','f-docs-lista'].forEach(id => {
     const el = document.getElementById(id); if (el) el.innerHTML = '';
   });

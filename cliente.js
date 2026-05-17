@@ -125,6 +125,7 @@ function renderOrcamento(p) {
   };
 
   // Elementos fixos — juntar artigos com valor
+  const elemMoveis    = (p.elem_moveis    || []).filter(i => i.nome);
   const elemTampos    = (p.elem_tampos    || []).filter(i => i.nome);
   const elemEletros   = (p.elem_eletros   || []).filter(i => i.nome);
   const elemAcessorios= (p.elem_acessorios|| []).filter(i => i.nome);
@@ -134,7 +135,7 @@ function renderOrcamento(p) {
   const vEletros   = n(p.orc_eletros)   || somaArray(p.eletros);
   const vAcessorios= n(p.orc_acessorios)|| somaArray(p.acessorios);
 
-  if (vMoveis)     addCat(lang==='en'?'Fitted Furniture':'Móveis',           vMoveis,     p.orc_moveis_desc    || '', []);
+  if (vMoveis)     addCat(lang==='en'?'Fitted Furniture':'Móveis',           vMoveis,     p.orc_moveis_desc    || '', elemMoveis);
   if (vTampos)     addCat(lang==='en'?'Worktops'        :'Tampos',           vTampos,     p.orc_tampos_desc    || '', elemTampos);
   if (vEletros)    addCat(lang==='en'?'Appliances'      :'Eletrodomésticos', vEletros,    p.orc_eletros_desc   || '', elemEletros);
   if (vAcessorios) addCat(lang==='en'?'Accessories'     :'Acessórios',       vAcessorios, p.orc_acessorios_desc|| '', elemAcessorios);
