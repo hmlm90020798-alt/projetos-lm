@@ -70,11 +70,13 @@ function iniciarCountdown(prazo) {
     wrap.innerHTML = `
       <div class="cd-label">${tH.countdown}</div>
       <div class="cd-grid">
-        ${[[d,tH.dias],[h,tH.horas],[m,tH.minutos],[s,tH.segundos]].map(([n,l]) => `
-          <div class="cd-unit">
-            <div class="cd-num">${String(n).padStart(2,'0')}</div>
-            <div class="cd-lbl">${l}</div>
-          </div>`).join('')}
+        ${[[d,'dias'],[h,'h'],[m,'m'],[s,'s']].map(([n,l],i) =>
+          `${i > 0 ? '<span class="cd-sep">:</span>' : ''}` +
+          `<div class="cd-unit">` +
+            `<div class="cd-num">${String(n).padStart(2,'0')}</div>` +
+            `<div class="cd-lbl">${l}</div>` +
+          `</div>`
+        ).join('')}
       </div>`;
   }
   const old = getState('cdInterval');
@@ -772,23 +774,43 @@ export function renderPaginaCliente(p) {
   // Extrair só o nome do tipo (sem emoji) para o título 3D
   const tipoNome = tipoLabel.replace(/^\S+\s+/, ''); // Remove emoji
 
+  // Tipos de projeto para os pills
+  const TODOS_TIPOS_HERO = [
+    { key: 'cozinha',            label: 'Cozinha' },
+    { key: 'casa-de-banho',      label: 'Casa de Banho' },
+    { key: 'roupeiro',           label: 'Roupeiro' },
+    { key: 'renovacao-parcial',  label: 'Renovação Parcial' },
+    { key: 'aquecimento',        label: 'Aquecimento' },
+  ];
+  const tipoAtivo = TODOS_TIPOS_HERO.find(t => t.key === p.tipo) || { key: p.tipo, label: p.tipoOutro || p.tipo || '' };
+  const outrosTipos = TODOS_TIPOS_HERO.filter(t => t.key !== p.tipo).slice(0, 2);
+  const tiposHtml = [tipoAtivo, ...outrosTipos].map((tp, i) =>
+    `${i > 0 ? '<span class="hero-tipo-dot">·</span>' : ''}` +
+    `<span class="hero-tipo-item${i === 0 ? ' ativo' : ''}">${tp.label.toUpperCase()}</span>`
+  ).join('');
+
+  const cdHtml = prazoPassou
+    ? `<div class="hero-expirada">${tH.expirada}</div>`
+    : jaAprovado ? '' : `<div id="countdown-wrap" class="countdown-wrap"></div>`;
+
   document.getElementById('cli-hero-content').innerHTML = `
     <div class="hero-3d-block">
       <div class="hero-eyebrow">${tH.eyebrow}</div>
-      <h1 class="hero-titulo">${tipoNome}</h1>
-      <div class="hero-para">${tH.para} <em>${esc(nome)}</em></div>
-      <div class="hero-meta">
-        ${p.localidade ? `<div class="hero-meta-item"><span class="hero-meta-dot">·</span>${esc(p.localidade)}</div>` : ''}
-        ${validadeHtml}
+      <h1 class="hero-titulo">
+        Um espaço<br>
+        pensado<br>
+        para viver<span class="hero-titulo-ponto">.</span>
+      </h1>
+      <div class="hero-div"></div>
+      <div class="hero-tipos">${tiposHtml}</div>
+      <div class="hero-cliente">
+        <div class="hero-cliente-icon">⌂</div>
+        <div>
+          <div class="hero-cliente-label">${lang === 'en' ? 'DEVELOPED EXCLUSIVELY FOR' : 'DESENVOLVIDO EXCLUSIVAMENTE PARA'}</div>
+          <div class="hero-para">${esc(nome)}</div>
+        </div>
       </div>
-      ${prazoPassou
-        ? `<div class="hero-expirada">${tH.expirada}</div>`
-        : jaAprovado ? '' : `<div id="countdown-wrap" class="countdown-wrap"></div>`}
-      <div class="hero-cta">
-        <a href="#timeline" class="btn-hero-primary">📍 ${tH.ctaProgresso}</a>
-        ${faseOrdem(p.fase||'proposta') < faseOrdem('aprovado') && !prazoPassou
-          ? `<a href="#aprovacao" class="btn-hero-approve">✓ ${tH.ctaAprovar}</a>` : ''}
-      </div>
+      ${cdHtml}
     </div>`;
 
   if (p.prazo && !prazoPassou && !jaAprovado) iniciarCountdown(p.prazo);
