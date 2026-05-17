@@ -2128,6 +2128,42 @@ img   { display: block; max-width: 100%; }
   border-color: rgba(200,165,100,.18) !important;
 }
 
+/* ── FAB Falar Comigo ── */
+.fab-falar {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 400;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(14,12,10,.92);
+  border: .5px solid rgba(200,165,100,.3);
+  color: rgba(200,165,100,.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow:
+    0 4px 20px rgba(0,0,0,.4),
+    0 0 0 1px rgba(200,165,100,.08);
+  transition: all .25s cubic-bezier(.16,1,.3,1);
+}
+.fab-falar:hover {
+  border-color: rgba(200,165,100,.65);
+  color: rgba(200,165,100,1);
+  box-shadow:
+    0 4px 24px rgba(0,0,0,.5),
+    0 0 16px rgba(200,165,100,.2),
+    0 0 32px rgba(200,165,100,.08);
+  transform: translateY(-2px) scale(1.05);
+}
+.fab-falar:active {
+  transform: translateY(0) scale(.97);
+}
+
 /* ── Caixa de fase activa na timeline ── */
 .tl-fase-ativa-box {
   border: .5px solid rgba(200,165,100,.35);

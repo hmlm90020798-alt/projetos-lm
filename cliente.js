@@ -891,8 +891,6 @@ export function renderPaginaCliente(p) {
     <a href="#orcamento"      class="nav-link">${t.nav.orcamento}</a>
     <a href="#wrap-notas"     class="nav-link">${t.nav.notas}</a>
     <a href="#timeline"       class="nav-link">${t.nav.timeline}</a>
-    <a href="#mensagens"      class="nav-link">💬 ${lang==='pt'?'Mensagens':'Messages'}</a>
-
     <a href="#contacto"       class="nav-link">${t.nav.contacto}</a>
     <button class="nav-lang" onclick="window.setLang(window._LANG==='pt'?'en':'pt')">${lang==='pt'?'EN':'PT'}</button>`;
 
@@ -1037,6 +1035,9 @@ export function renderPaginaCliente(p) {
   // ── Animação em cascata do orçamento ──
   _iniciarCascataOrcamento();
   _iniciarSecaoActiva();
+
+  // ── FAB Falar Comigo ──
+  _criarFAB();
 
   // ── Verificar notificações para o cliente (mensagens novas + proposta atualizada)
   const _projId = getState('projAtualId');
@@ -1558,6 +1559,18 @@ function _iniciarCascataOrcamento() {
     }
   }, { threshold: 0.6 });
   io.observe(secOrc);
+}
+
+// ── FAB Falar Comigo ──
+function _criarFAB() {
+  if (document.getElementById('fab-falar-comigo')) return;
+  const fab = document.createElement('button');
+  fab.id = 'fab-falar-comigo';
+  fab.className = 'fab-falar';
+  fab.setAttribute('aria-label', 'Falar Comigo');
+  fab.innerHTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`;
+  fab.onclick = () => window._abrirMensagens();
+  document.body.appendChild(fab);
 }
 
 // ── Neon de entrada/saída por secção ──
