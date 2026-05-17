@@ -58,8 +58,8 @@ export const T = {
       doTotal:  'do total',
     },
     notas: {
-      eyebrow: 'Transparência',
-      titulo:  'Notas Importantes',
+      eyebrow: 'Condições',
+      titulo:  'O nosso compromisso.',
       cartoes: {
         base:        { icon: '✅', titulo: 'Base do Projeto',      texto: 'Este projeto foi desenvolvido com base nas preferências e necessidades apresentadas, procurando aliar estética, funcionalidade e aproveitamento do espaço.' },
         validade:    { icon: '📅', titulo: 'Validade da Proposta', prefixo: 'Este orçamento é válido até ' },
@@ -69,8 +69,8 @@ export const T = {
       },
     },
     timeline: {
-      eyebrow: 'Acompanhamento · 03',
-      titulo:  'Acompanhamos cada detalhe.',
+      eyebrow: 'Acompanhamento',
+      titulo:  'Evolução do Projeto',
       marcos: {
         planificado:  'Projeto planificado',
         analise:      'Em análise e decisão',
@@ -186,8 +186,8 @@ export const T = {
       doTotal:  'of total',
     },
     notas: {
-      eyebrow: 'Transparency',
-      titulo:  'Important Notes',
+      eyebrow: 'Terms',
+      titulo:  'Our commitment.',
       cartoes: {
         base:        { icon: '✅', titulo: 'Project Basis',        texto: 'This project was developed based on the preferences and requirements presented, seeking to combine aesthetics, functionality and space efficiency.' },
         validade:    { icon: '📅', titulo: 'Proposal Validity',    prefixo: 'This quote is valid until ' },
@@ -197,8 +197,8 @@ export const T = {
       },
     },
     timeline: {
-      eyebrow: 'Project Tracking · 03',
-      titulo:  'We follow every detail.',
+      eyebrow: 'Project Tracking',
+      titulo:  'Project Progress',
       marcos: {
         planificado:  'Project planned',
         analise:      'Under review and decision',

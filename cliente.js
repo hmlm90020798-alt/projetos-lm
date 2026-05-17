@@ -591,12 +591,22 @@ function renderNotasCartoes(p) {
     ? new Date(p.dataEntregaMat + 'T12:00:00').toLocaleDateString(lang === 'en' ? 'en-GB' : 'pt-PT')
     : null);
 
+  // Ícones SVG linha fina por tipo de card
+  const SVG = {
+    base:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`,
+    validade: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+    entrega:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
+    flex:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>`,
+    transp:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
+    manual:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
+  };
+
   const cartoes = [
-    { ...tN.base },
-    prazoFmt   ? { ...tN.validade,  texto: tN.validade.prefixo  + prazoFmt   + '.' } : null,
-    entregaFmt ? { ...tN.entrega,   texto: tN.entrega.prefixo   + entregaFmt + '.' } : null,
-    { ...tN.flex },
-    { ...tN.transp },
+    { svg: SVG.base,     ...tN.base },
+    prazoFmt   ? { svg: SVG.validade, ...tN.validade, texto: tN.validade.prefixo + prazoFmt   + '.' } : null,
+    entregaFmt ? { svg: SVG.entrega,  ...tN.entrega,  texto: tN.entrega.prefixo  + entregaFmt + '.' } : null,
+    { svg: SVG.flex,     ...tN.flex },
+    { svg: SVG.transp,   ...tN.transp },
   ].filter(Boolean);
 
   const notasArr = Array.isArray(p.notas)
@@ -606,28 +616,27 @@ function renderNotasCartoes(p) {
   const notasExtra = notasArr.map(n => {
     const titulo = typeof n === 'string' ? '' : (n.titulo || '');
     const texto  = typeof n === 'string' ? n  : (n.texto  || '');
-    return _notaCardHtml('📌', titulo || (lang === 'en' ? 'Important Note' : 'Nota Importante'), nl2br(texto), true);
+    return _notaCardHtml(SVG.manual, titulo || (lang === 'en' ? 'Important Note' : 'Nota Importante'), nl2br(texto), true);
   }).join('');
 
   const cartoesHtml = cartoes.map(c =>
-    _notaCardHtml(c.icon, c.titulo, nl2br(c.texto), false)
+    _notaCardHtml(c.svg, c.titulo, nl2br(c.texto), false)
   ).join('');
 
   return `<div class="notas-grid">${cartoesHtml}${notasExtra}</div>`;
 }
 
-function _notaCardHtml(icon, titulo, textoHtml, isManual) {
-  const uid = 'nc-' + Math.random().toString(36).slice(2, 7);
+function _notaCardHtml(svgIcon, titulo, textoHtml, isManual) {
   return `
     <div class="nota-card${isManual ? ' nota-card-manual' : ''}" onclick="window._toggleNota(this)" role="button" tabindex="0" aria-expanded="false">
       <div class="nota-card-header">
-        <span class="nota-card-icon">${icon}</span>
+        <span class="nota-card-icon">${svgIcon}</span>
         <span class="nota-card-titulo">${titulo}</span>
         <span class="nota-card-chevron">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </span>
       </div>
-      <div class="nota-card-corpo" id="${uid}">
+      <div class="nota-card-corpo">
         <p class="nota-card-texto">${textoHtml}</p>
       </div>
     </div>`;
@@ -969,7 +978,7 @@ export function renderPaginaCliente(p) {
   const secTitulos = {
     'sec-header-galeria':   { num: '01', eyebrow: t.galeria.eyebrow,   titulo: t.galeria.titulo,   light: false },
     'sec-header-orcamento': { num: '02', eyebrow: t.orcamento.eyebrow, titulo: t.orcamento.titulo, light: true  },
-    'sec-header-notas':     { num: '03', eyebrow: t.notas.eyebrow,     titulo: t.notas.titulo,     light: false },
+    'sec-header-notas':     { num: '03', eyebrow: t.notas.eyebrow, titulo: t.notas.titulo, desc: lang==='pt' ? 'Definimos claramente as responsabilidades de cada parte para que o projeto decorra sem surpresas. Toque em cada tema para saber mais.' : 'We clearly define the responsibilities of each party so the project runs without surprises. Tap each topic to learn more.', light: false },
     'sec-header-timeline':  { num: '04', eyebrow: t.timeline.eyebrow,  titulo: t.timeline.titulo, desc: lang==='pt' ? 'Cada fase é gerida com rigor e transparência, para que tudo aconteça como planeado.' : 'Every phase is managed with rigour and transparency, so everything happens as planned.', light: true  },
     'sec-header-docs':      { num: '05', eyebrow: lang==='pt'?'Documentos':'Documents', titulo: lang==='pt'?'Plantas & Documentos':'Plans & Documents', light: false },
   };
@@ -1567,8 +1576,8 @@ window._toggleNota = function(card) {
   const isOpen = card.classList.toggle('nota-aberta');
   card.setAttribute('aria-expanded', isOpen);
   if (isOpen) {
-    corpo.style.maxHeight = corpo.scrollHeight + 'px';
-    corpo.style.opacity   = '1';
+    // max-height fixo — o CSS .nota-aberta trata o overflow-y:auto
+    corpo.style.opacity = '1';
   } else {
     corpo.style.maxHeight = '0';
     corpo.style.opacity   = '0';

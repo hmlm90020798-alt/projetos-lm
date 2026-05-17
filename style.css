@@ -752,77 +752,112 @@ img   { display: block; max-width: 100%; }
 /* Cartões de notas fixos */
 .notas-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
 }
 .nota-card {
-  background: rgba(245,242,236,.03);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: .5px solid rgba(200,165,100,.18);
-  border-radius: 12px;
-  padding: 0;
+  background: rgba(255,255,255,.025);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: .5px solid rgba(200,165,100,.15);
+  border-radius: 14px;
   cursor: pointer;
-  transition: border-color .25s, background .25s, box-shadow .25s;
+  transition: border-color .3s, background .3s, box-shadow .3s;
   overflow: hidden;
+  position: relative;
+}
+.nota-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(200,165,100,.04) 0%, transparent 60%);
+  pointer-events: none;
+  border-radius: inherit;
 }
 .nota-card:hover {
-  border-color: rgba(200,165,100,.4);
-  background: rgba(200,165,100,.05);
-  box-shadow: 0 0 20px rgba(200,165,100,.07);
+  border-color: rgba(200,165,100,.35);
+  background: rgba(200,165,100,.04);
+  box-shadow: 0 4px 24px rgba(0,0,0,.2), 0 0 0 1px rgba(200,165,100,.08);
 }
 .nota-card.nota-aberta {
   border-color: rgba(200,165,100,.45);
   background: rgba(200,165,100,.06);
-  box-shadow: 0 0 28px rgba(200,165,100,.1);
+  box-shadow: 0 8px 32px rgba(0,0,0,.25), 0 0 0 1px rgba(200,165,100,.12), inset 0 1px 0 rgba(200,165,100,.1);
 }
 .nota-card-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 18px 20px;
+  gap: 14px;
+  padding: 20px 22px;
 }
 .nota-card-icon {
-  font-size: 16px;
   flex-shrink: 0;
+  color: rgba(200,165,100,.65);
+  display: flex;
+  align-items: center;
+  transition: color .3s;
+}
+.nota-card.nota-aberta .nota-card-icon,
+.nota-card:hover .nota-card-icon {
+  color: rgba(200,165,100,.9);
 }
 .nota-card-titulo {
   font-family: var(--sans);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: rgba(240,235,224,.8);
+  color: rgba(240,235,224,.75);
   flex: 1;
   line-height: 1.3;
+  transition: color .2s;
+}
+.nota-card:hover .nota-card-titulo,
+.nota-card.nota-aberta .nota-card-titulo {
+  color: rgba(240,235,224,.95);
 }
 .nota-card-chevron {
   flex-shrink: 0;
-  color: rgba(200,165,100,.45);
+  color: rgba(200,165,100,.35);
   display: flex;
   align-items: center;
-  transition: transform .3s cubic-bezier(.16,1,.3,1), color .2s;
+  transition: transform .35s cubic-bezier(.16,1,.3,1), color .2s;
 }
+.nota-card:hover .nota-card-chevron { color: rgba(200,165,100,.6); }
 .nota-card.nota-aberta .nota-card-chevron {
   transform: rotate(180deg);
-  color: rgba(200,165,100,.8);
+  color: rgba(200,165,100,.85);
 }
 .nota-card-corpo {
   max-height: 0;
   opacity: 0;
   overflow: hidden;
-  transition: max-height .4s cubic-bezier(.16,1,.3,1), opacity .3s ease;
+  transition: max-height .45s cubic-bezier(.16,1,.3,1), opacity .35s ease;
+}
+.nota-card.nota-aberta .nota-card-corpo {
+  overflow-y: auto;
+  max-height: 220px;
+}
+.nota-card.nota-aberta .nota-card-corpo::-webkit-scrollbar {
+  width: 3px;
+}
+.nota-card.nota-aberta .nota-card-corpo::-webkit-scrollbar-track {
+  background: transparent;
+}
+.nota-card.nota-aberta .nota-card-corpo::-webkit-scrollbar-thumb {
+  background: rgba(200,165,100,.3);
+  border-radius: 2px;
 }
 .nota-card-texto {
   font-family: var(--sans);
-  font-size: 13px;
-  line-height: 1.75;
-  color: rgba(240,235,224,.55);
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: rgba(240,235,224,.7);
   margin: 0;
-  padding: 0 20px 18px;
+  padding: 0 22px 20px;
   border-top: .5px solid rgba(200,165,100,.1);
-  padding-top: 14px;
+  padding-top: 16px;
 }
 .nota-card-manual {
-  border-color: rgba(200,165,100,.28);
+  border-color: rgba(200,165,100,.25);
 }
 .notas-extra        { margin-top: 20px; font-family: var(--sans); font-size: 15px; line-height: 1.8; color: var(--ink3); background: var(--white); border-radius: 10px; padding: 24px; border: 1px solid var(--border); }
 
