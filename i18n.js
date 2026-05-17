@@ -69,8 +69,8 @@ export const T = {
       },
     },
     timeline: {
-      eyebrow: 'Acompanhamento',
-      titulo:  'Evolução do Projeto',
+      eyebrow: 'Acompanhamento · 03',
+      titulo:  'Acompanhamos cada detalhe.',
       marcos: {
         planificado:  'Projeto planificado',
         analise:      'Em análise e decisão',
@@ -197,8 +197,8 @@ export const T = {
       },
     },
     timeline: {
-      eyebrow: 'Project Tracking',
-      titulo:  'Project Progress',
+      eyebrow: 'Project Tracking · 03',
+      titulo:  'We follow every detail.',
       marcos: {
         planificado:  'Project planned',
         analise:      'Under review and decision',

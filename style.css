@@ -704,8 +704,8 @@ img   { display: block; max-width: 100%; }
 .elem-item          { display: flex; align-items: center; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--border); }
 .elem-item:last-child { border-bottom: none; }
 .elem-nome          { font-family: var(--sans); font-size: 15px; color: var(--ink2); }
-.elem-link          { font-family: var(--sans); font-size: 12px; font-weight: 600; color: var(--green); text-decoration: none; padding: 6px 14px; border: 1.5px solid var(--green); border-radius: 6px; transition: all .15s; white-space: nowrap; flex-shrink: 0; }
-.elem-link:hover    { background: var(--green); color: #fff; }
+.elem-link          { font-family: var(--sans); font-size: 11px; font-weight: 600; color: rgba(200,165,100,.75); text-decoration: none; padding: 6px 14px; border: 1px solid rgba(200,165,100,.3); border-radius: 6px; transition: all .25s; white-space: nowrap; flex-shrink: 0; letter-spacing: .04em; }
+.elem-link:hover    { background: rgba(200,165,100,.1); color: rgba(200,165,100,1); border-color: rgba(200,165,100,.7); box-shadow: 0 0 10px rgba(200,165,100,.25), 0 0 22px rgba(200,165,100,.1); }
 
 /* ──────────────────────────────────────────────
    10. 03 ORÇAMENTO
@@ -1891,8 +1891,8 @@ img   { display: block; max-width: 100%; }
 .orc-desc           { font-family: var(--mono); font-size: 10px; color: rgba(245,242,236,.35); letter-spacing: .05em; font-style: italic; }
 
 /* Toggle — seta e cursor */
-.orc-row-toggle     { cursor: pointer; user-select: none; transition: background .2s; }
-.orc-row-toggle:hover { background: rgba(245,242,236,.02); border-radius: 4px; }
+.orc-row-toggle     { cursor: pointer; user-select: none; transition: background .2s, border-color .2s; }
+.orc-row-toggle:hover { background: rgba(200,165,100,.03); border-color: rgba(200,165,100,.15) !important; }
 .orc-toggle-ic      {
   font-size: 18px;
   color: rgba(245,242,236,.25);
@@ -1931,11 +1931,27 @@ img   { display: block; max-width: 100%; }
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 8px 0;
+  padding: 10px 12px;
   border-bottom: .5px solid rgba(245,242,236,.05);
+  border-radius: 6px;
+  transition: background .2s, backdrop-filter .2s;
 }
 .orc-artigo-item:first-child { border-top: .5px solid rgba(245,242,236,.07); margin-top: 10px; }
 .orc-artigo-item:last-child  { border-bottom: none; }
+.orc-artigo-item:hover {
+  background: rgba(200,165,100,.05);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.orc-artigo-item:hover .elem-link {
+  color: rgba(200,165,100,1);
+  border-color: rgba(200,165,100,.65);
+  background: rgba(200,165,100,.08);
+  box-shadow: 0 0 10px rgba(200,165,100,.3), 0 0 24px rgba(200,165,100,.12);
+}
+.orc-artigo-item:hover .orc-artigo-nome {
+  color: rgba(245,242,236,.9);
+}
 .orc-artigo-nome    { font-family: var(--sans); font-size: 12px; color: rgba(245,242,236,.55); flex: 1; }
 .orc-artigo-direita { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
 .orc-artigo-preco   { font-family: var(--mono); font-size: 12px; color: rgba(245,242,236,.5); }
