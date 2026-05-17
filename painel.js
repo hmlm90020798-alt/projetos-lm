@@ -483,13 +483,15 @@ export function gerarPDF(id) {
   .pdf-tag { font-family: 'DM Mono', monospace; font-size: 7.5pt; padding: 1.5pt 7pt; border: .5pt solid #C8C0B4; border-radius: 99pt; color: #706A62; }
 
   /* Imagens */
-  .pdf-imgs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6pt; margin-bottom: 14pt; }
+  .pdf-imgs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6pt; margin-bottom: 0; page-break-after: avoid; }
   .pdf-imgs.cols-1 { grid-template-columns: 1fr; }
   .pdf-imgs.cols-2 { grid-template-columns: repeat(2, 1fr); }
-  .pdf-img { width: 100%; max-height: 200pt; object-fit: cover; border-radius: 4pt; display: block; }
+  .pdf-img { width: 100%; height: 160pt; object-fit: cover; border-radius: 4pt; display: block; }
+  .pdf-imgs.cols-1 .pdf-img { height: 220pt; }
+  .pdf-imgs.cols-2 .pdf-img { height: 190pt; }
 
   /* Secção */
-  .pdf-sec { margin-bottom: 14pt; page-break-inside: avoid; }
+  .pdf-sec { margin-bottom: 14pt; margin-top: 14pt; page-break-inside: avoid; }
   .pdf-sec-titulo { font-family: 'DM Mono', monospace; font-size: 7.5pt; letter-spacing: .2em; text-transform: uppercase; color: #9C968E; border-bottom: .5pt solid #E4DED4; padding-bottom: 4pt; margin-bottom: 10pt; }
 
   /* Orçamento */
