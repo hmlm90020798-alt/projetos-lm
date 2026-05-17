@@ -1217,6 +1217,7 @@ window._recTipoChange = function() {
 export async function enviarReclamacao() {
   const btn = document.getElementById('btn-rec-enviar');
   const estado = document.getElementById('rec-form-estado');
+  const lang = getLang();
 
   // Recolher campos
   const nome     = document.getElementById('rec-nome')?.value.trim();
@@ -1316,16 +1317,44 @@ export async function enviarReclamacao() {
     if (estado) {
       estado.style.display = '';
       estado.className = 'rec-form-estado rec-estado-ok';
-      estado.textContent = '✓ Reclamação registada. Pode acompanhar o estado na secção Progresso.';
+      estado.textContent = '✓ Reclamação registada com sucesso.';
     }
+
+    // Mostrar registo no drawer
+    const dataHoraCliente = new Date().toLocaleString(lang === 'en' ? 'en-GB' : 'pt-PT', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
+    const tipoLabel = TIPOS_REC[tipo]?.label || tipo;
+    const urgLabel2 = URGENCIA_LABEL[urgencia] || urgencia;
+    let hist = document.getElementById('rec-hist-lista');
+    if (!hist) {
+      const wrap = document.createElement('div');
+      wrap.id = 'rec-hist-wrap';
+      wrap.innerHTML = `
+        <div class="rec-hist-titulo">${lang === 'en' ? 'Submitted reports' : 'Reclamações submetidas'}</div>
+        <div id="rec-hist-lista"></div>`;
+      document.getElementById('form-reclamacao')?.after(wrap);
+      hist = document.getElementById('rec-hist-lista');
+    }
+    if (hist) {
+      const entry = document.createElement('div');
+      entry.className = 'rec-hist-item';
+      entry.innerHTML = `
+        <div class="rec-hist-header">
+          <span class="rec-hist-tipo">${tipoLabel}</span>
+          <span class="rec-hist-badge rec-hist-badge-detectada">${lang === 'en' ? 'Detected' : 'Detectada'}</span>
+          <span class="rec-hist-data">${dataHoraCliente}</span>
+        </div>
+        <div class="rec-hist-desc">${esc(descricao)}</div>
+        <div class="rec-hist-urg">${lang === 'en' ? 'Priority' : 'Urgência'}: ${urgLabel2}</div>`;
+      hist.prepend(entry);
+    }
+
     // Limpar formulário
     document.getElementById('form-reclamacao')?.reset();
     window._recTipoChange();
-
-    // Fechar drawer após 2 segundos
-    setTimeout(() => window._fecharReclamacao(), 2000);
-
-    if (btn) { btn.disabled = false; btn.textContent = 'Enviar Reclamação'; }
+    if (btn) { btn.disabled = false; btn.textContent = lang === 'en' ? 'Submit Report' : 'Enviar Reclamação'; }
 
   } catch (err) {
     console.error('EmailJS error:', err);

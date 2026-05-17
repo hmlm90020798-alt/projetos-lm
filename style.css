@@ -2134,6 +2134,83 @@ img   { display: block; max-width: 100%; }
 .rec-drawer::-webkit-scrollbar { width: 4px; }
 .rec-drawer::-webkit-scrollbar-thumb { background: rgba(200,165,100,.3); border-radius: 2px; }
 
+/* Historial de reclamações submetidas no drawer */
+#rec-hist-wrap {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: .5px solid rgba(200,165,100,.15);
+}
+.rec-hist-titulo {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(200,165,100,.55);
+  margin-bottom: 14px;
+}
+.rec-hist-item {
+  background: rgba(200,165,100,.04);
+  border: .5px solid rgba(200,165,100,.18);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+}
+.rec-hist-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.rec-hist-tipo {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(240,235,224,.85);
+  flex: 1;
+}
+.rec-hist-badge {
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+.rec-hist-badge-detectada {
+  background: rgba(184,48,48,.15);
+  color: rgba(255,120,100,.9);
+  border: .5px solid rgba(184,48,48,.3);
+}
+.rec-hist-badge-resolucao {
+  background: rgba(186,117,23,.15);
+  color: rgba(239,201,122,.9);
+  border: .5px solid rgba(186,117,23,.3);
+}
+.rec-hist-badge-resolvida {
+  background: rgba(74,140,42,.15);
+  color: rgba(103,171,47,.9);
+  border: .5px solid rgba(74,140,42,.3);
+}
+.rec-hist-data {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(245,242,236,.3);
+}
+.rec-hist-desc {
+  font-size: 13px;
+  color: rgba(245,242,236,.6);
+  line-height: 1.6;
+  margin-bottom: 6px;
+}
+.rec-hist-urg {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: rgba(200,165,100,.45);
+  letter-spacing: .05em;
+}
+
 /* ── Documentos por secção ── */
 .docs-sec-wrap {
   margin-top: 28px;
