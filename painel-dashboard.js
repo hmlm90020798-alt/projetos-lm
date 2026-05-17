@@ -310,7 +310,7 @@ function renderCard(p) {
     : 'fase-proposta';
 
   return `
-    <div class="proj-card ${faseClasse}${temOcorr ? ' card-ocorrencia' : ''}" onclick="window.editarProjeto('${p.id}')">
+    <div class="proj-card ${faseClasse}${temOcorr ? ' card-ocorrencia' : ''}" onclick="window.ativarModoApresentacao('${p.id}')">
       <div class="card-top">
         <div class="card-tipo-badge">${tipo}</div>
         <div style="display:flex;gap:6px;align-items:center">
@@ -333,7 +333,7 @@ function renderCard(p) {
       ${p.prazo ? `<div class="card-prazo${urg ? ' urgente' : ''}">
         ${urg ? '⚠️ ' : ''}Válido até ${formatarData(p.prazo)}</div>` : ''}
       <div class="card-actions">
-        <button class="btn-card apresentar" onclick="event.stopPropagation();window.ativarModoApresentacao('${p.id}')" title="Abrir Modo Apresentação numa nova janela">⛶ Apresentar</button>
+        <button class="btn-card apresentar" onclick="event.stopPropagation();window.editarProjeto('${p.id}')" title="Editar projeto">✏️ Editar</button>
         <button class="btn-card acomp" onclick="event.stopPropagation();window.abrirDrawerAcompanhamento('${p.id}')" title="Acompanhamento — Interacções, Ocorrências, Mensagens">📋 Acompanhar</button>
         <button class="btn-card ia" onclick="event.stopPropagation();window.abrirResumoIA('${p.id}')" title="Resumo gerado por IA">✦ IA</button>
         <button class="btn-card pdf" onclick="event.stopPropagation();window.gerarPDF('${p.id}')" title="Gerar PDF da proposta">📄 PDF</button>

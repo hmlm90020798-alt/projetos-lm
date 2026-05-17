@@ -364,8 +364,8 @@ img   { display: block; max-width: 100%; }
 /* PDF, Link e Danger */
 .btn-card.pdf    { background: rgba(255,255,255,.12); color: rgba(255,255,255,.75); border-color: rgba(255,255,255,.2); }
 .btn-card.danger { background: rgba(192,57,43,.35);   color: #ffb3a0;              border-color: rgba(255,100,80,.3); }
-.btn-card.acomp  { background: rgba(196,169,106,.15); color: rgba(196,169,106,.9); border-color: rgba(196,169,106,.3); }
-.btn-card.acomp:hover { background: rgba(196,169,106,.28); }
+.btn-card.acomp       { background: rgba(196,169,106,.22); color: #f0d898; border-color: rgba(196,169,106,.45); font-weight: 700; }
+.btn-card.acomp:hover { background: rgba(196,169,106,.38); border-color: rgba(196,169,106,.7); }
 
 /* ══ DRAWER DE ACOMPANHAMENTO ══ */
 .acomp-overlay {
