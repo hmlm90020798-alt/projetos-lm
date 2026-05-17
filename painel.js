@@ -565,7 +565,7 @@ export function gerarPDF(id) {
 
 <!-- HERO + IMAGENS -->
 ${(() => {
-  const imgs = (p.imagens||[]).slice(0,3);
+  const imgs = (p.imagens||[]).slice(0,1);
   const temImgs = imgs.length > 0;
   const rowsClass = imgs.length === 1 ? 'rows-1' : imgs.length === 2 ? 'rows-2' : 'rows-3';
   const imgsCol = temImgs ? `
