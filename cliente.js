@@ -342,9 +342,9 @@ function renderTimeline(p) {
           <button class="tl-btn tl-btn-primary" onclick="window.aprovarProposta()">
             ✓ Aprovar Proposta
           </button>
-          <a href="#reclamacao" class="tl-btn tl-btn-secondary">
+          <button class="tl-btn tl-btn-secondary" onclick="window._abrirReclamacao('ajuste')">
             ↩ Solicitar Ajustes
-          </a>
+          </button>
         </div>`;
     }
     if (marcFase === 'entrega' && fase === 'entrega') {
@@ -353,9 +353,9 @@ function renderTimeline(p) {
           <button class="tl-btn tl-btn-primary" onclick="window._confirmarEntrega()">
             ✓ Confirmar Entrega
           </button>
-          <a href="#reclamacao" class="tl-btn tl-btn-secondary">
+          <button class="tl-btn tl-btn-secondary" onclick="window._abrirReclamacao('reclamacao')">
             ⚠ Reclamar
-          </a>
+          </button>
         </div>`;
     }
     if (marcFase === 'instalacao' && fase === 'montagem') {
@@ -364,17 +364,17 @@ function renderTimeline(p) {
           <button class="tl-btn tl-btn-primary" onclick="window._confirmarInstalacao()">
             ✓ Confirmar Instalação
           </button>
-          <a href="#reclamacao" class="tl-btn tl-btn-secondary">
+          <button class="tl-btn tl-btn-secondary" onclick="window._abrirReclamacao('reclamacao')">
             ⚠ Reclamar
-          </a>
+          </button>
         </div>`;
     }
     if (marcFase === 'conclusao' && fase === 'concluido') {
       return `
         <div class="tl-acoes">
-          <a href="#reclamacao" class="tl-btn tl-btn-secondary">
+          <button class="tl-btn tl-btn-secondary" onclick="window._abrirReclamacao('reclamacao')">
             ⚠ Reclamar
-          </a>
+          </button>
         </div>`;
     }
     return '';
@@ -807,7 +807,7 @@ export function renderPaginaCliente(p) {
     <a href="#timeline"       class="nav-link">${t.nav.timeline}</a>
     <a href="#wrap-docs"      class="nav-link">${lang==='pt'?'Documentos':'Documents'}</a>
     <a href="#mensagens"      class="nav-link">💬 ${lang==='pt'?'Mensagens':'Messages'}</a>
-    <a href="#reclamacao"     class="nav-link">⚠️ ${lang==='pt'?'Reclamação':'Complaint'}</a>
+
     <a href="#contacto"       class="nav-link">${t.nav.contacto}</a>
     <button class="nav-lang" onclick="window.setLang(window._LANG==='pt'?'en':'pt')">${lang==='pt'?'EN':'PT'}</button>`;
 
@@ -1193,6 +1193,48 @@ export function setLang(lang) {
   if (cache) renderPaginaCliente(cache);
 }
 
+
+
+// ── Drawer de Reclamação ──────────────────────────
+window._abrirReclamacao = function(tipo) {
+  const sec = document.getElementById('reclamacao');
+  const overlay = document.getElementById('rec-overlay');
+  if (!sec) return;
+
+  // Criar overlay se não existir
+  if (!overlay) {
+    const ov = document.createElement('div');
+    ov.id = 'rec-overlay';
+    ov.className = 'rec-overlay';
+    ov.onclick = () => window._fecharReclamacao();
+    document.body.appendChild(ov);
+  }
+
+  // Pré-seleccionar tipo se pedido
+  if (tipo === 'ajuste') {
+    const sel = document.getElementById('rec-tipo');
+    if (sel) { sel.value = 'revisao'; sel.dispatchEvent(new Event('change')); }
+  }
+
+  sec.style.display = 'block';
+  sec.removeAttribute('aria-hidden');
+  setTimeout(() => {
+    sec.classList.add('rec-drawer-open');
+    document.getElementById('rec-overlay')?.classList.add('rec-overlay-show');
+    document.body.style.overflow = 'hidden';
+  }, 10);
+};
+
+window._fecharReclamacao = function() {
+  const sec = document.getElementById('reclamacao');
+  const overlay = document.getElementById('rec-overlay');
+  if (!sec) return;
+  sec.classList.remove('rec-drawer-open');
+  overlay?.classList.remove('rec-overlay-show');
+  document.body.style.overflow = '';
+  sec.setAttribute('aria-hidden', 'true');
+  setTimeout(() => { sec.style.display = 'none'; }, 450);
+};
 
 // ── Cascata de animação do orçamento ──
 function _iniciarCascataOrcamento() {
