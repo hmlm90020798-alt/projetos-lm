@@ -583,30 +583,50 @@ function renderNotasCartoes(p) {
   const tN  = T[getLang()].notas.cartoes;
   const lang = getLang();
 
+  // ── 8 cards fixos ──
+  const SVG = {
+    scope:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>`,
+    client:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
+    works:    `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>`,
+    delivery: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
+    install:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`,
+    changes:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`,
+    validity: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
+    warranty: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>`,
+    manual:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
+  };
+
+  const fixos = lang === 'en' ? [
+    { svg: SVG.scope,    titulo: 'Project Scope',            texto: 'This proposal includes exclusively the elements specified and detailed in the presented quote. Any supplies or services not expressly listed are outside the scope of this project.' },
+    { svg: SVG.client,   titulo: 'Client Responsibility',    texto: 'The removal of existing equipment, furniture or finishes is the client\'s responsibility, unless expressly agreed otherwise and reflected in the proposal. The specific conditions of each project are always clarified and documented in advance.' },
+    { svg: SVG.works,    titulo: 'Works & Infrastructure',   texto: 'Equipment installation assumes that the necessary infrastructure is properly prepared — namely electrical outlets positioned, isolation valves installed and other technical conditions completed. Prior verification of these conditions is the client\'s responsibility, unless expressly agreed otherwise.' },
+    { svg: SVG.delivery, titulo: 'Delivery & Logistics',     texto: 'All materials are checked before dispatch and delivered in the best possible condition. Delays or anomalies may occur during transport beyond our control. In case of non-conformity on delivery, the client will always be contacted and the issue followed up until resolution.' },
+    { svg: SVG.install,  titulo: 'Installation',             texto: 'The installation service covers the assembly and placement of the elements included in this proposal, with a 3-year guarantee on the work carried out. Timelines are defined together and met whenever conditions allow. Any rescheduling will always be communicated with as much notice as possible.' },
+    { svg: SVG.changes,  titulo: 'Changes After Approval',   texto: 'Any change requested after proposal approval will be subject to new analysis and possible revision of the quote and timelines. We recommend that all decisions are consolidated before final project confirmation.' },
+    { svg: SVG.validity, titulo: 'Proposal Validity',        texto: 'The values presented are valid until the date indicated in this proposal. After that date, prices are subject to update and a new proposal will need to be issued.' },
+    { svg: SVG.warranty, titulo: 'Guarantees & After-Sales', texto: 'All products supplied benefit from applicable legal and commercial guarantees. The installation service has a 3-year guarantee. Any anomaly detected after project completion can be reported through Leroy Merlin\'s customer support channels — telephone, email or directly with your consultant.' },
+  ] : [
+    { svg: SVG.scope,    titulo: 'Âmbito do Projeto',           texto: 'Esta proposta inclui exclusivamente os elementos especificados e detalhados no orçamento apresentado. Quaisquer fornecimentos ou serviços não expressamente listados estão fora do âmbito deste projeto.' },
+    { svg: SVG.client,   titulo: 'Responsabilidade do Cliente', texto: 'A remoção de equipamentos, móveis ou revestimentos existentes é da responsabilidade do cliente, salvo quando expressamente acordado em contrário e refletido na proposta. As condições específicas de cada projeto são sempre clarificadas e documentadas previamente.' },
+    { svg: SVG.works,    titulo: 'Obras e Infraestruturas',     texto: 'A instalação dos equipamentos pressupõe que as infraestruturas necessárias estejam devidamente preparadas — nomeadamente tomadas elétricas posicionadas, torneiras de esquadria instaladas e demais condições técnicas concluídas. A verificação prévia destas condições é da responsabilidade do cliente, salvo acordo expresso em contrário.' },
+    { svg: SVG.delivery, titulo: 'Entrega e Logística',         texto: 'Todos os materiais são verificados antes do envio e entregues nas melhores condições possíveis. Poderão ocorrer situações de atraso ou anomalia durante o transporte alheias ao nosso controlo. Em caso de não conformidade na entrega, o cliente será sempre contactado e o problema acompanhado até à sua resolução.' },
+    { svg: SVG.install,  titulo: 'Instalação',                  texto: 'O serviço de instalação abrange a montagem e colocação dos elementos incluídos nesta proposta, com uma garantia de 3 anos sobre o trabalho executado. Os prazos são definidos em conjunto e cumpridos sempre que as condições o permitam. Qualquer reagendamento será sempre comunicado com a maior antecedência possível.' },
+    { svg: SVG.changes,  titulo: 'Alterações Após Aprovação',   texto: 'Qualquer alteração solicitada após a aprovação da proposta será sujeita a nova análise e eventual revisão do orçamento e prazos. Recomendamos que todas as decisões sejam consolidadas antes da confirmação final do projeto.' },
+    { svg: SVG.validity, titulo: 'Validade da Proposta',        texto: 'Os valores apresentados são válidos até à data indicada nesta proposta. Decorrido esse prazo, os preços ficam sujeitos a atualização, sendo necessária a emissão de uma nova proposta.' },
+    { svg: SVG.warranty, titulo: 'Garantias e Pós-Venda',       texto: 'Todos os produtos fornecidos beneficiam das garantias legais e comerciais aplicáveis. O serviço de instalação tem uma garantia de 3 anos. Qualquer anomalia detetada após a conclusão do projeto pode ser reportada através dos canais de apoio ao cliente da Leroy Merlin — linha telefónica, email ou diretamente com o seu consultor.' },
+  ];
+
+  // ── Cards dinâmicos ──
   const prazoFmt = p.prazo
     ? new Date(p.prazo + 'T12:00:00').toLocaleDateString(lang === 'en' ? 'en-GB' : 'pt-PT')
     : null;
-
   const entregaFmt = p.entrega || (p.dataEntregaMat
     ? new Date(p.dataEntregaMat + 'T12:00:00').toLocaleDateString(lang === 'en' ? 'en-GB' : 'pt-PT')
     : null);
 
-  // Ícones SVG linha fina por tipo de card
-  const SVG = {
-    base:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>`,
-    validade: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`,
-    entrega:  `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13" rx="1"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>`,
-    flex:     `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>`,
-    transp:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>`,
-    manual:   `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`,
-  };
-
-  const cartoes = [
-    { svg: SVG.base,     ...tN.base },
-    prazoFmt   ? { svg: SVG.validade, ...tN.validade, texto: tN.validade.prefixo + prazoFmt   + '.' } : null,
-    entregaFmt ? { svg: SVG.entrega,  ...tN.entrega,  texto: tN.entrega.prefixo  + entregaFmt + '.' } : null,
-    { svg: SVG.flex,     ...tN.flex },
-    { svg: SVG.transp,   ...tN.transp },
+  const dinamicos = [
+    prazoFmt   ? { svg: SVG.validity, titulo: tN.validade.titulo, texto: tN.validade.prefixo + prazoFmt   + '.' } : null,
+    entregaFmt ? { svg: SVG.delivery, titulo: tN.entrega.titulo,  texto: tN.entrega.prefixo  + entregaFmt + '.' } : null,
   ].filter(Boolean);
 
   const notasArr = Array.isArray(p.notas)
@@ -619,11 +639,13 @@ function renderNotasCartoes(p) {
     return _notaCardHtml(SVG.manual, titulo || (lang === 'en' ? 'Important Note' : 'Nota Importante'), nl2br(texto), true);
   }).join('');
 
-  const cartoesHtml = cartoes.map(c =>
-    _notaCardHtml(c.svg, c.titulo, nl2br(c.texto), false)
-  ).join('');
+  const todosCards = [
+    ...fixos.map(c => _notaCardHtml(c.svg, c.titulo, c.texto, false)),
+    ...dinamicos.map(c => _notaCardHtml(c.svg, c.titulo, c.texto, true)),
+    notasExtra,
+  ].join('');
 
-  return `<div class="notas-grid">${cartoesHtml}${notasExtra}</div>`;
+  return `<div class="notas-grid">${todosCards}</div>`;
 }
 
 function _notaCardHtml(svgIcon, titulo, textoHtml, isManual) {
