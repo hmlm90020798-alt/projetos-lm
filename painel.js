@@ -236,8 +236,9 @@ export async function guardarProjeto() {
   // Notas múltiplas com título
   const notas = Array.from(document.querySelectorAll('#f-notas-lista .nota-form-item'))
     .map(el => ({
-      titulo: el.querySelector('.nota-form-titulo')?.value?.trim() || '',
-      texto:  el.querySelector('.nota-form-input')?.value?.trim()  || '',
+      titulo:  el.querySelector('.nota-form-titulo')?.value?.trim() || '',
+      texto:   el.querySelector('.nota-form-input')?.value?.trim()  || '',
+      seccao:  el.querySelector('.nota-form-seccao')?.value         || 'compromisso',
     }))
     .filter(n => n.titulo || n.texto);
 

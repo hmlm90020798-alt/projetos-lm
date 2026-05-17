@@ -636,7 +636,7 @@ function renderNotasCartoes(p) {
 
   // ── Cards dinâmicos — só notas manuais do painel ──
   const notasArr = Array.isArray(p.notas)
-    ? p.notas.filter(n => n && (n.texto || typeof n === 'string'))
+    ? p.notas.filter(n => n && (n.texto || typeof n === 'string') && (!n.seccao || n.seccao === 'compromisso'))
     : (p.notas ? [{ titulo: '', texto: p.notas }] : []);
 
   const notasExtra = notasArr.map(n => {
@@ -1055,6 +1055,7 @@ export function renderPaginaCliente(p) {
   // ── Documentos por secção ──
   const docs = p.docs || [];
   _renderDocsPorSeccao(docs, lang);
+  _renderNotasPorSeccao(p.notas || [], lang);
 
   // ── Aprovação
   renderEstadoAprovacao(getState('projAtualId') || getState('projCache')?.id, p.aprovacao);
@@ -1543,6 +1544,40 @@ function _renderDocsPorSeccao(docs, lang) {
   if (galEl  && porSec.galeria.length)   galEl.insertAdjacentHTML('afterend', docsHtml(porSec.galeria));
   if (orcEl  && porSec.orcamento.length) orcEl.insertAdjacentHTML('afterend', docsHtml(porSec.orcamento));
   if (notEl  && porSec.notas.length)     notEl.insertAdjacentHTML('afterend', docsHtml(porSec.notas));
+}
+
+function _renderNotasPorSeccao(notas, lang) {
+  if (!notas || !notas.length) return;
+
+  // Separar notas por secção — só as que não são 'compromisso' (essas já aparecem nos cards)
+  const porSec = { galeria: [], orcamento: [], progresso: [] };
+  notas.forEach(n => {
+    const sec = n.seccao || 'compromisso';
+    if (porSec[sec]) porSec[sec].push(n);
+  });
+
+  function notasHtml(lista) {
+    if (!lista.length) return '';
+    return `
+      <div class="notas-sec-wrap">
+        <div class="notas-sec-titulo">${lang === 'en' ? 'Notes' : 'Notas'}</div>
+        <div class="notas-sec-lista">
+          ${lista.map(n => `
+            <div class="nota-sec-item">
+              ${n.titulo ? `<div class="nota-sec-titulo">${esc(n.titulo)}</div>` : ''}
+              <div class="nota-sec-texto">${nl2br(esc(n.texto))}</div>
+            </div>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  const galEl  = document.getElementById('sec-galeria');
+  const orcEl  = document.getElementById('sec-orcamento');
+  const tlEl   = document.getElementById('sec-timeline');
+
+  if (galEl  && porSec.galeria.length)   galEl.insertAdjacentHTML('afterend', notasHtml(porSec.galeria));
+  if (orcEl  && porSec.orcamento.length) orcEl.insertAdjacentHTML('afterend', notasHtml(porSec.orcamento));
+  if (tlEl   && porSec.progresso.length) tlEl.insertAdjacentHTML('afterend', notasHtml(porSec.progresso));
 }
 
 // ── Cascata de animação do orçamento ──

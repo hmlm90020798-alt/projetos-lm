@@ -2598,7 +2598,45 @@ img   { display: block; max-width: 100%; }
   transform: translateY(0) scale(.97);
 }
 
-/* ── Caixa de fase activa na timeline ── */
+/* ── Notas por secção inline (como docs) ── */
+.notas-sec-wrap {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: .5px solid rgba(245,242,236,.08);
+}
+.notas-sec-titulo {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(200,165,100,.55);
+  margin-bottom: 12px;
+}
+.notas-sec-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.nota-sec-item {
+  padding: 14px 18px;
+  background: rgba(200,165,100,.05);
+  border: .5px solid rgba(200,165,100,.18);
+  border-left: 2px solid rgba(200,165,100,.45);
+  border-radius: 0 8px 8px 0;
+}
+.nota-sec-titulo {
+  font-family: var(--sans);
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(240,235,224,.85);
+  margin-bottom: 6px;
+}
+.nota-sec-texto {
+  font-family: var(--sans);
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(240,235,224,.6);
+}
 .tl-fase-ativa-box {
   border: .5px solid rgba(200,165,100,.35);
   border-radius: 8px;

@@ -234,14 +234,20 @@ export function renderDocsForm(docs) {
   (docs || []).forEach(d => addDoc(d.nome || '', d.url || '', d.seccao || 'galeria'));
 }
 
-export function addNota(titulo = '', texto = '') {
+export function addNota(titulo = '', texto = '', seccao = 'compromisso') {
   const lista = document.getElementById('f-notas-lista');
   if (!lista) return;
   const d = document.createElement('div');
   d.className = 'nota-form-item';
   d.innerHTML = `
     <div class="nota-form-fields">
-      <input type="text" class="f-input nota-form-titulo" placeholder="Título da nota (ex: Condições de Pagamento)" value="${titulo}">
+      <select class="f-select nota-form-seccao" style="font-size:12px;margin-bottom:6px">
+        <option value="galeria"     ${seccao==='galeria'    ?'selected':''}>📐 3D / Plantas</option>
+        <option value="orcamento"   ${seccao==='orcamento'  ?'selected':''}>💶 Orçamento</option>
+        <option value="compromisso" ${seccao==='compromisso'?'selected':''}>📋 Compromisso</option>
+        <option value="progresso"   ${seccao==='progresso'  ?'selected':''}>📊 Progresso</option>
+      </select>
+      <input type="text" class="f-input nota-form-titulo" placeholder="Título da nota" value="${titulo}">
       <textarea class="f-textarea nota-form-input" placeholder="Descrição detalhada…" rows="2">${texto}</textarea>
     </div>
     <button class="prod-line-del nota-del" onclick="this.closest('.nota-form-item').remove()">×</button>`;
@@ -254,8 +260,8 @@ export function renderNotasForm(notas) {
   lista.innerHTML = '';
   const arr = Array.isArray(notas) ? notas : (notas ? [{ titulo: 'Nota', texto: notas }] : []);
   arr.forEach(n => {
-    if (typeof n === 'string') addNota('', n);
-    else addNota(n.titulo || '', n.texto || '');
+    if (typeof n === 'string') addNota('', n, 'compromisso');
+    else addNota(n.titulo || '', n.texto || '', n.seccao || 'compromisso');
   });
 }
 
