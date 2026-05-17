@@ -36,7 +36,8 @@ export function atualizarBadgeMensagens(projId, total) {
 // ── Mensagens do cliente no modal ────────────────
 
 export async function renderMensagensModal(projId) {
-  const wrap = document.getElementById('modal-msgs-lista');
+  // Suporta tanto o modal antigo como o drawer de acompanhamento
+  const wrap = document.getElementById('acomp-msgs-lista') || document.getElementById('modal-msgs-lista');
   const form = document.getElementById('modal-msgs-form');
   if (!wrap) return;
 
@@ -90,7 +91,8 @@ export async function renderMensagensModal(projId) {
 // ── Responder mensagem (exposto globalmente) ──────
 window._responderMensagemModal = async function() {
   const projId = getEditId();
-  const input  = document.getElementById('modal-msg-input');
+  // Suporta input do drawer ou do modal antigo
+  const input = document.getElementById('acomp-msg-input') || document.getElementById('modal-msg-input');
   if (!projId || !input) return;
   const texto = input.value.trim();
   if (!texto) return;

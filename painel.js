@@ -723,6 +723,7 @@ let _acompProjId = null;
 
 export function abrirDrawerAcompanhamento(id) {
   _acompProjId = id;
+  setState({ editId: id }); // necessário para renderMensagensModal usar getEditId()
   const p = getProjects().find(x => x.id === id);
   if (!p) return;
 
@@ -889,20 +890,7 @@ window._acompAddOcorrencia = function() {
 
 // Responder mensagem a partir do drawer
 window._acompResponderMsg = async function() {
-  const input = document.getElementById('acomp-msg-input');
-  const texto = input?.value?.trim();
-  if (!texto || !_acompProjId) return;
-  // Copiar para o input do modal e usar função existente
-  const modalInput = document.getElementById('modal-msg-input');
-  if (modalInput) modalInput.value = texto;
   await window._responderMensagemModal?.();
-  if (input) input.value = '';
-  // Actualizar lista no drawer
-  setTimeout(() => {
-    const modalLista = document.getElementById('modal-msgs-lista');
-    const acompLista = document.getElementById('acomp-msgs-lista');
-    if (modalLista && acompLista) acompLista.innerHTML = modalLista.innerHTML;
-  }, 500);
 };
 
 window.abrirDrawerAcompanhamento  = abrirDrawerAcompanhamento;
