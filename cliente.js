@@ -511,7 +511,7 @@ function _animarBarraProgresso() {
 
 // Confirmações de entrega e instalação
 window._confirmarEntrega = async function() {
-  const id = getState('projAtualId');
+  const id = getState('projAtualId') || getState('projCache')?.id;
   if (!id) return;
   if (!confirm('Confirma a recepção da mercadoria?')) return;
   try {
@@ -524,7 +524,7 @@ window._confirmarEntrega = async function() {
 };
 
 window._confirmarInstalacao = async function() {
-  const id = getState('projAtualId');
+  const id = getState('projAtualId') || getState('projCache')?.id;
   if (!id) return;
   if (!confirm('Confirma a conclusão da instalação?')) return;
   try {
@@ -566,7 +566,7 @@ export async function renderEstadoAprovacao(projetoId, aprovacao) {
 }
 
 export async function aprovarProposta() {
-  const id  = getState('projAtualId');
+  const id  = getState('projAtualId') || getState('projCache')?.id;
   if (!id) { alert('Erro: ID do projeto não encontrado.'); return; }
   const btn = document.getElementById('btn-aprovar-proj');
   if (btn) { btn.disabled = true; btn.textContent = 'A registar…'; }
@@ -777,7 +777,7 @@ export async function renderMensagens(projId, forcarScroll = false) {
 }
 
 export async function enviarMensagem() {
-  const projId = getState('projAtualId');
+  const projId = getState('projAtualId') || getState('projCache')?.id;
   const input  = document.getElementById('msg-input');
   if (!projId || !input) return;
 
@@ -877,7 +877,7 @@ function mostrarNotifCliente(titulo, sub, onClicar) {
     toast.classList.remove('show');
     if (onClicar) onClicar();
     // Marcar msgs como vistas ao clicar
-    const projId = getState('projAtualId');
+    const projId = getState('projAtualId') || getState('projCache')?.id;
     if (projId) {
       const msgs = document.querySelectorAll('.msg-item-hm');
       if (msgs.length) {
@@ -1048,7 +1048,7 @@ export function renderPaginaCliente(p) {
   _animarBarraProgresso();
 
   // ── 07 Mensagens — carregar e renderizar
-  const projId = getState('projAtualId');
+  const projId = getState('projAtualId') || getState('projCache')?.id;
   if (projId) renderMensagens(projId);
 
   // ── Documentos por secção ──
@@ -1056,7 +1056,7 @@ export function renderPaginaCliente(p) {
   _renderDocsPorSeccao(docs, lang);
 
   // ── Aprovação
-  renderEstadoAprovacao(getState('projAtualId'), p.aprovacao);
+  renderEstadoAprovacao(getState('projAtualId') || getState('projCache')?.id, p.aprovacao);
 
   // ── Email — visível via spans no HTML (imune ao Cloudflare)
   // Não é necessário injectar via JS — os spans .em-u/.em-a/.em-d estão no HTML
@@ -1075,7 +1075,7 @@ export function renderPaginaCliente(p) {
   _criarFAB();
 
   // ── Verificar notificações para o cliente (mensagens novas + proposta atualizada)
-  const _projId = getState('projAtualId');
+  const _projId = getState('projAtualId') || getState('projCache')?.id;
   if (_projId) verificarNotificacoesCliente(_projId, p);
 
   // ── Iniciar formulário de reclamação — mostrar secção e pré-preencher
@@ -1278,7 +1278,7 @@ export async function enviarReclamacao() {
 
     // Guardar no Firestore e re-renderizar
     try {
-      const projId = getState('projAtualId');
+      const projId = getState('projAtualId') || getState('projCache')?.id || getState('projCache')?.id;
       if (projId) {
         const { doc, updateDoc, arrayUnion } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
         const novaOcorrencia = {
