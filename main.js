@@ -12,7 +12,8 @@
 
 import { getState, setState }    from './state.js';
 import { carregar, doLogin, doLogout, onAuth, registarVisita, carregarGroqKey, guardarGroqKey,
-         carregarMensagens, enviarMensagemCliente, responderMensagem, marcarMensagensLidas } from './firebase.js';
+         carregarMensagens, enviarMensagemCliente, responderMensagem, marcarMensagensLidas,
+         _auth } from './firebase.js';
 import { setView, mostrarToast } from './ui.js';
 import {
   abrirModalNovo, fecharModal, guardarProjeto,
@@ -179,7 +180,9 @@ async function checkUrlParam() {
     setView('cliente');
     const btn = document.getElementById('btn-voltar-painel');
     if (btn) btn.style.display = 'none';
-    if (!isPrint) registarVisita(id);
+    // Só registar visita se não estiver autenticado (visita real do cliente)
+    const authUser = _auth?.currentUser;
+    if (!isPrint && !authUser) registarVisita(id);
     if (isPrint) { setTimeout(() => { window.print(); }, 800); }
 
   } catch (err) {
