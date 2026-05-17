@@ -442,37 +442,6 @@
         <button class="btn-add" onclick="window.addDoc()">+ Documento</button>
       </div>
 
-      <!-- Histórico de Reuniões -->
-      <div class="form-bloco collapsed" id="bloco-reunioes" style="display:none">
-        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>📅 Reuniões</span><span class="accordion-arrow">&#9662;</span></div>
-        <div class="form-note">Notas guardadas durante sessões de apresentação desta proposta.</div>
-        <div id="reunioes-historico-lista"></div>
-      </div>
-
-      <!-- Mensagens do Cliente -->
-      <div class="form-bloco collapsed" id="bloco-mensagens">
-        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')">
-          <span>💬 Mensagens do Cliente <span class="card-msg-badge" id="modal-msg-badge" style="display:none"></span></span>
-          <span class="accordion-arrow">&#9662;</span>
-        </div>
-        <div class="form-note">Mensagens enviadas pelo cliente através da página da proposta.</div>
-        <div class="modal-msgs-wrap">
-          <div class="modal-msgs-lista" id="modal-msgs-lista"></div>
-          <div class="modal-msgs-form" id="modal-msgs-form" style="display:none">
-            <textarea
-              id="modal-msg-input"
-              class="modal-msg-textarea"
-              placeholder="Escreva a sua resposta…"
-              rows="2"
-              onkeydown="if(event.key==='Enter'&&event.ctrlKey)window._responderMensagemModal()"></textarea>
-            <div class="modal-msg-footer">
-              <span style="font-size:11px;color:var(--ink4);font-family:var(--mono)">Ctrl+Enter para enviar</span>
-              <button class="btn-guardar" id="modal-msg-btn" style="padding:7px 16px;font-size:12px" onclick="window._responderMensagemModal()">Responder</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
     </div>
     <div class="modal-footer">
       <button class="btn-cancelar" onclick="window.fecharModal()">Cancelar</button>
@@ -755,6 +724,88 @@
   <div>
     <div class="toast-titulo" id="toast-titulo"></div>
      <div class="toast-sub" id="toast-sub"></div>
+  </div>
+</div>
+
+<!-- ══ DRAWER ACOMPANHAMENTO ══ -->
+<div id="acomp-overlay" class="acomp-overlay" onclick="window.fecharDrawerAcompanhamento()"></div>
+<div id="acomp-drawer" class="acomp-drawer" style="display:none">
+  <div class="acomp-header">
+    <div>
+      <div class="acomp-eyebrow">Acompanhamento</div>
+      <div class="acomp-nome" id="acomp-nome">—</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span class="acomp-fase" id="acomp-fase"></span>
+      <button class="acomp-fechar" onclick="window.fecharDrawerAcompanhamento()">✕ Fechar</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="acomp-tabs">
+    <button class="acomp-tab acomp-tab-ativa" onclick="window.setAcompTab('interacoes',this)">Interacções</button>
+    <button class="acomp-tab" onclick="window.setAcompTab('ocorrencias',this)">Ocorrências</button>
+    <button class="acomp-tab" onclick="window.setAcompTab('mensagens',this)">💬 Mensagens <span class="acomp-badge" id="acomp-msg-badge" style="display:none"></span></button>
+    <button class="acomp-tab" onclick="window.setAcompTab('reunioes',this)">Reuniões</button>
+  </div>
+
+  <!-- Tab: Interacções -->
+  <div class="acomp-tab-content" id="acomp-tab-interacoes">
+    <div class="acomp-form-row">
+      <select id="acomp-int-tipo" class="f-select" style="width:130px;flex-shrink:0">
+        <option value="nota">📝 Nota</option>
+        <option value="chamada">📞 Chamada</option>
+        <option value="email">✉️ Email</option>
+        <option value="visita">🏠 Visita</option>
+        <option value="whatsapp">💬 WhatsApp</option>
+      </select>
+      <input type="text" id="acomp-int-texto" class="f-input" placeholder="Resumo da interacção…" style="flex:1"
+        onkeydown="if(event.key==='Enter')window._acompAddInteracao()">
+      <button class="btn-int-add" onclick="window._acompAddInteracao()">Adicionar</button>
+    </div>
+    <div id="acomp-int-lista" class="acomp-lista"></div>
+  </div>
+
+  <!-- Tab: Ocorrências -->
+  <div class="acomp-tab-content" id="acomp-tab-ocorrencias" style="display:none">
+    <div class="acomp-form-row" style="flex-wrap:wrap">
+      <select id="acomp-ocorr-tipo" class="f-select" style="width:170px;flex-shrink:0">
+        <option value="atraso">Atraso na entrega</option>
+        <option value="defeito">Defeito de material</option>
+        <option value="instalacao">Problema na instalação</option>
+        <option value="falta">Material em falta</option>
+        <option value="outro">Outro</option>
+      </select>
+      <select id="acomp-ocorr-estado" class="f-select" style="width:140px;flex-shrink:0">
+        <option value="detectada">Detectada</option>
+        <option value="resolucao">Em resolução</option>
+        <option value="resolvida">Resolvida</option>
+      </select>
+      <input type="text" id="acomp-ocorr-desc" class="f-input" placeholder="Descrição…" style="flex:1">
+      <button class="btn-int-add btn-ocorr-add" onclick="window._acompAddOcorrencia()">Registar</button>
+    </div>
+    <div id="acomp-ocorr-lista" class="acomp-lista"></div>
+  </div>
+
+  <!-- Tab: Mensagens -->
+  <div class="acomp-tab-content" id="acomp-tab-mensagens" style="display:none">
+    <div class="modal-msgs-wrap">
+      <div class="modal-msgs-lista" id="acomp-msgs-lista"></div>
+      <div class="modal-msgs-form">
+        <textarea id="acomp-msg-input" class="modal-msg-textarea" placeholder="Escreva a sua resposta…" rows="3"
+          onkeydown="if(event.key==='Enter'&&event.ctrlKey)window._acompResponderMsg()"></textarea>
+        <div class="modal-msg-footer">
+          <span style="font-size:11px;color:var(--ink4);font-family:var(--mono)">Ctrl+Enter para enviar</span>
+          <button class="btn-guardar" style="padding:7px 16px;font-size:12px" onclick="window._acompResponderMsg()">Responder</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Reuniões -->
+  <div class="acomp-tab-content" id="acomp-tab-reunioes" style="display:none">
+    <div class="form-note" style="margin-bottom:12px">Notas guardadas durante sessões de apresentação desta proposta.</div>
+    <div id="acomp-reunioes-lista" class="acomp-lista"></div>
   </div>
 </div>
 

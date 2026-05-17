@@ -364,6 +364,156 @@ img   { display: block; max-width: 100%; }
 /* PDF, Link e Danger */
 .btn-card.pdf    { background: rgba(255,255,255,.12); color: rgba(255,255,255,.75); border-color: rgba(255,255,255,.2); }
 .btn-card.danger { background: rgba(192,57,43,.35);   color: #ffb3a0;              border-color: rgba(255,100,80,.3); }
+.btn-card.acomp  { background: rgba(196,169,106,.15); color: rgba(196,169,106,.9); border-color: rgba(196,169,106,.3); }
+.btn-card.acomp:hover { background: rgba(196,169,106,.28); }
+
+/* ══ DRAWER DE ACOMPANHAMENTO ══ */
+.acomp-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+.acomp-overlay.acomp-overlay-show { opacity: 1; }
+
+.acomp-drawer {
+  position: fixed;
+  top: 0; right: 0;
+  width: min(680px, 100vw);
+  height: 100vh;
+  background: var(--white);
+  z-index: 600;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .4s cubic-bezier(.16,1,.3,1);
+  box-shadow: -8px 0 40px rgba(0,0,0,.2);
+  overflow: hidden;
+}
+.acomp-drawer.acomp-drawer-open { transform: translateX(0); }
+
+.acomp-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--white);
+}
+.acomp-eyebrow {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+.acomp-nome {
+  font-family: var(--serif);
+  font-size: 20px;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.acomp-fase {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 99px;
+  background: rgba(44,94,26,.1);
+  color: var(--green);
+  border: 1px solid rgba(44,94,26,.2);
+  white-space: nowrap;
+  align-self: center;
+}
+.acomp-fechar {
+  background: transparent;
+  border: .5px solid var(--border-mid);
+  border-radius: 5px;
+  padding: 6px 12px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  color: var(--ink3);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.acomp-fechar:hover { border-color: var(--ink3); color: var(--ink); }
+
+.acomp-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  background: var(--cli-bg-soft);
+  padding: 0 16px;
+}
+.acomp-tab {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  color: var(--ink3);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all .15s;
+  white-space: nowrap;
+  position: relative;
+}
+.acomp-tab:hover { color: var(--ink); }
+.acomp-tab.acomp-tab-ativa {
+  color: var(--green);
+  border-bottom-color: var(--green);
+  font-weight: 600;
+}
+.acomp-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  background: var(--red);
+  color: #fff;
+  border-radius: 99px;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 0 4px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.acomp-tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 28px;
+}
+.acomp-form-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.acomp-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.acomp-vazio {
+  font-size: 13px;
+  color: var(--ink4);
+  font-style: italic;
+  padding: 20px 0;
+  text-align: center;
+}
 .empty-state        { text-align: center; padding: 80px 20px; color: rgba(255,255,255,.5); }
 .empty-icon         { font-size: 48px; margin-bottom: 16px; }
 .empty-titulo       { font-family: var(--serif); font-size: 22px; color: rgba(255,255,255,.75); margin-bottom: 8px; }

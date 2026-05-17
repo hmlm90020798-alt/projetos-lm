@@ -714,3 +714,197 @@ export function iniciarPollingAprovacoes() {
 // ── Mensagens — ver painel-mensagens.js ────────────
 
 
+
+// ══════════════════════════════════════════════════
+// DRAWER DE ACOMPANHAMENTO
+// ══════════════════════════════════════════════════
+
+let _acompProjId = null;
+
+export function abrirDrawerAcompanhamento(id) {
+  _acompProjId = id;
+  const p = getProjects().find(x => x.id === id);
+  if (!p) return;
+
+  // Cabeçalho
+  document.getElementById('acomp-nome').textContent = p.nome || '—';
+  const faseLabels = {
+    proposta: 'Proposta', retificacao: 'Retificação', aprovado: 'Aprovado',
+    encomenda: 'Encomenda', entrega: 'Entrega', montagem: 'Montagem', concluido: 'Concluído'
+  };
+  const faseEl = document.getElementById('acomp-fase');
+  if (faseEl) {
+    faseEl.textContent = faseLabels[p.fase] || p.fase || '';
+    faseEl.className = `acomp-fase acomp-fase-${p.fase || 'proposta'}`;
+  }
+
+  // Activar tab interacções por defeito
+  setAcompTab('interacoes', document.querySelector('.acomp-tab'));
+
+  // Render interacções
+  _renderAcompInteracoes(p.interacoes || []);
+
+  // Render ocorrências
+  renderOcorrenciasForm(p.ocorrencias || []);
+  // Mover lista para o drawer
+  const ocorrLista = document.getElementById('f-ocorrencias-lista');
+  const acompOcorrLista = document.getElementById('acomp-ocorr-lista');
+  if (ocorrLista && acompOcorrLista) acompOcorrLista.innerHTML = ocorrLista.innerHTML;
+
+  // Render mensagens
+  renderMensagensModal(id);
+  // Copiar para o drawer
+  setTimeout(() => {
+    const modalLista = document.getElementById('modal-msgs-lista');
+    const acompLista = document.getElementById('acomp-msgs-lista');
+    if (modalLista && acompLista) acompLista.innerHTML = modalLista.innerHTML;
+  }, 300);
+
+  // Reuniões
+  _renderAcompReunioes(id);
+
+  // Abrir
+  const drawer = document.getElementById('acomp-drawer');
+  const overlay = document.getElementById('acomp-overlay');
+  drawer.style.display = 'block';
+  overlay.style.display = 'block';
+  setTimeout(() => {
+    drawer.classList.add('acomp-drawer-open');
+    overlay.classList.add('acomp-overlay-show');
+    document.body.style.overflow = 'hidden';
+  }, 10);
+}
+
+export function fecharDrawerAcompanhamento() {
+  const drawer = document.getElementById('acomp-drawer');
+  const overlay = document.getElementById('acomp-overlay');
+  if (!drawer) return;
+  drawer.classList.remove('acomp-drawer-open');
+  overlay?.classList.remove('acomp-overlay-show');
+  document.body.style.overflow = '';
+  setTimeout(() => {
+    drawer.style.display = 'none';
+    overlay.style.display = 'none';
+  }, 400);
+}
+
+export function setAcompTab(tab, btnEl) {
+  // Desactivar todas as tabs
+  document.querySelectorAll('.acomp-tab').forEach(b => b.classList.remove('acomp-tab-ativa'));
+  document.querySelectorAll('.acomp-tab-content').forEach(c => c.style.display = 'none');
+  // Activar tab seleccionada
+  if (btnEl) btnEl.classList.add('acomp-tab-ativa');
+  const content = document.getElementById(`acomp-tab-${tab}`);
+  if (content) content.style.display = 'block';
+}
+
+function _renderAcompInteracoes(list) {
+  const el = document.getElementById('acomp-int-lista');
+  if (!el) return;
+  const tipoIcons = { nota:'📝', chamada:'📞', email:'✉️', visita:'🏠', whatsapp:'💬' };
+  if (!list.length) {
+    el.innerHTML = '<div class="acomp-vazio">Sem interacções registadas.</div>';
+    return;
+  }
+  el.innerHTML = list.slice().reverse().map(i => `
+    <div class="interacao-item">
+      <span class="int-tipo tipo-${i.tipo}">${tipoIcons[i.tipo] || ''} ${i.tipo}</span>
+      <span class="int-texto">${esc(i.texto)}</span>
+      <span class="int-data">${i.data || ''} ${i.hora || ''}</span>
+    </div>`).join('');
+}
+
+function _renderAcompReunioes(id) {
+  const el = document.getElementById('acomp-reunioes-lista');
+  if (!el) return;
+  let reunioes = [];
+  try { reunioes = JSON.parse(localStorage.getItem(`lm_reunioes_${id}`) || '[]'); } catch(_) {}
+  if (!reunioes.length) {
+    el.innerHTML = '<div class="acomp-vazio">Sem reuniões registadas.</div>';
+    return;
+  }
+  el.innerHTML = reunioes.map(r => `
+    <div class="hist-reuniao-item">
+      <div class="hist-reuniao-data">${r.data || ''}</div>
+      <div class="hist-reuniao-texto">${esc(r.nota || '')}</div>
+    </div>`).join('');
+}
+
+// Adicionar interacção a partir do drawer
+window._acompAddInteracao = function() {
+  if (!_acompProjId) return;
+  const tipo  = document.getElementById('acomp-int-tipo')?.value;
+  const texto = document.getElementById('acomp-int-texto')?.value?.trim();
+  if (!texto) return;
+
+  const agora = new Date();
+  const data  = agora.toLocaleDateString('pt-PT');
+  const hora  = String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0');
+
+  // Guardar no projecto
+  const projetos = getProjects();
+  const p = projetos.find(x => x.id === _acompProjId);
+  if (!p) return;
+  const novaInt = { tipo, texto, data, hora };
+  p.interacoes = [novaInt, ...(p.interacoes || [])];
+
+  // Guardar no Firestore
+  import('./firebase.js').then(({ guardar }) => {
+    guardar(p).catch(console.warn);
+  });
+
+  _renderAcompInteracoes(p.interacoes);
+  document.getElementById('acomp-int-texto').value = '';
+};
+
+// Adicionar ocorrência a partir do drawer
+window._acompAddOcorrencia = function() {
+  if (!_acompProjId) return;
+  const tipo   = document.getElementById('acomp-ocorr-tipo')?.value;
+  const estado = document.getElementById('acomp-ocorr-estado')?.value || 'detectada';
+  const desc   = document.getElementById('acomp-ocorr-desc')?.value?.trim();
+  if (!desc) return;
+
+  const data = new Date().toLocaleDateString('pt-PT');
+  const projetos = getProjects();
+  const p = projetos.find(x => x.id === _acompProjId);
+  if (!p) return;
+
+  const novaOcorr = {
+    id: 'oc-' + Date.now(), tipo, descricao: desc, estado, data,
+    actualizacoes: [{ data, dataISO: new Date().toISOString(), estado, nota: 'Registada por HM.', autor: 'hm' }]
+  };
+  p.ocorrencias = [...(p.ocorrencias || []), novaOcorr];
+
+  import('./firebase.js').then(({ guardar }) => {
+    guardar(p).catch(console.warn);
+  });
+
+  renderOcorrenciasForm(p.ocorrencias);
+  const ocorrLista = document.getElementById('f-ocorrencias-lista');
+  const acompOcorrLista = document.getElementById('acomp-ocorr-lista');
+  if (ocorrLista && acompOcorrLista) acompOcorrLista.innerHTML = ocorrLista.innerHTML;
+  document.getElementById('acomp-ocorr-desc').value = '';
+};
+
+// Responder mensagem a partir do drawer
+window._acompResponderMsg = async function() {
+  const input = document.getElementById('acomp-msg-input');
+  const texto = input?.value?.trim();
+  if (!texto || !_acompProjId) return;
+  // Copiar para o input do modal e usar função existente
+  const modalInput = document.getElementById('modal-msg-input');
+  if (modalInput) modalInput.value = texto;
+  await window._responderMensagemModal?.();
+  if (input) input.value = '';
+  // Actualizar lista no drawer
+  setTimeout(() => {
+    const modalLista = document.getElementById('modal-msgs-lista');
+    const acompLista = document.getElementById('acomp-msgs-lista');
+    if (modalLista && acompLista) acompLista.innerHTML = modalLista.innerHTML;
+  }, 500);
+};
+
+window.abrirDrawerAcompanhamento  = abrirDrawerAcompanhamento;
+window.fecharDrawerAcompanhamento = fecharDrawerAcompanhamento;
+window.setAcompTab                = setAcompTab;
