@@ -2002,3 +2002,56 @@ img   { display: block; max-width: 100%; }
 }
 .rec-drawer::-webkit-scrollbar { width: 4px; }
 .rec-drawer::-webkit-scrollbar-thumb { background: rgba(200,165,100,.3); border-radius: 2px; }
+
+/* ── Documentos por secção ── */
+.docs-sec-wrap {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: .5px solid rgba(245,242,236,.08);
+}
+.docs-sec-titulo {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(200,165,100,.55);
+  margin-bottom: 12px;
+}
+.docs-grid-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.doc-card-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(245,242,236,.04);
+  border: .5px solid rgba(245,242,236,.08);
+  border-radius: 6px;
+  text-decoration: none;
+  transition: background .2s, border-color .2s;
+}
+.doc-card-inline:hover {
+  background: rgba(200,165,100,.07);
+  border-color: rgba(200,165,100,.2);
+}
+.doc-card-inline-icon {
+  color: rgba(200,165,100,.5);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+.doc-card-inline-nome {
+  font-family: var(--sans);
+  font-size: 13px;
+  color: rgba(245,242,236,.7);
+  flex: 1;
+}
+.doc-card-inline-hint {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: rgba(200,165,100,.5);
+  flex-shrink: 0;
+}

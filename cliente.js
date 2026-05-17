@@ -931,17 +931,9 @@ export function renderPaginaCliente(p) {
   const projId = getState('projAtualId');
   if (projId) renderMensagens(projId);
 
-  // ── 06 Documentos
-  const wrapDocs = document.getElementById('wrap-docs');
-  if (wrapDocs) {
-    const docs = p.docs || [];
-    if (docs.length) {
-      wrapDocs.style.display = '';
-      document.getElementById('sec-docs').innerHTML = renderDocumentos(docs, lang);
-    } else {
-      wrapDocs.style.display = 'none';
-    }
-  }
+  // ── Documentos por secção ──
+  const docs = p.docs || [];
+  _renderDocsPorSeccao(docs, lang);
 
   // ── Aprovação
   renderEstadoAprovacao(getState('projAtualId'), p.aprovacao);
@@ -1235,6 +1227,52 @@ window._fecharReclamacao = function() {
   sec.setAttribute('aria-hidden', 'true');
   setTimeout(() => { sec.style.display = 'none'; }, 450);
 };
+
+
+// ── Documentos distribuídos por secção ──
+function _renderDocsPorSeccao(docs, lang) {
+  if (!docs.length) return;
+
+  const hint = lang === 'en' ? '↗ Open document' : '↗ Abrir documento';
+
+  function docsHtml(lista) {
+    if (!lista.length) return '';
+    return `
+      <div class="docs-sec-wrap">
+        <div class="docs-sec-titulo">${lang==='en'?'Documents':'Documentos'}</div>
+        <div class="docs-grid-inline">
+          ${lista.map(d => `
+            <a href="${safeUrl(d.url)}" target="_blank" rel="noopener noreferrer" class="doc-card-inline">
+              <div class="doc-card-inline-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                </svg>
+              </div>
+              <span class="doc-card-inline-nome">${esc(d.nome)}</span>
+              <span class="doc-card-inline-hint">↗</span>
+            </a>`).join('')}
+        </div>
+      </div>`;
+  }
+
+  // Distribuir por secção
+  const porSec = { galeria: [], orcamento: [], notas: [] };
+  docs.forEach(d => {
+    const sec = d.seccao || 'galeria';
+    if (porSec[sec]) porSec[sec].push(d);
+    else porSec.notas.push(d); // fallback
+  });
+
+  // Injectar em cada secção
+  const galEl  = document.getElementById('sec-galeria');
+  const orcEl  = document.getElementById('sec-orcamento');
+  const notEl  = document.getElementById('sec-notas');
+
+  if (galEl  && porSec.galeria.length)   galEl.insertAdjacentHTML('afterend', docsHtml(porSec.galeria));
+  if (orcEl  && porSec.orcamento.length) orcEl.insertAdjacentHTML('afterend', docsHtml(porSec.orcamento));
+  if (notEl  && porSec.notas.length)     notEl.insertAdjacentHTML('afterend', docsHtml(porSec.notas));
+}
 
 // ── Cascata de animação do orçamento ──
 function _iniciarCascataOrcamento() {

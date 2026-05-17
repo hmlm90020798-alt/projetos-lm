@@ -211,15 +211,20 @@ export function addOcorrencia(tipo, descricao, estado) {
 
 // ── Notas múltiplas ───────────────────────────────
 
-export function addDoc(nome = '', url = '') {
+export function addDoc(nome = '', url = '', seccao = 'galeria') {
   const lista = document.getElementById('f-docs-lista');
   if (!lista) return;
   const d = document.createElement('div');
   d.className = 'doc-form-item';
   d.innerHTML = `
     <div class="doc-form-fields">
-      <input type="text" class="f-input doc-form-nome" placeholder="Nome do documento (ex: Planta Cozinha)" value="${nome}">
-      <input type="url"  class="f-input doc-form-url"  placeholder="https://drive.google.com/..." value="${url}">
+      <select class="f-input doc-form-seccao" style="width:140px;flex-shrink:0">
+        <option value="galeria"  ${seccao==='galeria'  ?'selected':''}>📐 3D / Plantas</option>
+        <option value="orcamento"${seccao==='orcamento'?'selected':''}>💶 Orçamento</option>
+        <option value="notas"    ${seccao==='notas'    ?'selected':''}>📋 Notas</option>
+      </select>
+      <input type="text" class="f-input doc-form-nome" placeholder="Nome do documento" value="${nome}" style="flex:1">
+      <input type="url"  class="f-input doc-form-url"  placeholder="https://drive.google.com/..." value="${url}" style="flex:2">
     </div>
     <button class="prod-line-del" onclick="this.closest('.doc-form-item').remove()">×</button>`;
   lista.appendChild(d);
@@ -229,7 +234,7 @@ export function renderDocsForm(docs) {
   const lista = document.getElementById('f-docs-lista');
   if (!lista) return;
   lista.innerHTML = '';
-  (docs || []).forEach(d => addDoc(d.nome || '', d.url || ''));
+  (docs || []).forEach(d => addDoc(d.nome || '', d.url || '', d.seccao || 'galeria'));
 }
 
 export function addNota(titulo = '', texto = '') {

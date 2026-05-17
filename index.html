@@ -437,7 +437,7 @@
       <!-- Documentos -->
       <div class="form-bloco">
         <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>📎 Documentos</span><span class="accordion-arrow">&#9662;</span></div>
-        <div class="form-note">Adiciona links para plantas, medidas ou outros documentos (Google Drive, Dropbox, etc.).</div>
+        <div class="form-note">Associa cada documento à secção onde deve aparecer (3D, Orçamento ou Notas).</div>
         <div id="f-docs-lista"></div>
         <button class="btn-add" onclick="window.addDoc()">+ Documento</button>
       </div>
@@ -544,7 +544,7 @@
   </section>
 
   <!-- 06 · Documentos -->
-  <div id="wrap-docs">
+  <div id="wrap-docs" style="display:none">
     <section class="cli-sec cli-sec-soft" id="docs">
       <div class="cli-sec-inner">
         <div class="sec-header" id="sec-header-docs"></div>
@@ -562,7 +562,7 @@
   <section id="mensagens" class="cli-sec cli-sec-soft">
     <div class="cli-sec-inner">
       <div class="sec-header" style="display:flex;align-items:flex-end;gap:20px;margin-bottom:40px">
-        <span class="sec-num">06</span>
+        <span class="sec-num">05</span>
         <div>
           <div class="sec-eyebrow">Comunicação Direta</div>
           <h2 class="sec-titulo">Fale Comigo</h2>

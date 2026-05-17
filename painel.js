@@ -240,8 +240,9 @@ export async function guardarProjeto() {
   // Documentos (links externos)
   const docs = Array.from(document.querySelectorAll('#f-docs-lista .doc-form-item'))
     .map(el => ({
-      nome: el.querySelector('.doc-form-nome')?.value?.trim() || '',
-      url:  el.querySelector('.doc-form-url')?.value?.trim()  || '',
+      nome:    el.querySelector('.doc-form-nome')?.value?.trim()    || '',
+      url:     el.querySelector('.doc-form-url')?.value?.trim()     || '',
+      seccao:  el.querySelector('.doc-form-seccao')?.value?.trim()  || 'galeria',
     }))
     .filter(d => d.nome && d.url);
 
