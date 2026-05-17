@@ -177,6 +177,7 @@ function renderOrcamento(p) {
 
     const artigosHtml = temArtigos ? `
       <div class="orc-artigos" id="${artigosId}">
+        <div class="orc-artigos-inner">
         ${c.artigos.map(a => `
           <div class="orc-artigo-item">
             <span class="orc-artigo-nome">${esc(a.nome)}</span>
@@ -185,6 +186,7 @@ function renderOrcamento(p) {
               ${a.url ? `<a href="${safeUrl(a.url)}" target="_blank" rel="noopener noreferrer" class="elem-link">${lang==='en'?'View':'VER ARTIGO'}</a>` : ''}
             </div>
           </div>`).join('')}
+        </div>
       </div>` : '';
 
     return `
@@ -325,6 +327,53 @@ function renderTimeline(p) {
   const tOc    = T[lang].ocorrencias;
   const jaAprov= faseOrdem(fase) >= faseOrdem('aprovado');
 
+  // Percentagem de progresso por fase
+  const fasePct = {
+    proposta:    14,
+    retificacao: 14,
+    aprovado:    28,
+    encomenda:   42,
+    entrega:     57,
+    montagem:    80,
+    concluido:   100,
+  };
+  const pct = fasePct[fase] ?? 0;
+
+  // Frases marcantes por fase
+  const frasesPT = {
+    proposta:    'A sua cozinha começa a <em>tomar forma.</em>',
+    retificacao: 'Cada detalhe <em>afinado</em> à sua medida.',
+    aprovado:    'Decisão tomada. <em>Avançamos juntos.</em>',
+    encomenda:   'Cada peça no lugar certo, <em>antes do tempo.</em>',
+    entrega:     'Os materiais chegaram. <em>Estamos prontos.</em>',
+    montagem:    'As mãos na obra. O resultado <em>aproxima-se.</em>',
+    concluido:   'Feito com rigor. <em>Pensado para durar.</em>',
+  };
+  const frasesEN = {
+    proposta:    'Your kitchen is starting to <em>take shape.</em>',
+    retificacao: 'Every detail <em>refined</em> to your measure.',
+    aprovado:    'Decision made. <em>Moving forward together.</em>',
+    encomenda:   'Every piece in the right place, <em>ahead of schedule.</em>',
+    entrega:     'Materials have arrived. <em>We are ready.</em>',
+    montagem:    'Work in progress. The result <em>is close.</em>',
+    concluido:   'Done with precision. <em>Built to last.</em>',
+  };
+  const frase = (lang === 'en' ? frasesEN : frasesPT)[fase] || '';
+
+  // Barra de progresso global
+  const progHtml = `
+    <div class="tl-prog-wrap" id="tl-prog-wrap">
+      <div class="tl-prog-header">
+        <span class="tl-prog-label">${lang === 'en' ? 'Global Progress' : 'Progresso Global'}</span>
+        <span class="tl-prog-pct" id="tl-prog-pct">0%</span>
+      </div>
+      <div class="tl-prog-track">
+        <div class="tl-prog-fill" id="tl-prog-fill" data-pct="${pct}"></div>
+      </div>
+    </div>`;
+
+  const fraseHtml = frase ? `<div class="tl-frase">${frase}</div>` : '';
+
   // Ocorrências activas
   const ocorrAtivas = (p.ocorrencias||[]).filter(o => o.estado !== 'resolvida');
   const ocorrHtml = ocorrAtivas.map(o => `
@@ -416,7 +465,37 @@ function renderTimeline(p) {
     </div>`;
   }).join('');
 
-  return marcosHtml + ocorrHtml;
+  return progHtml + fraseHtml + marcosHtml + ocorrHtml;
+}
+
+// Animar barra de progresso global quando visível
+function _animarBarraProgresso() {
+  const fill = document.getElementById('tl-prog-fill');
+  const pctEl = document.getElementById('tl-prog-pct');
+  if (!fill || !pctEl) return;
+  const targetPct = parseInt(fill.dataset.pct) || 0;
+
+  const io = new IntersectionObserver(entries => {
+    if (!entries[0].isIntersecting) return;
+    io.disconnect();
+    // Animar a barra
+    setTimeout(() => {
+      fill.style.width = targetPct + '%';
+    }, 150);
+    // Animar o número
+    const DUR = 1100;
+    const start = performance.now();
+    function step(now) {
+      const progress = Math.min((now - start) / DUR, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      pctEl.textContent = Math.round(eased * targetPct) + '%';
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    setTimeout(() => requestAnimationFrame(step), 150);
+  }, { threshold: 0.5 });
+
+  const wrap = document.getElementById('tl-prog-wrap');
+  if (wrap) io.observe(wrap);
 }
 
 // Confirmações de entrega e instalação
@@ -938,6 +1017,7 @@ export function renderPaginaCliente(p) {
 
   // ── 05 Timeline
   document.getElementById('sec-timeline').innerHTML = renderTimeline(p);
+  _animarBarraProgresso();
 
   // ── 07 Mensagens — carregar e renderizar
   const projId = getState('projAtualId');
