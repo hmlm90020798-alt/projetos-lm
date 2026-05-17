@@ -291,12 +291,12 @@ export function adicionarActualizacaoOcorr(btnEl) {
   const dataISO  = agora.toISOString();
   const estadoLabels = { detectada: 'Detectada', resolucao: 'Em resolução', resolvida: 'Resolvida' };
 
-  // Actualizar estado do item
+  // Actualizar estado do item DOM
   item.dataset.estado = estado;
   const badge = item.querySelector('.ocorr-estado');
   if (badge) { badge.textContent = estadoLabels[estado]; badge.className = `ocorr-estado ocorr-estado-${estado}`; }
 
-  // Inserir no historial
+  // Inserir no historial DOM
   const hist = item.querySelector('.ocorr-hist-lista');
   if (hist) {
     const d = document.createElement('div');
@@ -316,8 +316,13 @@ export function adicionarActualizacaoOcorr(btnEl) {
     hist.prepend(d);
   }
 
-  // Limpar
+  // Guardar no Firestore — reler estado completo do DOM e chamar guardar
   if (textarea) textarea.value = '';
+
+  // Disparar guardar via painel se disponível
+  if (typeof window._guardarOcorrenciasDrawer === 'function') {
+    window._guardarOcorrenciasDrawer();
+  }
 }
 
 export function renderOcorrenciasForm(list) {

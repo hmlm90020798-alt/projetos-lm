@@ -828,8 +828,8 @@ function _renderAcompReunioes(id) {
   }
   el.innerHTML = reunioes.map(r => `
     <div class="hist-reuniao-item">
-      <div class="hist-reuniao-data">${r.data || ''}</div>
-      <div class="hist-reuniao-texto">${esc(r.nota || '')}</div>
+      <div class="hist-reuniao-data">${r.data || ''} ${r.hora || ''}</div>
+      <div class="hist-reuniao-texto">${esc(r.texto || r.nota || '')}</div>
     </div>`).join('');
 }
 
@@ -898,3 +898,41 @@ window._acompResponderMsg = async function() {
 window.abrirDrawerAcompanhamento  = abrirDrawerAcompanhamento;
 window.fecharDrawerAcompanhamento = fecharDrawerAcompanhamento;
 window.setAcompTab                = setAcompTab;
+
+// Guardar ocorrências actualizadas no drawer → Firestore
+window._guardarOcorrenciasDrawer = function() {
+  if (!_acompProjId) return;
+  const projetos = getProjects();
+  const p = projetos.find(x => x.id === _acompProjId);
+  if (!p) return;
+
+  // Reler estado completo dos itens no drawer
+  const itens = document.querySelectorAll('#acomp-ocorr-lista .ocorr-item');
+  if (!itens.length) return;
+
+  p.ocorrencias = Array.from(itens).map(el => {
+    const acts = Array.from(el.querySelectorAll('.ocorr-act-item')).map(a => ({
+      data:    a.dataset.data    || '',
+      dataISO: a.dataset.dataiso || '',
+      estado:  a.dataset.estado  || 'detectada',
+      nota:    a.dataset.nota    || '',
+      autor:   a.dataset.autor   || 'hm',
+    }));
+    return {
+      id:            el.dataset.id       || ('oc-' + Date.now()),
+      tipo:          el.dataset.tipo     || 'outro',
+      descricao:     el.dataset.desc     || '',
+      estado:        el.dataset.estado   || 'detectada',
+      data:          el.dataset.data     || '',
+      dataISO:       el.dataset.dataiso  || '',
+      urgencia:      el.dataset.urgencia || 'normal',
+      actualizacoes: acts,
+    };
+  });
+
+  import('./firebase.js').then(({ guardar }) => {
+    guardar(p)
+      .then(() => mostrarToast('✓ Actualização guardada', ''))
+      .catch(e => { console.warn('Erro ao guardar:', e); mostrarToast('⚠️ Erro ao guardar', ''); });
+  });
+};
