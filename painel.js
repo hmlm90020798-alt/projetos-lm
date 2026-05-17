@@ -625,7 +625,18 @@ ${notas.length ? `
   </div>
 </div>
 
-<script>window.onload = () => { window.print(); }</script>
+<script>
+  window.onload = () => {
+    const imgs = Array.from(document.images);
+    if (!imgs.length) { window.print(); return; }
+    let loaded = 0;
+    const tryPrint = () => { if (++loaded >= imgs.length) window.print(); };
+    imgs.forEach(img => {
+      if (img.complete) tryPrint();
+      else { img.onload = tryPrint; img.onerror = tryPrint; }
+    });
+  };
+</script>
 </body>
 </html>`;
 
