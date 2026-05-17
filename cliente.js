@@ -1358,44 +1358,44 @@ function _iniciarCascataOrcamento() {
 
 // ── Iluminação de secção activa por scroll ──
 function _iniciarSecaoActiva() {
-  // Incluir também secções dentro de wrap-divs (galeria, notas, docs)
-  const secs = Array.from(document.querySelectorAll('.cli-sec[id], .cli-sec'))
-    .filter((s, i, arr) => arr.indexOf(s) === i) // deduplicar
-    .filter(s => {
-      // Excluir secções ocultas
-      const wrap = s.closest('[style*="display:none"]');
-      return !wrap && s.offsetHeight > 0;
-    });
-  if (!secs.length) return;
-
-  // Usar scroll para determinar qual secção ocupa mais espaço no viewport
-  function actualizarSecAtiva() {
-    const vpH    = window.innerHeight;
-    const navH   = 48; // altura da navbar
-    let melhor   = null;
-    let melhorAlt = 0;
-
-    secs.forEach(sec => {
-      const rect = sec.getBoundingClientRect();
-      // Área visível da secção no viewport (excluindo navbar)
-      const top    = Math.max(rect.top, navH);
-      const bottom = Math.min(rect.bottom, vpH);
-      const visivel = Math.max(0, bottom - top);
-      if (visivel > melhorAlt) {
-        melhorAlt = visivel;
-        melhor = sec;
+  // Pequeno delay para garantir que o DOM está renderizado
+  setTimeout(() => {
+    // Seleccionar TODAS as cli-sec visíveis — incluindo as dentro de wrap-divs
+    const todasSecs = Array.from(document.querySelectorAll('.cli-sec'));
+    const secs = todasSecs.filter(s => {
+      // Excluir se o próprio elemento ou qualquer pai tem display:none
+      let el = s;
+      while (el) {
+        const st = window.getComputedStyle(el);
+        if (st.display === 'none') return false;
+        el = el.parentElement;
       }
+      return s.offsetHeight > 0;
     });
 
-    secs.forEach(sec => {
-      sec.classList.toggle('sec-ativa', sec === melhor);
-    });
-  }
+    if (!secs.length) return;
 
-  // Correr no scroll e no resize
-  window.addEventListener('scroll', actualizarSecAtiva, { passive: true });
-  window.addEventListener('resize', actualizarSecAtiva, { passive: true });
-  actualizarSecAtiva(); // estado inicial
+    function actualizarSecAtiva() {
+      const vpH  = window.innerHeight;
+      const navH = document.querySelector('.cli-nav')?.offsetHeight || 56;
+      let melhor    = null;
+      let melhorAlt = 0;
+
+      secs.forEach(sec => {
+        const rect   = sec.getBoundingClientRect();
+        const top    = Math.max(rect.top, navH);
+        const bottom = Math.min(rect.bottom, vpH);
+        const vis    = Math.max(0, bottom - top);
+        if (vis > melhorAlt) { melhorAlt = vis; melhor = sec; }
+      });
+
+      secs.forEach(sec => sec.classList.toggle('sec-ativa', sec === melhor));
+    }
+
+    window.addEventListener('scroll', actualizarSecAtiva, { passive: true });
+    window.addEventListener('resize', actualizarSecAtiva, { passive: true });
+    actualizarSecAtiva();
+  }, 300);
 }
 
 // ── Toggle de artigos no orçamento ──
