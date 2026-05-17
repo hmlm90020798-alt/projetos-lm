@@ -481,17 +481,18 @@ export function gerarPDF(id) {
     border-radius: 6pt;
     border-left: 3pt solid #C4A96A;
     overflow: hidden;
-    min-height: 160pt;
+    height: 175pt;
   }
   .pdf-hero-sem-imgs {
     grid-template-columns: 1fr;
-    min-height: auto;
+    height: auto;
   }
   .pdf-hero-left {
     padding: 16pt 16pt;
     display: flex;
     flex-direction: column;
     justify-content: center;
+    overflow: hidden;
   }
   .pdf-eyebrow { font-family: 'DM Mono', monospace; font-size: 7pt; letter-spacing: .2em; text-transform: uppercase; color: #9C968E; margin-bottom: 4pt; }
   .pdf-titulo { font-family: 'DM Serif Display', serif; font-size: 15pt; color: #1A1814; line-height: 1.15; margin-bottom: 8pt; }
@@ -505,12 +506,13 @@ export function gerarPDF(id) {
   .pdf-imgs-col {
     display: grid;
     grid-template-rows: 1fr 1fr 1fr;
-    gap: 0;
+    gap: 2pt;
     overflow: hidden;
+    height: 175pt;
   }
   .pdf-imgs-col.rows-1 { grid-template-rows: 1fr; }
   .pdf-imgs-col.rows-2 { grid-template-rows: 1fr 1fr; }
-  .pdf-img-col { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 50pt; }
+  .pdf-img-col { width: 100%; height: 100%; object-fit: cover; display: block; }
 
   /* Secção */
   .pdf-sec { margin-bottom: 14pt; margin-top: 14pt; page-break-inside: avoid; }
