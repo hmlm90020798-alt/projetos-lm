@@ -545,6 +545,15 @@ img   { display: block; max-width: 100%; }
 .modal-box .prod-line-nome:focus,
 .modal-box .prod-line-preco:focus { border-color: var(--green); }
 
+.modal-box .elem-line {
+  background: var(--cli-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
+}
+.modal-box .elem-line:nth-child(odd) { background: var(--cli-bg-soft); }
+
 .modal-box .elem-cat-grupo  { background: var(--cli-bg-soft); border-color: var(--border); }
 .modal-box .orc-cat-grupo   { background: var(--cli-bg-soft); border-color: var(--border); }
 .modal-box .nota-form-item  { background: var(--cli-bg-soft); border-color: var(--border); }
