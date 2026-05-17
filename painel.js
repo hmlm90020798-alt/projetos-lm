@@ -17,9 +17,13 @@ import {
   addLinhaOrc, addCatOrcamento, atualizarTotalPreview,
   processarImagens, removerImagem, renderThumbs,
   addInteracao, addOcorrencia,
-  addDoc, addNota, atualizarEstadoOcorrencia,
+  addDoc, addNota, atualizarEstadoOcorrencia, adicionarActualizacaoOcorr,
   renderInteracoes, renderDocsForm, renderNotasForm, renderOcorrenciasForm,
 } from './painel-form-extras.js';
+
+// Expor globalmente para onclicks inline
+window.adicionarActualizacaoOcorr = adicionarActualizacaoOcorr;
+window.atualizarEstadoOcorrencia  = atualizarEstadoOcorrencia;
 
 
 // ── Inicialização do módulo de alertas ───────────────
@@ -250,7 +254,25 @@ export async function guardarProjeto() {
     .map(el => ({ tipo: el.dataset.tipo||'nota', texto: el.dataset.texto||'', data: el.dataset.data||'', hora: el.dataset.hora||'' }));
 
   const ocorrencias = Array.from(document.querySelectorAll('#f-ocorrencias-lista .ocorr-item'))
-    .map(el => ({ tipo: el.dataset.tipo||'outro', descricao: el.dataset.desc||'', estado: el.dataset.estado||'detectada', data: el.dataset.data||'' }));
+    .map(el => {
+      const acts = Array.from(el.querySelectorAll('.ocorr-act-item')).map(a => ({
+        data:    a.dataset.data    || '',
+        dataISO: a.dataset.dataiso || '',
+        estado:  a.dataset.estado  || 'detectada',
+        nota:    a.dataset.nota    || '',
+        autor:   a.dataset.autor   || 'hm',
+      }));
+      return {
+        id:            el.dataset.id      || ('oc-' + Date.now()),
+        tipo:          el.dataset.tipo    || 'outro',
+        descricao:     el.dataset.desc    || '',
+        estado:        el.dataset.estado  || 'detectada',
+        data:          el.dataset.data    || '',
+        dataISO:       el.dataset.dataiso || '',
+        urgencia:      el.dataset.urgencia|| 'normal',
+        actualizacoes: acts,
+      };
+    });
 
   const tipo = document.getElementById('f-tipo').value;
   const gv   = id => document.getElementById(id)?.value || '';

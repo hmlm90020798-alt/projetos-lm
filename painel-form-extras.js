@@ -274,25 +274,99 @@ export function atualizarEstadoOcorrencia(btnEl, novoEstado) {
   }
 }
 
+export function adicionarActualizacaoOcorr(btnEl) {
+  const item     = btnEl.closest('.ocorr-item');
+  if (!item) return;
+  const textarea = item.querySelector('.ocorr-act-nova-nota');
+  const select   = item.querySelector('.ocorr-act-novo-estado');
+  const nota     = textarea?.value?.trim();
+  const estado   = select?.value || 'resolucao';
+  if (!nota) { textarea?.focus(); return; }
+
+  const agora    = new Date();
+  const data     = agora.toLocaleDateString('pt-PT');
+  const dataISO  = agora.toISOString();
+  const estadoLabels = { detectada: 'Detectada', resolucao: 'Em resolução', resolvida: 'Resolvida' };
+
+  // Actualizar estado do item
+  item.dataset.estado = estado;
+  const badge = item.querySelector('.ocorr-estado');
+  if (badge) { badge.textContent = estadoLabels[estado]; badge.className = `ocorr-estado ocorr-estado-${estado}`; }
+
+  // Inserir no historial
+  const hist = item.querySelector('.ocorr-hist-lista');
+  if (hist) {
+    const d = document.createElement('div');
+    d.className = 'ocorr-act-item';
+    d.dataset.data    = data;
+    d.dataset.dataiso = dataISO;
+    d.dataset.estado  = estado;
+    d.dataset.nota    = nota;
+    d.dataset.autor   = 'hm';
+    d.innerHTML = `
+      <div class="ocorr-act-meta">
+        <span class="ocorr-act-data">${data}</span>
+        <span class="ocorr-act-badge ocorr-act-badge-${estado}">${estadoLabels[estado]}</span>
+        <span class="ocorr-act-autor">HM</span>
+      </div>
+      <div class="ocorr-act-nota">${nota}</div>`;
+    hist.prepend(d);
+  }
+
+  // Limpar
+  if (textarea) textarea.value = '';
+}
+
 export function renderOcorrenciasForm(list) {
   const el = document.getElementById('f-ocorrencias-lista');
   if (!el) return;
   const tipoLabels   = { atraso: 'Atraso entrega', defeito: 'Defeito material', instalacao: 'Instalação', falta: 'Material em falta', outro: 'Outro' };
   const estadoLabels = { detectada: 'Detectada', resolucao: 'Em resolução', resolvida: 'Resolvida' };
-  el.innerHTML = list.map(o => `
-    <div class="ocorr-item" data-tipo="${o.tipo}" data-desc="${o.descricao||''}" data-estado="${o.estado||'detectada'}" data-data="${o.data||''}">
+
+  el.innerHTML = list.map(o => {
+    const acts = (o.actualizacoes || []);
+    const actsHtml = acts.slice().reverse().map(a => `
+      <div class="ocorr-act-item"
+           data-data="${a.data||''}" data-dataiso="${a.dataISO||''}"
+           data-estado="${a.estado||'detectada'}" data-nota="${esc(a.nota||'')}"
+           data-autor="${a.autor||'hm'}">
+        <div class="ocorr-act-meta">
+          <span class="ocorr-act-data">${a.data||''}</span>
+          <span class="ocorr-act-badge ocorr-act-badge-${a.estado||'detectada'}">${estadoLabels[a.estado||'detectada']}</span>
+          <span class="ocorr-act-autor">${a.autor === 'cliente' ? 'Cliente' : 'HM'}</span>
+        </div>
+        <div class="ocorr-act-nota">${esc(a.nota||'')}</div>
+      </div>`).join('');
+
+    return `
+    <div class="ocorr-item"
+         data-id="${o.id||''}" data-tipo="${o.tipo}" data-desc="${esc(o.descricao||'')}"
+         data-estado="${o.estado||'detectada'}" data-data="${o.data||''}"
+         data-dataiso="${o.dataISO||''}" data-urgencia="${o.urgencia||'normal'}">
       <div class="ocorr-item-header">
         <span class="ocorr-tipo">${tipoLabels[o.tipo]||o.tipo}</span>
         <span class="ocorr-estado ocorr-estado-${o.estado||'detectada'}">${estadoLabels[o.estado||'detectada']}</span>
         <span class="int-data">${o.data||''}</span>
         <button class="prod-line-del" onclick="this.closest('.ocorr-item').remove()">×</button>
       </div>
-      <div class="ocorr-desc">${o.descricao||''}</div>
-      <div class="ocorr-estados-btns">
-        <button class="btn-ocorr-estado" onclick="window.atualizarEstadoOcorrencia(this,'detectada')">Detectada</button>
-        <button class="btn-ocorr-estado" onclick="window.atualizarEstadoOcorrencia(this,'resolucao')">Em resolução</button>
-        <button class="btn-ocorr-estado" onclick="window.atualizarEstadoOcorrencia(this,'resolvida')">Resolvida</button>
+      <div class="ocorr-desc">${esc(o.descricao||'')}</div>
+
+      ${acts.length ? `
+      <div class="ocorr-hist">
+        <div class="ocorr-hist-label">Historial</div>
+        <div class="ocorr-hist-lista">${actsHtml}</div>
+      </div>` : '<div class="ocorr-hist"><div class="ocorr-hist-label">Historial</div><div class="ocorr-hist-lista"></div></div>'}
+
+      <div class="ocorr-nova-act">
+        <select class="f-select ocorr-act-novo-estado" style="width:160px;font-size:11px">
+          <option value="resolucao">Em resolução</option>
+          <option value="resolvida">Resolvida</option>
+          <option value="detectada">Detectada</option>
+        </select>
+        <textarea class="f-textarea ocorr-act-nova-nota" rows="2" placeholder="Nota de actualização…" style="flex:1;font-size:12px;resize:vertical"></textarea>
+        <button class="btn-add" style="white-space:nowrap;align-self:flex-end" onclick="window.adicionarActualizacaoOcorr(this)">+ Adicionar</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 

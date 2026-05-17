@@ -467,9 +467,21 @@ img   { display: block; max-width: 100%; }
 .ocorr-estado-resolucao { background: var(--amber-pale); color: var(--amber); }
 .ocorr-estado-resolvida { background: var(--green-pale); color: var(--green); }
 .ocorr-desc         { font-size: 13px; color: var(--ink3); margin-bottom: 10px; }
-.ocorr-estados-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-.btn-ocorr-estado   { padding: 5px 10px; border: 1.5px solid var(--border); border-radius: 6px; background: transparent; color: var(--ink3); font-family: var(--sans); font-size: 11px; font-weight: 500; cursor: pointer; transition: all .15s; }
-.btn-ocorr-estado:hover { border-color: var(--amber); color: var(--amber); }
+
+/* Historial de actualizações — painel */
+.ocorr-hist         { margin: 10px 0 8px; border-top: 1px solid rgba(186,117,23,.15); padding-top: 8px; }
+.ocorr-hist-label   { font-family: var(--mono); font-size: 9px; letter-spacing: .15em; text-transform: uppercase; color: var(--ink4); margin-bottom: 6px; }
+.ocorr-hist-lista   { display: flex; flex-direction: column; gap: 6px; }
+.ocorr-act-item     { background: rgba(186,117,23,.06); border: 1px solid rgba(186,117,23,.15); border-radius: 6px; padding: 8px 10px; }
+.ocorr-act-meta     { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.ocorr-act-data     { font-family: var(--mono); font-size: 10px; color: var(--ink4); }
+.ocorr-act-autor    { font-family: var(--mono); font-size: 10px; color: var(--ink4); margin-left: auto; }
+.ocorr-act-badge    { font-size: 10px; font-weight: 600; padding: 1px 7px; border-radius: 99px; }
+.ocorr-act-badge-detectada { background: var(--red-pale);   color: var(--red);   }
+.ocorr-act-badge-resolucao { background: var(--amber-pale); color: var(--amber); }
+.ocorr-act-badge-resolvida { background: var(--green-pale); color: var(--green); }
+.ocorr-act-nota     { font-size: 12px; color: var(--ink3); line-height: 1.5; }
+.ocorr-nova-act     { display: flex; gap: 8px; align-items: flex-start; margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(186,117,23,.15); }
 
 .modal-footer       { padding: 14px 26px 22px; display: flex; gap: 10px; justify-content: flex-end; border-top: 1px solid var(--border); }
 .btn-cancelar       { padding: 11px 20px; border: 1.5px solid var(--border); border-radius: 8px; background: transparent; color: var(--ink3); font-family: var(--sans); font-size: 13px; font-weight: 500; cursor: pointer; }
@@ -944,9 +956,23 @@ img   { display: block; max-width: 100%; }
 
 
 .tl-ocorrencia      { background: rgba(186,117,23,.08); border: 1px solid rgba(186,117,23,.25); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; }
-.tl-ocorrencia-tipo { font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--champ-light); margin-bottom: 6px; }
+.tl-ocorrencia-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.tl-ocorrencia-tipo { font-family: var(--sans); font-size: 12px; font-weight: 700; color: var(--champ-light); }
+.tl-ocorr-estado-badge { font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; padding: 3px 10px; border-radius: 99px; }
+.tl-ocorr-estado-detectada { background: rgba(184,48,48,.15);  color: rgba(255,120,100,.9); border: .5px solid rgba(184,48,48,.3); }
+.tl-ocorr-estado-resolucao { background: rgba(186,117,23,.15); color: rgba(239,201,122,.9); border: .5px solid rgba(186,117,23,.3); }
+.tl-ocorr-estado-resolvida { background: rgba(74,140,42,.15);  color: rgba(103,171,47,.9);  border: .5px solid rgba(74,140,42,.3); }
 .tl-ocorrencia-desc { font-size: 14px; color: rgba(245,242,236,.6); margin-bottom: 8px; line-height: 1.5; }
-.tl-ocorrencia-estado { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--champ); }
+.tl-ocorr-data-criacao { font-family: var(--mono); font-size: 10px; color: rgba(245,242,236,.3); margin-bottom: 12px; }
+.tl-ocorrencia-estado { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--champ); margin-top: 8px; }
+
+/* Historial de actualizações — vista cliente */
+.tl-ocorr-hist      { margin-top: 14px; padding-top: 12px; border-top: .5px solid rgba(186,117,23,.2); display: flex; flex-direction: column; gap: 8px; }
+.tl-ocorr-act       { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; background: rgba(255,255,255,.03); border-radius: 7px; border-left: 2px solid rgba(186,117,23,.3); }
+.tl-ocorr-act-last  { border-left-color: rgba(200,165,100,.6); background: rgba(200,165,100,.05); }
+.tl-ocorr-act-data  { font-family: var(--mono); font-size: 10px; color: rgba(245,242,236,.3); }
+.tl-ocorr-act-estado { font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; margin-left: 8px; }
+.tl-ocorr-act-nota  { font-size: 13px; color: rgba(245,242,236,.65); line-height: 1.6; margin-top: 4px; }
 
 @keyframes tlpulse       { 0%,100%{ box-shadow: 0 0 0 4px rgba(196,169,106,.15); } 50%{ box-shadow: 0 0 0 9px rgba(196,169,106,.06); } }
 @keyframes tlpulse-amber { 0%,100%{ box-shadow: 0 0 0 4px rgba(186,117,23,.2);   } 50%{ box-shadow: 0 0 0 9px rgba(186,117,23,.08);  } }

@@ -376,12 +376,29 @@ function renderTimeline(p) {
 
   // Ocorrências activas
   const ocorrAtivas = (p.ocorrencias||[]).filter(o => o.estado !== 'resolvida');
-  const ocorrHtml = ocorrAtivas.map(o => `
-    <div class="tl-ocorrencia">
-      <div class="tl-ocorrencia-tipo">⚠️ ${esc(tOc.tipos[o.tipo] || o.tipo)}</div>
-      <div class="tl-ocorrencia-desc">${esc(o.descricao)}</div>
-      <div class="tl-ocorrencia-estado">${tOc.emResolucao}</div>
-    </div>`).join('');
+  const ocorrHtml = ocorrAtivas.map(o => {
+    const acts = (o.actualizacoes || []);
+    const actHtml = acts.length > 1 ? `
+      <div class="tl-ocorr-hist">
+        ${acts.slice().reverse().map((a, i) => `
+          <div class="tl-ocorr-act${i === 0 ? ' tl-ocorr-act-last' : ''}">
+            <span class="tl-ocorr-act-data">${a.data || ''}</span>
+            <span class="tl-ocorr-act-estado tl-ocorr-estado-${a.estado || 'detectada'}">${tOc.estados[a.estado] || a.estado}</span>
+            <span class="tl-ocorr-act-nota">${esc(a.nota || '')}</span>
+          </div>`).join('')}
+      </div>` : '';
+    return `
+      <div class="tl-ocorrencia">
+        <div class="tl-ocorrencia-header">
+          <span class="tl-ocorrencia-tipo">⚠️ ${esc(tOc.tipos[o.tipo] || o.tipo)}</span>
+          <span class="tl-ocorr-estado-badge tl-ocorr-estado-${o.estado || 'detectada'}">${tOc.estados[o.estado] || tOc.estados.detectada}</span>
+        </div>
+        <div class="tl-ocorrencia-desc">${esc(o.descricao)}</div>
+        ${o.data ? `<div class="tl-ocorr-data-criacao">📅 ${lang === 'pt' ? 'Registada em' : 'Registered on'} ${o.data}</div>` : ''}
+        ${actHtml}
+        <div class="tl-ocorrencia-estado">${tOc.emResolucao}</div>
+      </div>`;
+  }).join('');
 
   // Botões de acção por fase
   function botoesAcao(marcFase) {
@@ -1258,6 +1275,36 @@ export async function enviarReclamacao() {
     // Escolher template conforme tipo — soHM = só Hélder, senão vai para ambos
     const templateId = tipoInfo.soHM ? EMAILJS_TEMPLATE_HM : EMAILJS_TEMPLATE_ALL;
     await emailjs.send(EMAILJS_SERVICE_ID, templateId, templateParams);
+
+    // Guardar no Firestore
+    try {
+      const projId = getState('projAtualId');
+      if (projId) {
+        const { doc, updateDoc, arrayUnion } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+        const novaOcorrencia = {
+          id:          'oc-' + Date.now(),
+          tipo,
+          descricao,
+          urgencia,
+          estado:      'detectada',
+          data:        new Date().toLocaleDateString('pt-PT'),
+          dataISO:     new Date().toISOString(),
+          actualizacoes: [{
+            data:    new Date().toLocaleDateString('pt-PT'),
+            dataISO: new Date().toISOString(),
+            estado:  'detectada',
+            nota:    lang === 'pt' ? 'Ocorrência registada pelo cliente.' : 'Issue reported by client.',
+            autor:   'cliente',
+          }],
+        };
+        await updateDoc(doc(_db, 'projetos', projId), {
+          ocorrencias: arrayUnion(novaOcorrencia),
+        });
+      }
+    } catch (fsErr) {
+      console.warn('Firestore save failed:', fsErr);
+      // Email foi enviado — não bloquear o utilizador
+    }
 
     // Sucesso
     if (estado) {
