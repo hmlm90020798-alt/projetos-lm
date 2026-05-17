@@ -123,7 +123,7 @@ export const T = {
       email:   'Email',
       copiar:  'Copiar',
       copiado: '✓ Copiado',
-      cargo:   'Vendedor Projeto Renovação (VPR)',
+      cargo:   'Assessor Projeto (AP)',
       empresa: 'Leroy Merlin Portugal',
     },
     privacidade: {
@@ -251,7 +251,7 @@ export const T = {
       email:   'Email',
       copiar:  'Copy',
       copiado: '✓ Copied',
-      cargo:   'Renovation Project Seller (VPR)',
+      cargo:   'Project Advisor (AP)',
       empresa: 'Leroy Merlin Portugal',
     },
     privacidade: {

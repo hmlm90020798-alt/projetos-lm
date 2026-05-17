@@ -944,14 +944,15 @@ img   { display: block; max-width: 100%; }
   background: rgba(200,165,100,.06);
 }
 .tl-btn-rec {
-  background: transparent;
-  color: rgba(186,117,23,.6);
-  border: .5px solid rgba(186,117,23,.2);
+  background: rgba(186,117,23,.1);
+  color: rgba(239,180,80,.85);
+  border: .5px solid rgba(186,117,23,.45);
 }
 .tl-btn-rec:hover {
-  border-color: rgba(186,117,23,.5);
-  color: rgba(186,117,23,.9);
-  background: rgba(186,117,23,.07);
+  border-color: rgba(186,117,23,.8);
+  color: rgba(239,180,80,1);
+  background: rgba(186,117,23,.18);
+  box-shadow: 0 0 10px rgba(186,117,23,.2);
 }
 
 
