@@ -391,15 +391,28 @@ function renderTimeline(p) {
 
     const acoes = faseKey ? botoesAcao(faseKey) : '';
 
-    return `
-    <div class="tl-item${m.done?' done':''}${m.ativo?' ativo':''}${m.retif?' retif':''}">
+    const innerContent = `
       <div class="tl-dot"></div>
       <div class="tl-content">
         <div class="tl-label">${m.label}</div>
         ${m.data  ? `<div class="tl-data">${m.data}</div>` : ''}
         ${m.apelo ? `<span class="tl-apelo${m.retif?' tl-apelo-retif':''}">${m.apelo}</span>` : ''}
         ${acoes}
-      </div>
+      </div>`;
+
+    if (m.ativo) {
+      return `
+      <div class="tl-item${m.done?' done':''} ativo${m.retif?' retif':''}">
+        <div class="tl-fase-ativa-box">
+          <div class="tl-fase-ativa-label">${lang==='en'?'Current phase':'Fase atual'}</div>
+          ${innerContent}
+        </div>
+      </div>`;
+    }
+
+    return `
+    <div class="tl-item${m.done?' done':''}${m.retif?' retif':''}">
+      ${innerContent}
     </div>`;
   }).join('');
 
@@ -1185,6 +1198,85 @@ export function setLang(lang) {
 }
 
 
+
+
+// ── Drawer de Mensagens ──────────────────────────
+window._abrirMensagens = function() {
+  const drawer = document.getElementById('mensagens-drawer');
+  if (!drawer) {
+    // Criar drawer dinamicamente
+    const d = document.createElement('div');
+    d.id = 'mensagens-drawer';
+    d.className = 'rec-drawer msg-drawer';
+    d.style.display = 'none';
+    d.innerHTML = `
+      <div class="cli-sec-inner" style="padding-top:48px">
+        <div class="sec-header" style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:40px">
+          <div>
+            <div class="sec-eyebrow">Comunicação Direta</div>
+            <h2 class="sec-titulo">Fale Comigo</h2>
+          </div>
+          <button onclick="window._fecharMensagens()" style="background:transparent;border:.5px solid rgba(245,242,236,.15);border-radius:4px;padding:8px 14px;color:rgba(245,242,236,.5);font-family:var(--mono);font-size:10px;letter-spacing:.12em;cursor:pointer;flex-shrink:0">✕ Fechar</button>
+        </div>
+        <div class="msg-lista" id="sec-mensagens-drawer"></div>
+        <div class="msg-form">
+          <textarea id="msg-input-drawer" class="msg-textarea" placeholder="Escreva a sua dúvida, comentário ou pedido de alteração…" rows="4" onkeydown="if(event.key==='Enter'&&event.ctrlKey)window._enviarMsgDrawer()"></textarea>
+          <div class="msg-form-footer">
+            <span class="msg-hint">Ctrl+Enter para enviar</span>
+            <button class="btn-msg-enviar" onclick="window._enviarMsgDrawer()">Enviar</button>
+          </div>
+        </div>
+      </div>`;
+    document.body.appendChild(d);
+  }
+
+  // Criar overlay se não existir
+  if (!document.getElementById('msg-overlay')) {
+    const ov = document.createElement('div');
+    ov.id = 'msg-overlay';
+    ov.className = 'rec-overlay';
+    ov.onclick = () => window._fecharMensagens();
+    document.body.appendChild(ov);
+  }
+
+  // Copiar mensagens existentes
+  const msgSec = document.getElementById('sec-mensagens');
+  const msgDrawer = document.getElementById('sec-mensagens-drawer');
+  if (msgSec && msgDrawer) msgDrawer.innerHTML = msgSec.innerHTML;
+
+  const d = document.getElementById('mensagens-drawer');
+  d.style.display = 'block';
+  setTimeout(() => {
+    d.classList.add('rec-drawer-open');
+    document.getElementById('msg-overlay')?.classList.add('rec-overlay-show');
+    document.body.style.overflow = 'hidden';
+  }, 10);
+};
+
+window._fecharMensagens = function() {
+  const d = document.getElementById('mensagens-drawer');
+  const ov = document.getElementById('msg-overlay');
+  if (!d) return;
+  d.classList.remove('rec-drawer-open');
+  ov?.classList.remove('rec-overlay-show');
+  document.body.style.overflow = '';
+  setTimeout(() => { d.style.display = 'none'; }, 450);
+};
+
+window._enviarMsgDrawer = async function() {
+  const input = document.getElementById('msg-input-drawer');
+  const texto = input?.value?.trim();
+  if (!texto) return;
+  // Copiar para o input principal e enviar
+  const mainInput = document.getElementById('msg-input');
+  if (mainInput) mainInput.value = texto;
+  await window.enviarMensagem();
+  if (input) input.value = '';
+  // Actualizar mensagens no drawer
+  const msgSec = document.getElementById('sec-mensagens');
+  const msgDrawer = document.getElementById('sec-mensagens-drawer');
+  if (msgSec && msgDrawer) msgDrawer.innerHTML = msgSec.innerHTML;
+};
 
 // ── Drawer de Reclamação ──────────────────────────
 window._abrirReclamacao = function(tipo) {

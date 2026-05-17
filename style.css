@@ -2025,3 +2025,45 @@ img   { display: block; max-width: 100%; }
   color: rgba(200,165,100,.5);
   flex-shrink: 0;
 }
+
+/* ── Caixa de fase activa na timeline ── */
+.tl-fase-ativa-box {
+  border: .5px solid rgba(200,165,100,.35);
+  border-radius: 8px;
+  padding: 16px 18px;
+  background: rgba(200,165,100,.04);
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  box-shadow:
+    0 0 0 1px rgba(200,165,100,.08),
+    0 0 20px rgba(200,165,100,.06);
+}
+
+/* Label "Fase atual" no topo da caixa */
+.tl-fase-ativa-label {
+  position: absolute;
+  top: -9px;
+  left: 16px;
+  font-family: var(--mono);
+  font-size: 8px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(200,165,100,.8);
+  background: #0b0908;
+  padding: 0 8px;
+}
+
+/* Botão ghost para Falar Comigo */
+.tl-btn-ghost {
+  background: transparent;
+  color: rgba(200,165,100,.7);
+  border: .5px solid rgba(200,165,100,.25);
+  font-style: italic;
+}
+.tl-btn-ghost:hover {
+  background: rgba(200,165,100,.06);
+  border-color: rgba(200,165,100,.5);
+  color: rgba(200,165,100,.9);
+}
