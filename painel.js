@@ -126,9 +126,9 @@ export function editarProjeto(id) {
     }
   }
 
-  // Elementos do projecto (com URL) — só três categorias fixas + extras
+  // Elementos do projecto (com URL) — categorias fixas + extras
   const elemCats = [
-    ['tampos','elem_tampos'], ['eletros','elem_eletros'], ['acessorios','elem_acessorios'],
+    ['moveis','elem_moveis'], ['tampos','elem_tampos'], ['eletros','elem_eletros'], ['acessorios','elem_acessorios'],
   ];
   elemCats.forEach(([secId, campo]) => {
     (p[campo]||[]).forEach(i => addLinhaElem(secId, i.nome, i.url, i.preco||''));
@@ -296,6 +296,7 @@ export async function guardarProjeto() {
     tema:        gv('f-tema') || 'escuro',
     docs,
     // Elementos (com URL)
+    elem_moveis:        recolherLinhasElem(document.getElementById('sec-elem-moveis')),
     elem_tampos:        recolherLinhasElem(document.getElementById('sec-elem-tampos')),
     elem_eletros:       recolherLinhasElem(document.getElementById('sec-elem-eletros')),
     elem_acessorios:    recolherLinhasElem(document.getElementById('sec-elem-acessorios')),

@@ -75,8 +75,7 @@ export function addCatOrcamento(nome = '', valor = '', desc = '') {
       <input type="text"   class="f-input cat-nome"  data-cat-nome  placeholder="Nome da categoria" value="${nome}" style="flex:1">
       <input type="number" class="f-input cat-valor" data-cat-valor placeholder="0,00" value="${valor}" style="width:120px" oninput="window.atualizarTotalPreview()">
       <button class="prod-line-del" onclick="this.closest('[data-cat-grupo]').remove();window.atualizarTotalPreview()">×</button>
-    </div>
-    <input type="text" class="f-input cat-desc" data-cat-desc placeholder="Descrição / modelo (ex: Nolte Küchen — Premium Line)" value="${desc}" style="margin-top:4px;font-size:12px">`;
+    </div>`;
   sec.appendChild(d);
   atualizarTotalPreview();
 }
