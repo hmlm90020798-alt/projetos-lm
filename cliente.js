@@ -1576,8 +1576,8 @@ window._toggleNota = function(card) {
   const isOpen = card.classList.toggle('nota-aberta');
   card.setAttribute('aria-expanded', isOpen);
   if (isOpen) {
-    // max-height fixo — o CSS .nota-aberta trata o overflow-y:auto
-    corpo.style.opacity = '1';
+    corpo.style.maxHeight = '';
+    corpo.style.opacity   = '1';
   } else {
     corpo.style.maxHeight = '0';
     corpo.style.opacity   = '0';
