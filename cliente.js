@@ -1276,7 +1276,7 @@ export async function enviarReclamacao() {
     const templateId = tipoInfo.soHM ? EMAILJS_TEMPLATE_HM : EMAILJS_TEMPLATE_ALL;
     await emailjs.send(EMAILJS_SERVICE_ID, templateId, templateParams);
 
-    // Guardar no Firestore
+    // Guardar no Firestore e re-renderizar
     try {
       const projId = getState('projAtualId');
       if (projId) {
@@ -1300,21 +1300,30 @@ export async function enviarReclamacao() {
         await updateDoc(doc(_db, 'projetos', projId), {
           ocorrencias: arrayUnion(novaOcorrencia),
         });
+
+        // Recarregar e re-renderizar para o cliente ver imediatamente
+        const pAtual = await carregarUm(projId);
+        if (pAtual) {
+          setState({ projCache: pAtual });
+          renderPaginaCliente(pAtual);
+        }
       }
     } catch (fsErr) {
       console.warn('Firestore save failed:', fsErr);
-      // Email foi enviado — não bloquear o utilizador
     }
 
     // Sucesso
     if (estado) {
       estado.style.display = '';
       estado.className = 'rec-form-estado rec-estado-ok';
-      estado.textContent = '✓ Reclamação enviada com sucesso. Receberá uma resposta em breve.';
+      estado.textContent = '✓ Reclamação registada. Pode acompanhar o estado na secção Progresso.';
     }
     // Limpar formulário
     document.getElementById('form-reclamacao')?.reset();
-    window._recTipoChange(); // reset estado info
+    window._recTipoChange();
+
+    // Fechar drawer após 2 segundos
+    setTimeout(() => window._fecharReclamacao(), 2000);
 
     if (btn) { btn.disabled = false; btn.textContent = 'Enviar Reclamação'; }
 
