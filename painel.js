@@ -471,25 +471,46 @@ export function gerarPDF(id) {
   .pdf-meta { text-align: right; font-family: 'DM Mono', monospace; font-size: 8pt; color: #706A62; line-height: 1.7; }
   .pdf-meta strong { color: #1A1814; font-size: 9pt; }
 
-  /* Hero */
-  .pdf-hero { margin-bottom: 14pt; padding: 12pt 16pt; background: #F7F5F0; border-radius: 6pt; border-left: 3pt solid #C4A96A; }
-  .pdf-hero-com-imgs { padding-bottom: 0; }
-  .pdf-hero-left { margin-bottom: 8pt; }
+  /* Hero + Imagens — grelha 2 colunas */
+  .pdf-hero {
+    margin-bottom: 14pt;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    background: #F7F5F0;
+    border-radius: 6pt;
+    border-left: 3pt solid #C4A96A;
+    overflow: hidden;
+    min-height: 160pt;
+  }
+  .pdf-hero-sem-imgs {
+    grid-template-columns: 1fr;
+    min-height: auto;
+  }
+  .pdf-hero-left {
+    padding: 16pt 16pt;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
   .pdf-eyebrow { font-family: 'DM Mono', monospace; font-size: 7pt; letter-spacing: .2em; text-transform: uppercase; color: #9C968E; margin-bottom: 4pt; }
-  .pdf-titulo { font-family: 'DM Serif Display', serif; font-size: 16pt; color: #1A1814; line-height: 1.15; margin-bottom: 8pt; }
+  .pdf-titulo { font-family: 'DM Serif Display', serif; font-size: 15pt; color: #1A1814; line-height: 1.15; margin-bottom: 8pt; }
   .pdf-titulo span { color: #C4A96A; }
   .pdf-cliente-label { font-family: 'DM Mono', monospace; font-size: 7pt; letter-spacing: .2em; text-transform: uppercase; color: #9C968E; }
   .pdf-cliente-nome { font-family: 'DM Serif Display', serif; font-size: 13pt; color: #1A1814; margin-top: 1pt; }
-  .pdf-tags { display: flex; gap: 6pt; margin-top: 8pt; flex-wrap: wrap; }
-  .pdf-tag { font-family: 'DM Mono', monospace; font-size: 7.5pt; padding: 1.5pt 7pt; border: .5pt solid #C8C0B4; border-radius: 99pt; color: #706A62; }
+  .pdf-tags { display: flex; gap: 5pt; margin-top: 8pt; flex-wrap: wrap; }
+  .pdf-tag { font-family: 'DM Mono', monospace; font-size: 7pt; padding: 1.5pt 6pt; border: .5pt solid #C8C0B4; border-radius: 99pt; color: #706A62; }
 
-  /* Imagens dentro do hero */
-  .pdf-imgs-hero { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin: 0 -16pt; border-radius: 0 0 6pt 6pt; overflow: hidden; }
-  .pdf-imgs-hero.cols-1 { grid-template-columns: 1fr; }
-  .pdf-imgs-hero.cols-2 { grid-template-columns: repeat(2, 1fr); }
-  .pdf-img-hero { width: 100%; height: 155pt; object-fit: cover; display: block; }
-  .pdf-imgs-hero.cols-1 .pdf-img-hero { height: 200pt; }
-  .pdf-imgs-hero.cols-2 .pdf-img-hero { height: 175pt; }
+  /* Coluna das imagens */
+  .pdf-imgs-col {
+    display: grid;
+    grid-template-rows: 1fr 1fr 1fr;
+    gap: 0;
+    overflow: hidden;
+  }
+  .pdf-imgs-col.rows-1 { grid-template-rows: 1fr; }
+  .pdf-imgs-col.rows-2 { grid-template-rows: 1fr 1fr; }
+  .pdf-img-col { width: 100%; height: 100%; object-fit: cover; display: block; min-height: 50pt; }
 
   /* Secção */
   .pdf-sec { margin-bottom: 14pt; margin-top: 14pt; page-break-inside: avoid; }
@@ -541,25 +562,30 @@ export function gerarPDF(id) {
 </div>
 
 <!-- HERO + IMAGENS -->
-<div class="pdf-hero${(p.imagens||[]).length ? ' pdf-hero-com-imgs' : ''}">
-  <div class="pdf-hero-left">
-    <div class="pdf-eyebrow">Proposta Personalizada</div>
-    <div class="pdf-titulo">Um espaço pensado para <span>viver.</span></div>
-    <div class="pdf-cliente-label">Desenvolvido exclusivamente para</div>
-    <div class="pdf-cliente-nome">${esc(p.nome)}</div>
-    <div class="pdf-tags">
-      ${p.tipo ? `<span class="pdf-tag">${esc(p.tipo === 'outro' ? (p.tipoOutro || 'Outro') : p.tipo)}</span>` : ''}
-      ${p.localidade ? `<span class="pdf-tag">${esc(p.localidade)}</span>` : ''}
-      ${prazoFmt ? `<span class="pdf-tag">Válido até ${prazoFmt}</span>` : ''}
+${(() => {
+  const imgs = (p.imagens||[]).slice(0,3);
+  const temImgs = imgs.length > 0;
+  const rowsClass = imgs.length === 1 ? 'rows-1' : imgs.length === 2 ? 'rows-2' : 'rows-3';
+  const imgsCol = temImgs ? `
+    <div class="pdf-imgs-col ${rowsClass}">
+      ${imgs.map(src => `<img class="pdf-img-col" src="${src}" alt="">`).join('')}
+    </div>` : '';
+  return `
+  <div class="pdf-hero${temImgs ? '' : ' pdf-hero-sem-imgs'}">
+    <div class="pdf-hero-left">
+      <div class="pdf-eyebrow">Proposta Personalizada</div>
+      <div class="pdf-titulo">Um espaço pensado para <span>viver.</span></div>
+      <div class="pdf-cliente-label">Desenvolvido exclusivamente para</div>
+      <div class="pdf-cliente-nome">${esc(p.nome)}</div>
+      <div class="pdf-tags">
+        ${p.tipo ? `<span class="pdf-tag">${esc(p.tipo === 'outro' ? (p.tipoOutro || 'Outro') : p.tipo)}</span>` : ''}
+        ${p.localidade ? `<span class="pdf-tag">${esc(p.localidade)}</span>` : ''}
+        ${prazoFmt ? `<span class="pdf-tag">Válido até ${prazoFmt}</span>` : ''}
+      </div>
     </div>
-  </div>
-  ${(p.imagens||[]).length ? `
-  <div class="pdf-imgs-hero${p.imagens.length === 1 ? ' cols-1' : p.imagens.length === 2 ? ' cols-2' : ''}">
-    ${p.imagens.slice(0,6).map(src => `<img class="pdf-img-hero" src="${src}" alt="">`).join('')}
-  </div>` : ''}
-</div>
-
-<!-- ORÇAMENTO -->
+    ${imgsCol}
+  </div>`;
+})()}
 <div class="pdf-sec">
   <div class="pdf-sec-titulo">Proposta Financeira — O seu Orçamento</div>
   <div class="pdf-total">
