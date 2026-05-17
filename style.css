@@ -606,54 +606,103 @@ img   { display: block; max-width: 100%; }
 .cli-sec-soft       { background: #0b0908; }
 .cli-sec-ink        { background: #0b0908; }
 
-/* ── Iluminação da secção activa ── */
+/* ── Iluminação neon da secção activa ── */
 .cli-sec {
   border-left: 3px solid transparent;
-  transition: background .5s ease, border-color .5s ease;
+  transition: background .6s ease, border-color .5s ease, filter .5s ease;
 }
 
-/* Fundo das secções inactivas — ligeiramente mais escuro */
+/* Secções inactivas — esbatidas */
 .cli-sec:not(.sec-ativa) {
-  background: #080706 !important;
-  filter: brightness(.85);
-  transition: background .5s ease, filter .5s ease;
+  background: #070605 !important;
+  filter: brightness(.7) saturate(.8);
 }
 
-/* Secção activa — destaque marcante */
+/* Secção activa — neon dourado */
 .cli-sec.sec-ativa {
-  background: #110e0a !important;
-  border-left: 3px solid rgba(200,165,100,.85);
-  filter: brightness(1);
-  box-shadow: inset 4px 0 32px rgba(200,165,100,.06);
+  background: #0f0c09 !important;
+  border-left: 3px solid #c8a564;
+  filter: brightness(1) saturate(1);
+  box-shadow:
+    inset 3px 0 0 #c8a564,
+    inset 4px 0 40px rgba(200,165,100,.12),
+    inset 6px 0 80px rgba(200,165,100,.06);
 }
 
-/* Brilho lateral dourado — pseudo elemento */
+/* Pseudo — luz neon a irradiar da esquerda */
 .cli-sec::before {
   content: '';
   position: absolute;
   left: 0; top: 0; bottom: 0;
-  width: 180px;
+  width: 300px;
   background: linear-gradient(to right,
-    rgba(200,165,100,.07) 0%,
+    rgba(200,165,100,.14) 0%,
+    rgba(200,165,100,.06) 20%,
     transparent 100%
   );
   opacity: 0;
-  transition: opacity .6s ease;
+  transition: opacity .5s ease;
   pointer-events: none;
   z-index: 0;
 }
-.cli-sec.sec-ativa::before {
-  opacity: 1;
+.cli-sec.sec-ativa::before { opacity: 1; }
+
+/* Linha neon no topo da secção activa */
+.cli-sec::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(to right,
+    rgba(200,165,100,.7) 0%,
+    rgba(200,165,100,.2) 30%,
+    transparent 60%
+  );
+  box-shadow: 0 0 8px rgba(200,165,100,.5), 0 0 20px rgba(200,165,100,.2);
+  opacity: 0;
+  transition: opacity .5s ease;
+  pointer-events: none;
+}
+.cli-sec.sec-ativa::after { opacity: 1; }
+
+/* Número — neon pulsante quando activo */
+.cli-sec.sec-ativa .sec-num,
+.cli-sec.sec-ativa .sec-num-light {
+  color: rgba(200,165,100,.9) !important;
+  text-shadow:
+    0 0 10px rgba(200,165,100,.7),
+    0 0 30px rgba(200,165,100,.4),
+    0 0 60px rgba(200,165,100,.2);
+  animation: neon-pulse 2.5s ease-in-out infinite;
 }
 
-/* Título da secção activa — mais brilhante */
+/* Título — mais brilhante e nítido */
 .cli-sec.sec-ativa .sec-titulo,
 .cli-sec.sec-ativa .sec-titulo-light {
   color: #f4f1eb !important;
+  text-shadow: 0 0 20px rgba(240,235,224,.1);
 }
-.cli-sec.sec-ativa .sec-num,
-.cli-sec.sec-ativa .sec-num-light {
-  color: rgba(200,165,100,.6) !important;
+
+/* Eyebrow — dourado neon */
+.cli-sec.sec-ativa .sec-eyebrow,
+.cli-sec.sec-ativa [class*="eyebrow"] {
+  color: rgba(200,165,100,.9) !important;
+  text-shadow: 0 0 8px rgba(200,165,100,.5);
+}
+
+@keyframes neon-pulse {
+  0%, 100% {
+    text-shadow:
+      0 0 10px rgba(200,165,100,.7),
+      0 0 30px rgba(200,165,100,.4),
+      0 0 60px rgba(200,165,100,.2);
+  }
+  50% {
+    text-shadow:
+      0 0 16px rgba(200,165,100,.9),
+      0 0 40px rgba(200,165,100,.6),
+      0 0 80px rgba(200,165,100,.3);
+  }
 }
 .sec-header         { display: flex; align-items: flex-end; gap: 24px; margin-bottom: 48px; position: relative; z-index: 1; }
 .sec-num            { font-family: var(--serif); font-size: 72px; color: rgba(200,165,100,.2); line-height: 1; flex-shrink: 0; opacity: 1; transition: color .4s ease; }
