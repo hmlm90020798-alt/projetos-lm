@@ -454,7 +454,6 @@ export async function renderArquivo() {
     const refPcHtml = p.refPc ? '<span class="card-ref-badge">PC: ' + p.refPc + '</span>' : '';
     const refOsHtml = p.refOs ? '<span class="card-ref-badge">OS: ' + p.refOs + '</span>' : '';
     const id = p.id;
-    const btnVer    = '<button class="btn-card apresentar" onclick="window.verCliente(\'' + id + '\')" title="Ver proposta">👁 Ver</button>';
     const btnRest   = '<button class="btn-card acomp" onclick="window.restaurar(\'' + id + '\',\'' + nomeEsc + '\')">↩ Restaurar</button>';
     const btnApagar = '<button class="btn-card danger" onclick="window.apagarDefinitivamente(\'' + id + '\',\'' + nomeEsc + '\')">🗑 Apagar</button>';
     return '<div class="proj-card fase-concluido arquivo-card">'
@@ -470,7 +469,7 @@ export async function renderArquivo() {
       +     '<div class="card-aprovado" style="color:rgba(255,255,255,.35)">📦 ' + dataArq + '</div>'
       +   '</div>'
       + '</div>'
-      + '<div class="card-actions">' + btnVer + btnRest + btnApagar + '</div>'
+      + '<div class="card-actions">' + btnRest + btnApagar + '</div>'
       + '</div>';
   }).join('');
 }
@@ -498,9 +497,14 @@ export function partilharCliente(id) {
   });
 }
 
-export function verCliente(id) {
+export async function verCliente(id) {
   setState({ projAtualId: id });
-  const p = getProjects().find(x => x.id === id);
+  let p = getProjects().find(x => x.id === id);
+  // Projecto não está no estado activo (ex: arquivado) — carregar do Firestore
+  if (!p) {
+    const { carregarUm } = await import('./firebase.js');
+    p = await carregarUm(id);
+  }
   if (p) window._clienteModule.renderPaginaCliente(p);
   setView('cliente');
   const btn = document.getElementById('btn-voltar-painel');
