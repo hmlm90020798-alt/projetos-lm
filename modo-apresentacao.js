@@ -204,7 +204,8 @@ const inicio  = new Date();
 const hInicio = pad(inicio.getHours()) + ':' + pad(inicio.getMinutes());
 document.getElementById('tp-nome').textContent   = PROJ_NOME;
 document.getElementById('np-inicio').textContent = hInicio;
-document.getElementById('fr').src = BASE_URL + '?p=' + PROJ_ID;
+// FIX: &apres=1 oculta secções de suporte (mensagens, reclamação, documentos vazios)
+document.getElementById('fr').src = BASE_URL + '?p=' + PROJ_ID + '&apres=1';
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
@@ -249,21 +250,17 @@ function toggleNotas() {
   const np  = document.getElementById('np');
   const bbl = document.getElementById('np-bubble');
   if (np.classList.contains('np-hidden')) {
-    // estava oculto → mostrar painel
     np.classList.remove('np-hidden');
     bbl.classList.remove('vis');
   } else {
-    // estava visível → ocultar (sem bolha — botão na topbar serve)
     np.classList.add('np-hidden');
     bbl.classList.remove('vis');
   }
 }
 
 function miniNotas() {
-  // Minimizar para bolha flutuante
   const np  = document.getElementById('np');
   const bbl = document.getElementById('np-bubble');
-  // Sincronizar posição da bolha com a do painel
   bbl.style.top  = np.style.top  || '56px';
   bbl.style.left = np.style.left || 'auto';
   bbl.style.right= np.style.right || '16px';
@@ -272,10 +269,8 @@ function miniNotas() {
 }
 
 function expandirNotas() {
-  // Expandir a partir da bolha
   const np  = document.getElementById('np');
   const bbl = document.getElementById('np-bubble');
-  // Colocar painel na posição da bolha
   np.style.top   = bbl.style.top   || '56px';
   np.style.left  = bbl.style.left  || 'auto';
   np.style.right = bbl.style.right || '16px';
@@ -293,7 +288,6 @@ function expandirNotas() {
   handle.addEventListener('mousedown', e => {
     if (e.target.tagName === 'BUTTON') return;
     drag = true;
-    // Calcular posição actual (pode estar posicionado por right:)
     const rect = panel.getBoundingClientRect();
     panel.style.left  = rect.left + 'px';
     panel.style.top   = rect.top  + 'px';

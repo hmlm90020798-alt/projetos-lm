@@ -1080,14 +1080,32 @@ export function renderPaginaCliente(p) {
   document.getElementById('sec-timeline').innerHTML = renderTimeline(p);
   _animarBarraProgresso();
 
-  // ── 07 Mensagens — carregar e renderizar
+  // ── Modo Apresentação — detectar via parâmetro URL ──
+  const modoApres = new URLSearchParams(window.location.search).get('apres') === '1';
+
+  // ── 07 Mensagens — carregar e renderizar (não no modo apresentação)
   const projId = getState('projAtualId') || getState('projCache')?.id;
-  if (projId) renderMensagens(projId);
+  if (projId && !modoApres) renderMensagens(projId);
 
   // ── Documentos por secção ──
   const docs = p.docs || [];
   _renderDocsPorSeccao(docs, lang);
   _renderNotasPorSeccao(p.notas || [], lang);
+
+  // ── wrap-docs: ocultar se não há documentos válidos
+  const wrapDocs = document.getElementById('wrap-docs');
+  if (wrapDocs) {
+    const docsValidos = (p.docs || []).filter(d => d.url && d.nome);
+    wrapDocs.style.display = docsValidos.length ? '' : 'none';
+  }
+
+  // ── Ocultar secções de suporte no modo apresentação
+  if (modoApres) {
+    ['mensagens', 'reclamacao'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
 
   // ── Aprovação
   renderEstadoAprovacao(getState('projAtualId') || getState('projCache')?.id, p.aprovacao);
@@ -1105,15 +1123,15 @@ export function renderPaginaCliente(p) {
   _iniciarCascataOrcamento();
   _iniciarSecaoActiva();
 
-  // ── FAB Falar Comigo ──
-  _criarFAB();
-
-  // ── Verificar notificações para o cliente (mensagens novas + proposta atualizada)
-  const _projId = getState('projAtualId') || getState('projCache')?.id;
-  if (_projId) verificarNotificacoesCliente(_projId, p);
-
-  // ── Iniciar formulário de reclamação — mostrar secção e pré-preencher
-  iniciarFormReclamacao(p);
+  // ── FAB Falar Comigo — ocultar no modo apresentação
+  if (!modoApres) {
+    _criarFAB();
+    // ── Verificar notificações para o cliente (mensagens novas + proposta atualizada)
+    const _projId = getState('projAtualId') || getState('projCache')?.id;
+    if (_projId) verificarNotificacoesCliente(_projId, p);
+    // ── Iniciar formulário de reclamação — mostrar secção e pré-preencher
+    iniciarFormReclamacao(p);
+  }
 }
 
 // ── Lightbox ──────────────────────────────────────
