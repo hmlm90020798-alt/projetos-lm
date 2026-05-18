@@ -27,24 +27,17 @@ function driveEmbedUrl(url) {
 // Abrir documento inline no modal
 window._abrirDocModal = function(url, nome) {
   const embedUrl = driveEmbedUrl(url);
-  const modal  = document.getElementById('doc-modal');
-  const iframe = document.getElementById('doc-modal-iframe');
-  const titulo = document.getElementById('doc-modal-titulo');
-  if (!modal || !iframe) return;
-  if (titulo) titulo.textContent = nome || 'Documento';
-  iframe.src = embedUrl || url;
-  modal.classList.add('open');
-  document.body.style.overflow = 'hidden';
-};
-
-window._fecharDocModal = function() {
-  const modal  = document.getElementById('doc-modal');
-  const iframe = document.getElementById('doc-modal-iframe');
-  if (!modal) return;
-  modal.classList.remove('open');
-  document.body.style.overflow = '';
-  // Limpar src para parar carregamento
-  setTimeout(() => { if (iframe) iframe.src = ''; }, 300);
+  const target   = embedUrl || url;
+  const largura  = Math.min(1100, window.screen.width - 40);
+  const altura   = Math.min(820, window.screen.height - 60);
+  const left     = Math.round((window.screen.width  - largura) / 2);
+  const top      = Math.round((window.screen.height - altura)  / 2);
+  window.open(
+    target,
+    'doc_viewer_' + Date.now(),
+    'width=' + largura + ',height=' + altura + ',left=' + left + ',top=' + top
+      + ',menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes'
+  );
 };
 
 // ── Helpers ──────────────────────────────────────
