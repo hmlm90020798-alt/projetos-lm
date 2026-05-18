@@ -55,9 +55,7 @@ export function abrirModalNovo() {
   limparForm();
   colapsarBlocos();
   document.getElementById('modal-projeto').classList.add('open');
-
-  // Carregar mensagens do cliente para este projeto
-  renderMensagensModal(id);
+  // Projeto novo — sem ID ainda, sem mensagens para carregar
 }
 
 export function fecharModal() {
