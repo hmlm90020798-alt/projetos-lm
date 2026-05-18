@@ -143,13 +143,26 @@ async function checkUrlParam() {
       return true;
     }
 
-    // ── Verificação 1: link revogado manualmente
+    // ── Utilizador autenticado (HM) — acesso total, sem restrições de expiração
+    const authUser = _auth?.currentUser;
+    if (authUser) {
+      renderPaginaCliente(p);
+      setView('cliente');
+      const btnV = document.getElementById('btn-voltar-painel');
+      if (btnV) btnV.style.display = '';
+      if (isPrint) setTimeout(() => { window.print(); }, 800);
+      return true;
+    }
+
+    // ── A partir daqui: lógica para o cliente (sem autenticação) ──
+
+    // Verificação 1: link revogado manualmente
     if (p.linkAtivo === false) {
       setView('expirada');
       return true;
     }
 
-    // ── Verificação 2: expiração automática
+    // Verificação 2: expiração automática
     // Só aplica se a proposta ainda não avançou para aprovado ou além
     const fasesAprovadas = ['aprovado', 'encomenda', 'entrega', 'montagem', 'concluido'];
     const jaAprovado = fasesAprovadas.includes(p.fase) || !!p.aprovacao?.data;
@@ -180,9 +193,8 @@ async function checkUrlParam() {
     setView('cliente');
     const btn = document.getElementById('btn-voltar-painel');
     if (btn) btn.style.display = 'none';
-    // Só registar visita se não estiver autenticado (visita real do cliente)
-    const authUser = _auth?.currentUser;
-    if (!isPrint && !authUser) registarVisita(id);
+    // Registar visita — cliente real (sem auth)
+    if (!isPrint) registarVisita(id);
     if (isPrint) { setTimeout(() => { window.print(); }, 800); }
 
   } catch (err) {
@@ -267,8 +279,24 @@ function popularTiposSelect() {
     return;
   }
 
-  const isCliente = await checkUrlParam();
-  if (isCliente) { ov.remove(); return; }
+  // Se há ?p= no URL, aguardar resolução do estado de auth antes de renderizar.
+  // Garante que HM autenticado nunca vê a página de expiração ao abrir um link.
+  const temParam = !!new URLSearchParams(window.location.search).get('p');
+
+  if (temParam) {
+    // Aguardar auth (máx. 3s) e depois correr checkUrlParam com contexto correcto
+    await new Promise(resolve => {
+      const timer = setTimeout(resolve, 3000);
+      const unsub = onAuth(user => {
+        clearTimeout(timer);
+        unsub();
+        resolve(user);
+      });
+    });
+    await checkUrlParam();
+    ov.remove();
+    return;
+  }
 
   window._loginFallbackTimer = setTimeout(() => {
     const o = document.getElementById('loading-overlay');
@@ -282,8 +310,8 @@ function popularTiposSelect() {
       // Forçar refresh do token para garantir que o Firestore o reconhece
       await user.getIdToken(true);
       await carregar();
-      await carregarReclamacoesFirebase(); // pré-carrega reclamações do Firebase
-      await carregarGroqKey(); // carrega chave Groq do Firebase para localStorage
+      await carregarReclamacoesFirebase();
+      await carregarGroqKey();
       window._LANG = 'pt';
       inicializarPainel();
       renderPainel();
@@ -291,11 +319,6 @@ function popularTiposSelect() {
       iniciarPollingAprovacoes();
       if (o) o.remove();
     } else {
-      if (new URLSearchParams(window.location.search).get('p')) {
-        await checkUrlParam();
-        if (o) o.remove();
-        return;
-      }
       if (o) o.remove();
       setView('login');
     }
