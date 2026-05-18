@@ -1189,6 +1189,36 @@ img   { display: block; max-width: 100%; }
 .tl-ocorr-data-criacao { font-family: var(--mono); font-size: 10px; color: rgba(245,242,236,.3); margin-bottom: 12px; }
 .tl-ocorrencia-estado { font-family: var(--sans); font-size: 11px; font-weight: 600; color: var(--champ); margin-top: 8px; }
 
+/* ── Historial de versões ── */
+.tl-versoes {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: .5px solid rgba(245,242,236,.08);
+}
+.tl-versoes-titulo {
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+  color: rgba(200,165,100,.5);
+  margin-bottom: 16px;
+}
+.tl-versao-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 0;
+  border-bottom: .5px solid rgba(245,242,236,.06);
+}
+.tl-versao-item:last-child { border-bottom: none; }
+.tl-versao-data { font-family: var(--mono); font-size: 10px; color: rgba(245,242,236,.3); }
+.tl-versao-alts { display: flex; flex-direction: column; gap: 4px; }
+.tl-versao-alt { font-family: var(--sans); font-size: 12px; color: rgba(245,242,236,.55); line-height: 1.5; display: flex; align-items: baseline; gap: 6px; }
+.tl-versao-alt-orcamento { color: rgba(200,165,100,.75); }
+.tl-versao-alt-fase      { color: rgba(103,171,47,.75); }
+.tl-versao-alt-elementos { color: rgba(245,242,236,.55); }
+.tl-versao-icon { font-size: 11px; flex-shrink: 0; }
+
 /* Historial de actualizações — vista cliente */
 .tl-ocorr-hist      { margin-top: 14px; padding-top: 12px; border-top: .5px solid rgba(186,117,23,.2); display: flex; flex-direction: column; gap: 8px; }
 .tl-ocorr-act       { display: flex; flex-direction: column; gap: 4px; padding: 10px 14px; background: rgba(255,255,255,.03); border-radius: 7px; border-left: 2px solid rgba(186,117,23,.3); }

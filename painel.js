@@ -335,6 +335,70 @@ export async function guardarProjeto() {
 
   const lista = getProjects();
   const idx = lista.findIndex(p => p.id === proj.id);
+
+  // ── Registo de versão — detectar alterações relevantes ──
+  if (editId && idx >= 0) {
+    const anterior = lista[idx];
+    const alteracoes = [];
+    const n = v => parseFloat(String(v||'0').replace(',','.')) || 0;
+
+    // Calcular totais
+    const calcTotal = p => {
+      let t = 0;
+      t += n(p.orc_moveis); t += n(p.orc_tampos);
+      t += n(p.orc_eletros); t += n(p.orc_acessorios);
+      (p.orcamento||[]).forEach(c => { t += n(c.valor); });
+      return Math.round(t * 100) / 100;
+    };
+    const totalAnterior = calcTotal(anterior);
+    const totalNovo     = calcTotal(proj);
+
+    if (totalAnterior !== totalNovo) {
+      const diff = totalNovo - totalAnterior;
+      const sinal = diff > 0 ? '+' : '';
+      alteracoes.push({
+        tipo: 'orcamento',
+        desc: `Orçamento actualizado: ${totalAnterior.toLocaleString('pt-PT',{minimumFractionDigits:2})} € → ${totalNovo.toLocaleString('pt-PT',{minimumFractionDigits:2})} € (${sinal}${diff.toLocaleString('pt-PT',{minimumFractionDigits:2})} €)`,
+      });
+    }
+
+    if ((anterior.fase || 'proposta') !== (proj.fase || 'proposta')) {
+      const faseLabels = { proposta:'Proposta', retificacao:'Retificação', aprovado:'Aprovado', encomenda:'Encomenda', entrega:'Entrega', montagem:'Montagem', concluido:'Concluído' };
+      alteracoes.push({
+        tipo: 'fase',
+        desc: `Fase actualizada: ${faseLabels[anterior.fase]||anterior.fase} → ${faseLabels[proj.fase]||proj.fase}`,
+      });
+    }
+
+    // Alterações em elementos (móveis, tampos, eletros, acessórios)
+    const camposElem = [
+      ['elem_moveis','Móveis'], ['elem_tampos','Tampos'],
+      ['elem_eletros','Eletrodomésticos'], ['elem_acessorios','Acessórios'],
+    ];
+    camposElem.forEach(([campo, label]) => {
+      const ant = JSON.stringify((anterior[campo]||[]).map(i=>i.nome).sort());
+      const nov = JSON.stringify((proj[campo]||[]).map(i=>i.nome).sort());
+      if (ant !== nov) {
+        alteracoes.push({ tipo: 'elementos', desc: `Elementos actualizados: ${label}` });
+      }
+    });
+
+    if (alteracoes.length) {
+      const agora = new Date();
+      const novaVersao = {
+        data:       agora.toLocaleDateString('pt-PT'),
+        dataISO:    agora.toISOString(),
+        hora:       String(agora.getHours()).padStart(2,'0') + ':' + String(agora.getMinutes()).padStart(2,'0'),
+        alteracoes,
+        totalAnterior,
+        totalNovo,
+      };
+      proj.versoes = [...(anterior.versoes || []), novaVersao];
+    } else {
+      proj.versoes = anterior.versoes || [];
+    }
+  }
+
   if (idx >= 0) lista[idx] = proj; else lista.unshift(proj);
 
   fecharModal();

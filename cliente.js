@@ -489,7 +489,27 @@ function renderTimeline(p) {
     </div>`;
   }).join('');
 
-  return progHtml + fraseHtml + marcosHtml + ocorrHtml;
+  // ── Historial de versões ──
+  const versoes = (p.versoes || []).slice().reverse();
+  const versoesHtml = versoes.length ? `
+    <div class="tl-versoes">
+      <div class="tl-versoes-titulo">${lang === 'en' ? 'Project history' : 'Historial de alterações'}</div>
+      ${versoes.map(v => `
+        <div class="tl-versao-item">
+          <div class="tl-versao-meta">
+            <span class="tl-versao-data">${v.data}${v.hora ? ' · ' + v.hora : ''}</span>
+          </div>
+          <div class="tl-versao-alts">
+            ${v.alteracoes.map(a => `
+              <div class="tl-versao-alt tl-versao-alt-${a.tipo}">
+                <span class="tl-versao-icon">${a.tipo === 'orcamento' ? '💶' : a.tipo === 'fase' ? '📍' : '📋'}</span>
+                ${esc(a.desc)}
+              </div>`).join('')}
+          </div>
+        </div>`).join('')}
+    </div>` : '';
+
+  return progHtml + fraseHtml + marcosHtml + ocorrHtml + versoesHtml;
 }
 
 // Animar barra de progresso global quando visível
