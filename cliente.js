@@ -10,6 +10,43 @@ import { mostrarToast }                         from './ui.js';
 import { doc, getDoc }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { esc, safeUrl, nl2br }                  from './sanitize.js';
 
+// ── Drive inline viewer ───────────────────────────
+// Converte qualquer link Google Drive para URL de embed no iframe
+function driveEmbedUrl(url) {
+  if (!url) return '';
+  // Formato: /file/d/FILE_ID/view ou /file/d/FILE_ID/edit
+  const m = url.match(/\/file\/d\/([^/?]+)/);
+  if (m) return 'https://drive.google.com/file/d/' + m[1] + '/preview';
+  // Formato: id=FILE_ID
+  const m2 = url.match(/[?&]id=([^&]+)/);
+  if (m2) return 'https://drive.google.com/file/d/' + m2[1] + '/preview';
+  // URL de export/download directo — devolver como está
+  return url;
+}
+
+// Abrir documento inline no modal
+window._abrirDocModal = function(url, nome) {
+  const embedUrl = driveEmbedUrl(url);
+  const modal  = document.getElementById('doc-modal');
+  const iframe = document.getElementById('doc-modal-iframe');
+  const titulo = document.getElementById('doc-modal-titulo');
+  if (!modal || !iframe) return;
+  if (titulo) titulo.textContent = nome || 'Documento';
+  iframe.src = embedUrl || url;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+
+window._fecharDocModal = function() {
+  const modal  = document.getElementById('doc-modal');
+  const iframe = document.getElementById('doc-modal-iframe');
+  if (!modal) return;
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+  // Limpar src para parar carregamento
+  setTimeout(() => { if (iframe) iframe.src = ''; }, 300);
+};
+
 // ── Helpers ──────────────────────────────────────
 
 function fmt(v) {
@@ -686,24 +723,34 @@ function _notaCardHtml(svgIcon, titulo, textoHtml, isManual) {
 
 // ── Documentos ────────────────────────────────────
 
+function _docCardHtml(d, lang, inline = false) {
+  const nomeEsc = esc(d.nome || '');
+  const urlEsc  = (d.url || '').replace(/'/g, "\'").replace(/"/g, '&quot;');
+  const hint    = lang === 'en' ? 'View document' : 'Ver documento';
+  const cls     = inline ? 'doc-card-inline' : 'doc-card';
+  const icon    = inline
+    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
+    : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+  if (inline) {
+    return '<div class="' + cls + '" role="button" tabindex="0"'
+      + ' onclick="window._abrirDocModal('' + urlEsc + '','' + nomeEsc + '')">'
+      + '<div class="doc-card-inline-icon">' + icon + '</div>'
+      + '<span class="doc-card-inline-nome">' + nomeEsc + '</span>'
+      + '<span class="doc-card-inline-hint">⊞</span>'
+      + '</div>';
+  }
+  return '<div class="' + cls + '" role="button" tabindex="0"'
+    + ' onclick="window._abrirDocModal('' + urlEsc + '','' + nomeEsc + '')">'
+    + '<div class="doc-card-icon">' + icon + '</div>'
+    + '<div class="doc-card-info">'
+    + '<div class="doc-card-nome">' + nomeEsc + '</div>'
+    + '<div class="doc-card-hint">' + hint + '</div>'
+    + '</div></div>';
+}
+
 function renderDocumentos(docs, lang) {
   if (!docs.length) return '';
-  return `
-    <div class="docs-grid">
-      ${docs.map(d => `
-        <a href="${safeUrl(d.url)}" target="_blank" rel="noopener noreferrer" class="doc-card">
-          <div class="doc-card-icon">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-              <polyline points="14 2 14 8 20 8"/>
-            </svg>
-          </div>
-          <div class="doc-card-info">
-            <div class="doc-card-nome">${esc(d.nome)}</div>
-            <div class="doc-card-hint">${lang === 'en' ? '↗ Open document' : '↗ Abrir documento'}</div>
-          </div>
-        </a>`).join('')}
-    </div>`;
+  return '<div class="docs-grid">' + docs.map(d => _docCardHtml(d, lang, false)).join('') + '</div>';
 }
 
 // ── Render principal ──────────────────────────────
@@ -1099,19 +1146,9 @@ export function renderPaginaCliente(p) {
       const secDocs = document.getElementById('sec-docs');
       if (secDocs) {
         const hint = lang === 'en' ? '↗ Open document' : '↗ Abrir documento';
-        secDocs.innerHTML = docsSoltos.map(d => `
-          <a href="${safeUrl(d.url)}" target="_blank" rel="noopener noreferrer" class="doc-card">
-            <div class="doc-card-icon">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                <polyline points="14 2 14 8 20 8"/>
-              </svg>
-            </div>
-            <div class="doc-card-info">
-              <div class="doc-card-nome">${esc(d.nome)}</div>
-              <div class="doc-card-hint">${hint}</div>
-            </div>
-          </a>`).join('');
+        secDocs.innerHTML = '<div class="docs-grid">'
+          + docsSoltos.map(d => _docCardHtml(d, lang, false)).join('')
+          + '</div>';
       }
     }
   }
@@ -1576,23 +1613,11 @@ function _renderDocsPorSeccao(docs, lang) {
 
   function docsHtml(lista) {
     if (!lista.length) return '';
-    return `
-      <div class="docs-sec-wrap">
-        <div class="docs-sec-titulo">${lang==='en'?'Documents':'Documentos'}</div>
-        <div class="docs-grid-inline">
-          ${lista.map(d => `
-            <a href="${safeUrl(d.url)}" target="_blank" rel="noopener noreferrer" class="doc-card-inline">
-              <div class="doc-card-inline-icon">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
-                  <polyline points="14 2 14 8 20 8"/>
-                </svg>
-              </div>
-              <span class="doc-card-inline-nome">${esc(d.nome)}</span>
-              <span class="doc-card-inline-hint">↗</span>
-            </a>`).join('')}
-        </div>
-      </div>`;
+    return '<div class="docs-sec-wrap">'
+      + '<div class="docs-sec-titulo">' + (lang === 'en' ? 'Documents' : 'Documentos') + '</div>'
+      + '<div class="docs-grid-inline">'
+      + lista.map(d => _docCardHtml(d, lang, true)).join('')
+      + '</div></div>';
   }
 
   // Distribuir por secção
