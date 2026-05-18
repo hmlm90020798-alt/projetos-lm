@@ -4,6 +4,7 @@
 // ════════════════════════════════════════════════
 
 import { getProjects }               from './state.js';
+import { renderTarefasTab, enviarEmailResumo } from './tarefas.js';
 import { getAlertasReclamacoes }     from './reclamacoes.js';
 import { esc }                       from './sanitize.js';
 // TIPOS_PROJETO e faseOrdem são injectados via initAlertasModule()
@@ -28,6 +29,7 @@ export function setTab(btnEl, tab) {
 
   if (tab === 'alertas')      renderAlertas();
   if (tab === 'ocorrencias')  renderOcorrenciasTab();
+  if (tab === 'tarefas')      renderTarefasTab();
   if (tab === 'reclamacoes') {
     if (typeof window.renderReclamacoes === 'function') {
       window.renderReclamacoes();

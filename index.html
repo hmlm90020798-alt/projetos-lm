@@ -45,6 +45,52 @@
     .arquivo-card:hover { opacity:1; }
     #tab-arquivo .proj-grid { margin-top:16px; }
   </style>
+  <style>
+    /* ── Tarefas ── */
+    .tarefas-header { display:flex;align-items:center;justify-content:space-between;padding:16px 0 8px }
+    .btn-email-resumo { padding:7px 14px;border-radius:7px;border:1px solid rgba(103,171,47,.3);background:rgba(103,171,47,.08);color:#A8D878;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--mono,monospace) }
+    .btn-email-resumo:hover { background:rgba(103,171,47,.18) }
+    .tarefas-grupo { margin-bottom:24px }
+    .tarefas-grupo-titulo { font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:6px 0;margin-bottom:8px;border-bottom:1px solid rgba(255,255,255,.07) }
+    .tarefas-grupo-count { font-size:10px;background:rgba(255,255,255,.1);border-radius:10px;padding:1px 7px;margin-left:6px }
+    .tg-atraso { color:#f08080 }
+    .tg-hoje   { color:#EF9F27 }
+    .tg-futuras{ color:rgba(255,255,255,.6) }
+    .tg-semprazo{color:rgba(255,255,255,.4)}
+    .tarefa-card { display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);margin-bottom:6px;transition:background .15s }
+    .tarefa-card:hover { background:rgba(255,255,255,.07) }
+    .tarefa-card.tarefa-atrasada { border-color:rgba(240,128,128,.3);background:rgba(240,128,128,.05) }
+    .tarefa-check { background:none;border:1.5px solid rgba(255,255,255,.3);border-radius:50%;width:20px;height:20px;cursor:pointer;flex-shrink:0;color:rgba(255,255,255,.5);font-size:10px;display:flex;align-items:center;justify-content:center;transition:all .15s }
+    .tarefa-check:hover { border-color:#A8D878;color:#A8D878 }
+    .tarefa-body { flex:1;min-width:0 }
+    .tarefa-texto { font-size:13px;color:rgba(255,255,255,.85);line-height:1.4 }
+    .tarefa-meta  { display:flex;gap:10px;margin-top:3px;align-items:center }
+    .tarefa-proj  { font-size:10px;color:rgba(255,255,255,.35) }
+    .tarefa-prazo { font-size:10px;color:rgba(255,255,255,.4);font-family:var(--mono,monospace) }
+    .tarefa-prazo.tarefa-prazo-atrasada { color:#f08080;font-weight:600 }
+    .tarefa-del   { background:none;border:none;color:rgba(255,255,255,.2);cursor:pointer;font-size:16px;padding:0 2px;flex-shrink:0 }
+    .tarefa-del:hover { color:#f08080 }
+    /* Badge nos cards do painel */
+    .badge-tarefas-atraso { background:rgba(240,128,128,.15);color:#f08080;border:1px solid rgba(240,128,128,.3);border-radius:4px;font-size:10px;font-weight:700;padding:1px 6px;font-family:var(--mono,monospace) }
+    .badge-tarefas { background:rgba(103,171,47,.1);color:#A8D878;border:1px solid rgba(103,171,47,.2);border-radius:4px;font-size:10px;padding:1px 6px;font-family:var(--mono,monospace) }
+    /* Drawer */
+    .tarefa-drawer-item { display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06) }
+    .tarefa-drawer-item.concluida .tarefa-drawer-texto { text-decoration:line-through;opacity:.4 }
+    .tarefa-drawer-item.atrasada .tarefa-drawer-prazo { color:#f08080 }
+    .tarefa-check-drawer { background:none;border:1.5px solid rgba(255,255,255,.25);border-radius:50%;width:18px;height:18px;cursor:pointer;flex-shrink:0;color:rgba(255,255,255,.5);font-size:9px;display:flex;align-items:center;justify-content:center }
+    .tarefa-check-drawer:hover { border-color:#A8D878;color:#A8D878 }
+    .tarefa-drawer-body { flex:1 }
+    .tarefa-drawer-texto { font-size:12px;color:rgba(255,255,255,.8) }
+    .tarefa-drawer-prazo { font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;font-family:var(--mono,monospace) }
+    .tarefa-del-drawer { background:none;border:none;color:rgba(255,255,255,.15);cursor:pointer;font-size:15px }
+    .tarefa-del-drawer:hover { color:#f08080 }
+    .tarefa-concluidas-sep { font-size:10px;color:rgba(255,255,255,.25);padding:8px 0 4px;letter-spacing:.06em;text-transform:uppercase }
+    .acomp-tarefa-form { display:flex;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.07) }
+    /* Form de edição */
+    .tarefa-form-item { display:flex;align-items:center;gap:8px;margin-bottom:6px }
+    .tarefa-form-check { width:16px;height:16px;cursor:pointer;flex-shrink:0 }
+    .tarefa-form-texto { flex:1 }
+  </style>
 </head>
 <body>
 
@@ -101,6 +147,9 @@
       </button>
       <button class="tab-btn" onclick="window.setTab(this,'arquivo');window.renderArquivo()">
         📦 Arquivo
+      </button>
+      <button class="tab-btn" onclick="window.setTab(this,'tarefas')">
+        ✓ Tarefas<span class="tab-badge tab-badge-danger" id="tab-badge-tarefas" style="display:none"></span>
       </button>
     </div>
 
@@ -176,6 +225,15 @@
         <div style="font-size:14px">Nenhum projeto arquivado</div>
       </div>
       <div class="proj-grid" id="arquivo-grid"></div>
+    </div>
+
+    <!-- TAB: TAREFAS -->
+    <div id="tab-tarefas" class="tab-content">
+      <div class="tarefas-header">
+        <div class="tab-sec-titulo" style="margin:0">As minhas tarefas</div>
+        <button class="btn-email-resumo" onclick="window.enviarEmailResumo()" title="Enviar resumo por email">📧 Resumo por email</button>
+      </div>
+      <div id="tarefas-content"></div>
     </div>
 
     <!-- TAB: ALERTAS & AGENDA -->
@@ -403,7 +461,19 @@
         <button class="btn-add" onclick="window.addNota()">+ Nota</button>
       </div>
 
-      <!-- Interacções e Ocorrências — geridas no drawer de Acompanhamento -->
+      <!-- Tarefas do projecto -->
+  <div class="form-bloco collapsed" id="bloco-tarefas">
+    <div class="form-bloco-header" onclick="this.closest('.form-bloco').classList.toggle('collapsed')">
+      <span class="form-bloco-titulo">✓ Tarefas</span>
+      <span class="form-bloco-chevron">▾</span>
+    </div>
+    <div class="form-bloco-body">
+      <div id="f-tarefas-lista"></div>
+      <button type="button" class="btn-add" onclick="window.addTarefaForm()">+ Nova tarefa</button>
+    </div>
+  </div>
+
+  <!-- Interacções e Ocorrências — geridas no drawer de Acompanhamento -->
       <div id="f-interacoes-lista" style="display:none"></div>
       <div id="f-ocorrencias-lista" style="display:none"></div>
 
@@ -720,6 +790,7 @@
     <button class="acomp-tab" onclick="window.setAcompTab('ocorrencias',this)">Ocorrências</button>
     <button class="acomp-tab" onclick="window.setAcompTab('mensagens',this)">💬 Mensagens <span class="acomp-badge" id="acomp-msg-badge" style="display:none"></span></button>
     <button class="acomp-tab" onclick="window.setAcompTab('reunioes',this)">Reuniões</button>
+    <button class="acomp-tab" onclick="window.setAcompTab('tarefas',this)">✓ Tarefas <span class="acomp-badge" id="acomp-tarefas-badge" style="display:none"></span></button>
   </div>
 
   <!-- Tab: Interacções -->
@@ -779,6 +850,15 @@
   <div class="acomp-tab-content" id="acomp-tab-reunioes" style="display:none">
     <div class="form-note" style="margin-bottom:12px">Notas guardadas durante sessões de apresentação desta proposta.</div>
     <div id="acomp-reunioes-lista" class="acomp-lista"></div>
+  </div>
+  <div class="acomp-tab-content" id="acomp-tab-tarefas" style="display:none">
+    <div id="acomp-tarefas-lista"></div>
+    <div class="acomp-tarefa-form">
+      <input type="text" id="acomp-tarefa-texto" class="f-input" placeholder="Nova tarefa…" style="flex:1"
+        onkeydown="if(event.key==='Enter')window._adicionarTarefaDrawer(window._acompProjId)">
+      <input type="date" id="acomp-tarefa-prazo" class="f-input" style="width:130px" title="Prazo">
+      <button class="btn-add" onclick="window._adicionarTarefaDrawer(window._acompProjId)">+ Adicionar</button>
+    </div>
   </div>
 </div>
 

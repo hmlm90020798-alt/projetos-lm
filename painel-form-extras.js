@@ -5,6 +5,7 @@
 // ════════════════════════════════════════════════
 
 import { getState, setState } from './state.js';
+import { addTarefaForm, renderTarefasForm } from './tarefas.js';
 import { mostrarToast, fmt } from './ui.js';
 import { esc }               from './sanitize.js';
 
@@ -378,3 +379,6 @@ export function renderOcorrenciasForm(list) {
   }).join('');
 }
 
+
+// ── Re-exportar tarefas (acesso unificado via painel-form-extras) ──
+export { addTarefaForm, renderTarefasForm } from './tarefas.js';

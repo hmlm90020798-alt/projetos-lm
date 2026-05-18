@@ -44,6 +44,10 @@ import {
 import {
   ativarModoApresentacao, sairModoApresentacao,
 } from './modo-apresentacao.js';
+import {
+  renderTarefasTab, enviarEmailResumo, addTarefaForm, renderTarefasForm,
+  _actualizarBadgeTarefas,
+} from './tarefas.js';
 
 window._clienteModule            = { renderPaginaCliente };
 
@@ -107,6 +111,10 @@ window.marcarMensagensLidas     = marcarMensagensLidas;
 window.carregarMensagens        = carregarMensagens;
 window.ativarModoApresentacao   = ativarModoApresentacao;
 window.sairModoApresentacao     = sairModoApresentacao;
+window.renderTarefasTab         = renderTarefasTab;
+window.enviarEmailResumo        = enviarEmailResumo;
+window.addTarefaForm            = addTarefaForm;
+window._actualizarBadgeTarefas  = _actualizarBadgeTarefas;
 
 // ── Login ─────────────────────────────────────────
 async function loginHandler() {

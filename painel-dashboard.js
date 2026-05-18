@@ -6,6 +6,7 @@
 
 import { getState, setState, getProjects } from './state.js';
 import { calcTotal } from './utils.js';
+import { tarefasPendentes, tarefasEmAtraso, _actualizarBadgeTarefas } from './tarefas.js';
 import { mostrarToast, fmt, formatarData }  from './ui.js';
 import { carregarVisitas }                  from './firebase.js';
 
@@ -236,6 +237,7 @@ export function renderPainel() {
   }
   const ordenados = ordenarLista(filtrados);
   grid.innerHTML = ordenados.map(p => renderCard(p)).join('');
+  _actualizarBadgeTarefas();
 
   // Carregar visitas assincronamente e actualizar os cards
   const ids = ordenados.map(p => p.id);
@@ -289,7 +291,9 @@ function renderCard(p) {
   const classe = exp ? 'badge-expirado' : (FASE_CLASSE[p.fase] || '');
   const total  = calcTotalProjeto(p);
   const tipo   = TIPOS_PROJETO.find(t => t.value === p.tipo)?.label || p.tipoOutro || p.tipo || '';
-  const temOcorr = (p.ocorrencias||[]).some(o => o.estado !== 'resolvida');
+  const temOcorr    = (p.ocorrencias||[]).some(o => o.estado !== 'resolvida');
+  const nTarefas    = tarefasPendentes(p).length;
+  const nAtrasadas  = tarefasEmAtraso(p).length;
 
   // Classe de fase para cor do card
   const faseClasse = exp ? 'fase-expirado'
@@ -308,6 +312,7 @@ function renderCard(p) {
         <div class="card-tipo-badge">${tipo}</div>
         <div style="display:flex;gap:6px;align-items:center">
           ${temOcorr ? `<span class="badge-ocorr">⚠️ Ocorrência</span>` : ''}
+          ${nAtrasadas > 0 ? `<span class="badge-tarefas-atraso">⏰ ${nAtrasadas}</span>` : (nTarefas > 0 ? `<span class="badge-tarefas">${nTarefas} tarefa${nTarefas > 1 ? 's' : ''}</span>` : '')}
           <span class="proj-badge ${classe}">${label}</span>
         </div>
       </div>

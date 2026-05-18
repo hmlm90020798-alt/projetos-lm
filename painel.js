@@ -12,6 +12,7 @@ import { getAlertasReclamacoes } from './reclamacoes.js';
 import { renderHistoricoReunioes } from './modo-apresentacao.js';
 import { esc } from './sanitize.js';
 import { getMsgVisto, setMsgVisto, atualizarBadgeMensagens, renderMensagensModal } from './painel-mensagens.js';
+import { renderTarefasDrawer, tarefasPendentes, tarefasEmAtraso } from './tarefas.js';
 import { initAlertasModule, setTab, renderAlertas, renderOcorrenciasTab } from './painel-alertas.js';
 import { toggleOrdem, toggleValorCard, renderPainel, TIPOS_PROJETO, faseOrdem } from './painel-dashboard.js';
 import {
@@ -162,6 +163,8 @@ export function editarProjeto(id) {
   });
 
   renderInteracoes(p.interacoes || []);
+  // Tarefas — importar e renderizar
+  import('./tarefas.js').then(({ renderTarefasForm }) => renderTarefasForm(p.tarefas || []));
   renderOcorrenciasForm(p.ocorrencias || []);
   renderNotasForm(p.notas || []);
   renderDocsForm(p.docs || []);
@@ -231,6 +234,16 @@ export async function guardarProjeto() {
   };
 
   // Notas múltiplas com título
+  const tarefas = Array.from(document.querySelectorAll('#f-tarefas-lista .tarefa-form-item'))
+    .map(el => ({
+      id:          el.dataset.id || ('t-' + Date.now()),
+      texto:       el.querySelector('.tarefa-form-texto')?.value?.trim() || '',
+      prazo:       el.querySelector('.tarefa-form-prazo')?.value || null,
+      concluida:   el.dataset.concluida === '1',
+      dataCriacao: el.dataset.dataCriacao || new Date().toISOString(),
+    }))
+    .filter(t => t.texto);
+
   const notas = Array.from(document.querySelectorAll('#f-notas-lista .nota-form-item'))
     .map(el => ({
       titulo:  el.querySelector('.nota-form-titulo')?.value?.trim() || '',
@@ -310,7 +323,7 @@ export async function guardarProjeto() {
     orc_acessorios_desc:gv('f-orc-acessorios-desc')|| '',
     orcamento:          recolherCatsOrc(document.getElementById('sec-orcamento-cats')),
     incluido,
-    interacoes, ocorrencias,
+    interacoes, ocorrencias, tarefas,
     imagens:     getState('editImgs'),
     data:        new Date().toLocaleDateString('pt-PT'),
     dataCriacao: editId ? (getProjects().find(p => p.id === editId)?.dataCriacao || dataHoje()) : dataHoje(),
@@ -935,6 +948,9 @@ export function abrirDrawerAcompanhamento(id) {
 
   // Reuniões
   _renderAcompReunioes(id);
+
+  // Tarefas
+  renderTarefasDrawer(id);
 
   // Abrir
   const drawer = document.getElementById('acomp-drawer');
