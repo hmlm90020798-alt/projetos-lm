@@ -4,7 +4,8 @@
 
 import { getState, setState, getProjects, getEditId } from './state.js';
 import { calcTotal } from './utils.js';
-import { guardar, apagar, iniciarListenerAprovacoes, carregarVisitas,
+import { guardar, apagar, arquivarProjeto, restaurarProjeto, carregarArquivados,
+         iniciarListenerAprovacoes, carregarVisitas,
          carregarMensagens, responderMensagem, iniciarListenerMensagens } from './firebase.js';
 import { mostrarToast, setView, fmt, gerarId, dataHoje, formatarData } from './ui.js';
 import { getAlertasReclamacoes } from './reclamacoes.js';
@@ -396,9 +397,84 @@ export async function guardarProjeto() {
 
 export async function apagarProjeto(id) {
   const p = getProjects().find(x => x.id === id);
-  if (!confirm(`Apagar "${p?.nome || id}"?\nEsta ação é irreversível.`)) return;
-  await apagar(id);
-  renderPainel();
+  if (!confirm(`Arquivar "${p?.nome || id}"?\nO projeto ficará guardado no Arquivo e pode ser restaurado.`)) return;
+  try {
+    await arquivarProjeto(id);
+    mostrarToast('📦 Arquivado', `"${p?.nome || id}" movido para o Arquivo.`);
+    renderPainel();
+  } catch(e) { mostrarToast('✗ Erro ao arquivar', ''); }
+}
+
+export async function apagarDefinitivamente(id, nome) {
+  if (!confirm(`Apagar permanentemente "${nome || id}"?\nEsta acção é irreversível.`)) return;
+  try {
+    await apagar(id);
+    mostrarToast('🗑 Apagado', `"${nome || id}" eliminado permanentemente.`);
+    renderArquivo();
+  } catch(e) { mostrarToast('✗ Erro ao apagar', ''); }
+}
+
+export async function restaurar(id, nome) {
+  try {
+    await restaurarProjeto(id);
+    mostrarToast('↩ Restaurado', `"${nome || id}" devolvido ao painel.`);
+    renderArquivo();
+  } catch(e) { mostrarToast('✗ Erro ao restaurar', ''); }
+}
+
+export async function renderArquivo() {
+  const grid  = document.getElementById('arquivo-grid');
+  const empty = document.getElementById('arquivo-empty');
+  if (!grid) return;
+
+  grid.innerHTML = '<div style="padding:24px;color:rgba(255,255,255,.3);font-size:12px">A carregar…</div>';
+  const lista = await carregarArquivados();
+
+  const pesquisa = (document.getElementById('arquivo-pesquisa')?.value || '').toLowerCase().trim();
+  const filtrados = pesquisa
+    ? lista.filter(p =>
+        (p.nome||'').toLowerCase().includes(pesquisa) ||
+        (p.localidade||'').toLowerCase().includes(pesquisa) ||
+        (p.refPc||'').toLowerCase().includes(pesquisa) ||
+        (p.refOs||'').toLowerCase().includes(pesquisa))
+    : lista;
+
+  if (empty) empty.style.display = filtrados.length ? 'none' : '';
+
+  if (!filtrados.length) { grid.innerHTML = ''; return; }
+
+  const { calcTotal } = await import('./utils.js');
+  const { fmt } = await import('./ui.js');
+
+  grid.innerHTML = filtrados.map(p => {
+    const total  = calcTotal(p);
+    const dataArq = p.dataArquivado
+      ? new Date(p.dataArquivado).toLocaleDateString('pt-PT') : '—';
+    const nomeEsc = (p.nome||'').replace(/'/g,"\'");
+    return `
+    <div class="proj-card fase-concluido arquivo-card">
+      <div class="card-top">
+        <div class="card-tipo-badge">${p.tipo || '—'}</div>
+        <span class="proj-badge badge-arquivo">Arquivado</span>
+      </div>
+      <div class="card-nome">${p.nome || '—'}</div>
+      <div class="card-local">${p.localidade || ''}
+        ${p.refPc ? \`<span class="card-ref-badge">PC: \${p.refPc}</span>\` : ''}
+        ${p.refOs ? \`<span class="card-ref-badge">OS: \${p.refOs}</span>\` : ''}
+      </div>
+      <div class="card-financeiro">
+        <div class="card-total">${total > 0 ? fmt(total) : '—'}</div>
+        <div class="card-meta-right">
+          <div class="card-aprovado" style="color:rgba(255,255,255,.35)">📦 \${dataArq}</div>
+        </div>
+      </div>
+      <div class="card-actions">
+        <button class="btn-card apresentar" onclick="window.verCliente('${p.id}')" title="Ver proposta">👁 Ver</button>
+        <button class="btn-card acomp" onclick="window.restaurar('${p.id}','\${nomeEsc}')">↩ Restaurar</button>
+        <button class="btn-card danger" onclick="window.apagarDefinitivamente('${p.id}','\${nomeEsc}')">🗑 Apagar</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 
@@ -991,6 +1067,9 @@ window._acompResponderMsg = async function() {
 window.abrirDrawerAcompanhamento  = abrirDrawerAcompanhamento;
 window.fecharDrawerAcompanhamento = fecharDrawerAcompanhamento;
 window.setAcompTab                = setAcompTab;
+window.renderArquivo              = renderArquivo;
+window.restaurar                  = restaurar;
+window.apagarDefinitivamente      = apagarDefinitivamente;
 
 // Guardar ocorrências actualizadas no drawer → Firestore
 window._guardarOcorrenciasDrawer = function() {

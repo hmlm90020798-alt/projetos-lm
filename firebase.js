@@ -69,7 +69,10 @@ export async function carregar() {
   try {
     const snap = await getDocs(_col);
     const lista = [];
-    snap.forEach(d => lista.push({ id: d.id, ...d.data() }));
+    snap.forEach(d => {
+      const data = d.data();
+      if (!data.arquivado) lista.push({ id: d.id, ...data });
+    });
     lista.sort((a, b) => (b.dataCriacao || '').localeCompare(a.dataCriacao || ''));
     setState({ projetos: lista });
   } catch (e) { console.error('Erro ao carregar:', e); }
@@ -92,6 +95,38 @@ export async function apagar(id) {
     await deleteDoc(doc(_db, 'projetos', id));
     setState({ projetos: getState('projetos').filter(p => p.id !== id) });
   } catch (e) { console.error(e); }
+}
+
+export async function carregarArquivados() {
+  try {
+    const snap = await getDocs(_col);
+    const lista = [];
+    snap.forEach(d => {
+      const data = d.data();
+      if (data.arquivado) lista.push({ id: d.id, ...data });
+    });
+    lista.sort((a, b) => (b.dataArquivado || b.dataCriacao || '').localeCompare(a.dataArquivado || a.dataCriacao || ''));
+    return lista;
+  } catch (e) { console.error('Erro ao carregar arquivo:', e); return []; }
+}
+
+export async function arquivarProjeto(id) {
+  try {
+    await updateDoc(doc(_db, 'projetos', id), {
+      arquivado:      true,
+      dataArquivado:  new Date().toISOString(),
+    });
+    setState({ projetos: getState('projetos').filter(p => p.id !== id) });
+  } catch (e) { console.error('Erro ao arquivar:', e); throw e; }
+}
+
+export async function restaurarProjeto(id) {
+  try {
+    await updateDoc(doc(_db, 'projetos', id), {
+      arquivado:     false,
+      dataArquivado: null,
+    });
+  } catch (e) { console.error('Erro ao restaurar:', e); throw e; }
 }
 
 export async function carregarUm(id) {

@@ -39,6 +39,12 @@
   <script type="text/javascript">
     (function(){ emailjs.init({ publicKey: 'QLD6uqUtgHRmBgjt4' }); })();
   </script>
+  <style>
+    .badge-arquivo { background:rgba(255,255,255,.07);color:rgba(255,255,255,.45);border-color:rgba(255,255,255,.15); }
+    .arquivo-card  { opacity:.78; }
+    .arquivo-card:hover { opacity:1; }
+    #tab-arquivo .proj-grid { margin-top:16px; }
+  </style>
 </head>
 <body>
 
@@ -92,6 +98,9 @@
       <button class="tab-btn" onclick="window.setTab(this,'ocorrencias')">
         ⚠️ Ocorrências
         <span class="tab-badge tab-badge-danger" id="tab-badge-ocorr"></span>
+      </button>
+      <button class="tab-btn" onclick="window.setTab(this,'arquivo');window.renderArquivo()">
+        📦 Arquivo
       </button>
     </div>
 
@@ -151,6 +160,22 @@
         </div>
       </div>
       <div class="proj-grid" id="proj-grid"></div>
+    </div>
+
+    <!-- TAB: ARQUIVO -->
+    <div id="tab-arquivo" class="tab-content">
+      <div class="painel-toolbar">
+        <div class="search-wrap">
+          <input type="text" id="arquivo-pesquisa" class="search-input"
+                 placeholder="Pesquisar arquivo — nome, localidade, PC, OS…"
+                 oninput="window.renderArquivo()">
+        </div>
+      </div>
+      <div id="arquivo-empty" style="display:none;padding:48px 24px;text-align:center;color:rgba(255,255,255,.3)">
+        <div style="font-size:32px;margin-bottom:12px">📦</div>
+        <div style="font-size:14px">Nenhum projeto arquivado</div>
+      </div>
+      <div class="proj-grid" id="arquivo-grid"></div>
     </div>
 
     <!-- TAB: ALERTAS & AGENDA -->
