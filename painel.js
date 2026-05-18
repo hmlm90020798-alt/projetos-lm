@@ -12,7 +12,7 @@ import { getAlertasReclamacoes } from './reclamacoes.js';
 import { renderHistoricoReunioes } from './modo-apresentacao.js';
 import { esc } from './sanitize.js';
 import { getMsgVisto, setMsgVisto, atualizarBadgeMensagens, renderMensagensModal } from './painel-mensagens.js';
-import { renderTarefasDrawer, tarefasPendentes, tarefasEmAtraso } from './tarefas.js';
+import { renderTarefasDrawer, renderTarefasForm, tarefasPendentes, tarefasEmAtraso } from './tarefas.js';
 import { initAlertasModule, setTab, renderAlertas, renderOcorrenciasTab } from './painel-alertas.js';
 import { toggleOrdem, toggleValorCard, renderPainel, TIPOS_PROJETO, faseOrdem } from './painel-dashboard.js';
 import {
@@ -164,7 +164,7 @@ export function editarProjeto(id) {
 
   renderInteracoes(p.interacoes || []);
   // Tarefas — importar e renderizar
-  import('./tarefas.js').then(({ renderTarefasForm }) => renderTarefasForm(p.tarefas || []));
+  renderTarefasForm(p.tarefas || []);
   renderOcorrenciasForm(p.ocorrencias || []);
   renderNotasForm(p.notas || []);
   renderDocsForm(p.docs || []);
