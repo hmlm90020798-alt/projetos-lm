@@ -5,6 +5,7 @@
 // ════════════════════════════════════════════════
 
 import { getState, setState, getProjects } from './state.js';
+import { calcTotal } from './utils.js';
 import { mostrarToast, fmt, formatarData }  from './ui.js';
 import { carregarVisitas }                  from './firebase.js';
 
@@ -97,16 +98,8 @@ export function faseOrdem(f) {
 
 // ── Dashboard ──────────────────────────────────────
 
-function calcTotalProjeto(p) {
-  const n = v => parseFloat(String(v || '0').replace(',', '.')) || 0;
-  let t = 0;
-  t += n(p.orc_moveis);
-  t += n(p.orc_tampos);
-  t += n(p.orc_eletros);
-  t += n(p.orc_acessorios);
-  (p.orcamento||[]).forEach(c => { t += n(c.valor); });
-  return Math.max(0, t);
-}
+// calcTotalProjeto substituído por calcTotal de utils.js
+const calcTotalProjeto = calcTotal;
 
 function calcDashboard(lista) {
   const total      = lista.length;

@@ -3,6 +3,7 @@
 // ════════════════════════════════════════════════
 
 import { getState, setState, getProjects, getEditId } from './state.js';
+import { calcTotal } from './utils.js';
 import { guardar, apagar, iniciarListenerAprovacoes, carregarVisitas,
          carregarMensagens, responderMensagem, iniciarListenerMensagens } from './firebase.js';
 import { mostrarToast, setView, fmt, gerarId, dataHoje, formatarData } from './ui.js';
@@ -335,16 +336,8 @@ export async function guardarProjeto() {
   if (editId && idx >= 0) {
     const anterior = lista[idx];
     const alteracoes = [];
-    const n = v => parseFloat(String(v||'0').replace(',','.')) || 0;
-
     // Calcular totais
-    const calcTotal = p => {
-      let t = 0;
-      t += n(p.orc_moveis); t += n(p.orc_tampos);
-      t += n(p.orc_eletros); t += n(p.orc_acessorios);
-      (p.orcamento||[]).forEach(c => { t += n(c.valor); });
-      return Math.round(t * 100) / 100;
-    };
+    // calcTotal importado de utils.js
     const totalAnterior = calcTotal(anterior);
     const totalNovo     = calcTotal(proj);
 
