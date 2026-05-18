@@ -447,33 +447,31 @@ export async function renderArquivo() {
   const { fmt } = await import('./ui.js');
 
   grid.innerHTML = filtrados.map(p => {
-    const total  = calcTotal(p);
+    const total   = calcTotal(p);
     const dataArq = p.dataArquivado
       ? new Date(p.dataArquivado).toLocaleDateString('pt-PT') : '—';
-    const nomeEsc = (p.nome||'').replace(/'/g,"\'");
-    return `
-    <div class="proj-card fase-concluido arquivo-card">
-      <div class="card-top">
-        <div class="card-tipo-badge">${p.tipo || '—'}</div>
-        <span class="proj-badge badge-arquivo">Arquivado</span>
-      </div>
-      <div class="card-nome">${p.nome || '—'}</div>
-      <div class="card-local">${p.localidade || ''}
-        ${p.refPc ? \`<span class="card-ref-badge">PC: \${p.refPc}</span>\` : ''}
-        ${p.refOs ? \`<span class="card-ref-badge">OS: \${p.refOs}</span>\` : ''}
-      </div>
-      <div class="card-financeiro">
-        <div class="card-total">${total > 0 ? fmt(total) : '—'}</div>
-        <div class="card-meta-right">
-          <div class="card-aprovado" style="color:rgba(255,255,255,.35)">📦 \${dataArq}</div>
-        </div>
-      </div>
-      <div class="card-actions">
-        <button class="btn-card apresentar" onclick="window.verCliente('${p.id}')" title="Ver proposta">👁 Ver</button>
-        <button class="btn-card acomp" onclick="window.restaurar('${p.id}','\${nomeEsc}')">↩ Restaurar</button>
-        <button class="btn-card danger" onclick="window.apagarDefinitivamente('${p.id}','\${nomeEsc}')">🗑 Apagar</button>
-      </div>
-    </div>`;
+    const nomeEsc = (p.nome || '').replace(/'/g, "\'");
+    const refPcHtml = p.refPc ? '<span class="card-ref-badge">PC: ' + p.refPc + '</span>' : '';
+    const refOsHtml = p.refOs ? '<span class="card-ref-badge">OS: ' + p.refOs + '</span>' : '';
+    const id = p.id;
+    const btnVer    = '<button class="btn-card apresentar" onclick="window.verCliente(\'' + id + '\')" title="Ver proposta">👁 Ver</button>';
+    const btnRest   = '<button class="btn-card acomp" onclick="window.restaurar(\'' + id + '\',\'' + nomeEsc + '\')">↩ Restaurar</button>';
+    const btnApagar = '<button class="btn-card danger" onclick="window.apagarDefinitivamente(\'' + id + '\',\'' + nomeEsc + '\')">🗑 Apagar</button>';
+    return '<div class="proj-card fase-concluido arquivo-card">'
+      + '<div class="card-top">'
+      +   '<div class="card-tipo-badge">' + (p.tipo || '—') + '</div>'
+      +   '<span class="proj-badge badge-arquivo">Arquivado</span>'
+      + '</div>'
+      + '<div class="card-nome">' + (p.nome || '—') + '</div>'
+      + '<div class="card-local">' + (p.localidade || '') + refPcHtml + refOsHtml + '</div>'
+      + '<div class="card-financeiro">'
+      +   '<div class="card-total">' + (total > 0 ? fmt(total) : '—') + '</div>'
+      +   '<div class="card-meta-right">'
+      +     '<div class="card-aprovado" style="color:rgba(255,255,255,.35)">📦 ' + dataArq + '</div>'
+      +   '</div>'
+      + '</div>'
+      + '<div class="card-actions">' + btnVer + btnRest + btnApagar + '</div>'
+      + '</div>';
   }).join('');
 }
 
