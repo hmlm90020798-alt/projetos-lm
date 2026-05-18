@@ -26,13 +26,14 @@ function driveEmbedUrl(url) {
 
 // Abrir documento inline no modal
 window._abrirDocModal = function(url, nome) {
-  const embedUrl = driveEmbedUrl(url);
+  const cleanUrl = url.replace(/&#39;/g, "'");
+  const embedUrl = driveEmbedUrl(cleanUrl);
   const modal  = document.getElementById('doc-modal');
   const iframe = document.getElementById('doc-modal-iframe');
   const titulo = document.getElementById('doc-modal-titulo');
   if (!modal || !iframe) return;
   if (titulo) titulo.textContent = nome || 'Documento';
-  iframe.src = embedUrl || url;
+  iframe.src = embedUrl || cleanUrl;
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
 };
@@ -723,30 +724,28 @@ function _notaCardHtml(svgIcon, titulo, textoHtml, isManual) {
 
 // ── Documentos ────────────────────────────────────
 
-function _docCardHtml(d, lang, inline = false) {
-  const nomeEsc = esc(d.nome || '');
-  const urlEsc  = (d.url || '').replace(/'/g, "\'").replace(/"/g, '&quot;');
-  const hint    = lang === 'en' ? 'View document' : 'Ver documento';
-  const cls     = inline ? 'doc-card-inline' : 'doc-card';
-  const icon    = inline
-    ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'
-    : '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+function _docCardHtml(d, lang, inline) {
+  const nome = esc(d.nome || '');
+  const url  = (d.url || '').replace(/'/g, "&#39;");
+  const hint = lang === 'en' ? 'View document' : 'Ver documento';
+  const svg16 = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+  const svg24 = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+  const onclick = 'window._abrirDocModal("' + url + '","' + nome + '")';
   if (inline) {
-    return '<div class="' + cls + '" role="button" tabindex="0"'
-      + ' onclick="window._abrirDocModal('' + urlEsc + '','' + nomeEsc + '')">'
-      + '<div class="doc-card-inline-icon">' + icon + '</div>'
-      + '<span class="doc-card-inline-nome">' + nomeEsc + '</span>'
+    return '<div class="doc-card-inline" role="button" tabindex="0" onclick="' + onclick + '">'
+      + '<div class="doc-card-inline-icon">' + svg16 + '</div>'
+      + '<span class="doc-card-inline-nome">' + nome + '</span>'
       + '<span class="doc-card-inline-hint">⊞</span>'
       + '</div>';
   }
-  return '<div class="' + cls + '" role="button" tabindex="0"'
-    + ' onclick="window._abrirDocModal('' + urlEsc + '','' + nomeEsc + '')">'
-    + '<div class="doc-card-icon">' + icon + '</div>'
+  return '<div class="doc-card" role="button" tabindex="0" onclick="' + onclick + '">'
+    + '<div class="doc-card-icon">' + svg24 + '</div>'
     + '<div class="doc-card-info">'
-    + '<div class="doc-card-nome">' + nomeEsc + '</div>'
+    + '<div class="doc-card-nome">' + nome + '</div>'
     + '<div class="doc-card-hint">' + hint + '</div>'
     + '</div></div>';
 }
+
 
 function renderDocumentos(docs, lang) {
   if (!docs.length) return '';
