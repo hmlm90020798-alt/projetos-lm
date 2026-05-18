@@ -166,19 +166,16 @@ export function editarProjeto(id) {
   renderThumbs();
   atualizarTotalPreview();
 
-  // Histórico de reuniões — mostrar bloco só se houver reuniões guardadas
+  // Histórico de reuniões — carregar do Firestore
   const blocoReunioes = document.getElementById('bloco-reunioes');
   const listaReunioes = document.getElementById('reunioes-historico-lista');
   if (blocoReunioes && listaReunioes) {
-    let reunioesGuardadas = [];
-    try { reunioesGuardadas = JSON.parse(localStorage.getItem(`lm_reunioes_${id}`) || '[]'); } catch(_) {}
-    if (reunioesGuardadas.length) {
-      blocoReunioes.style.display = '';
-      renderHistoricoReunioes(id, listaReunioes);
-    } else {
-      blocoReunioes.style.display = 'none';
-      listaReunioes.innerHTML = '';
-    }
+    blocoReunioes.style.display = 'none';
+    listaReunioes.innerHTML = '';
+    renderHistoricoReunioes(id, listaReunioes).then(() => {
+      // renderHistoricoReunioes é async — mostrar bloco se houver conteúdo
+      if (listaReunioes.children.length) blocoReunioes.style.display = '';
+    });
   }
 
   colapsarBlocos();
@@ -919,11 +916,12 @@ function _renderAcompInteracoes(list) {
     </div>`).join('');
 }
 
-function _renderAcompReunioes(id) {
+async function _renderAcompReunioes(id) {
   const el = document.getElementById('acomp-reunioes-lista');
   if (!el) return;
-  let reunioes = [];
-  try { reunioes = JSON.parse(localStorage.getItem(`lm_reunioes_${id}`) || '[]'); } catch(_) {}
+  el.innerHTML = '<div class="acomp-vazio">A carregar…</div>';
+  const { carregarReunioesFirebase } = await import('./firebase.js');
+  const reunioes = await carregarReunioesFirebase(id);
   if (!reunioes.length) {
     el.innerHTML = '<div class="acomp-vazio">Sem reuniões registadas.</div>';
     return;

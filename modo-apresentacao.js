@@ -4,19 +4,11 @@
 
 import { getState, setState, getProjects } from './state.js';
 import { mostrarToast } from './ui.js';
-
-const LS_KEY = id => `lm_reunioes_${id}`;
-
-function carregarReunioes(projId) {
-  try { return JSON.parse(localStorage.getItem(LS_KEY(projId)) || '[]'); }
-  catch { return []; }
-}
+import { guardarReuniaoFirebase, carregarReunioesFirebase, apagarReuniaoFirebase } from './firebase.js';
 
 // ── HTML da janela de apresentação ───────────────
 function buildWindowHTML(projId, projNome, baseUrl) {
-  // Serializar reuniões existentes para passar à janela filha
-  let reunioesExistentes = '[]';
-  try { reunioesExistentes = localStorage.getItem(LS_KEY(projId)) || '[]'; } catch(_) {}
+  // Reuniões carregadas do Firestore — janela filha comunica via postMessage
 
   return `<!DOCTYPE html>
 <html lang="pt">
@@ -194,55 +186,57 @@ iframe{width:100%;height:100%;border:none;background:#0F1610}
 const PROJ_ID   = ${JSON.stringify(projId)};
 const PROJ_NOME = ${JSON.stringify(projNome)};
 const BASE_URL  = ${JSON.stringify(baseUrl)};
-const LS_KEY    = 'lm_reunioes_' + PROJ_ID;
+const FB_URL    = 'https://firestore.googleapis.com/v1/projects/hm-projetos-lm/databases/(default)/documents';
 
-// Reuniões pré-carregadas da janela pai (injectadas no HTML)
-let _reunioes = ${reunioesExistentes};
+let _reunioes = [];
 
 // ── Init ────────────────────────────────────────
 const inicio  = new Date();
 const hInicio = pad(inicio.getHours()) + ':' + pad(inicio.getMinutes());
 document.getElementById('tp-nome').textContent   = PROJ_NOME;
 document.getElementById('np-inicio').textContent = hInicio;
-// FIX: &apres=1 oculta secções de suporte (mensagens, reclamação, documentos vazios)
-document.getElementById('fr').src = BASE_URL + '?p=' + PROJ_ID + '&apres=1';
+document.getElementById('fr').src = BASE_URL + '?p=' + PROJ_ID;
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
-// ── Guardar no localStorage (com fallback ao opener) ──
-function salvarReunioesLS(lista) {
-  const json = JSON.stringify(lista);
-  // 1º: tentar localStorage local (funciona se mesma origem)
-  try { localStorage.setItem(LS_KEY, json); return; } catch(_) {}
-  // 2º: fallback via opener
-  try { if (window.opener && !window.opener.closed) window.opener.localStorage.setItem(LS_KEY, json); } catch(_) {}
-}
-
-// ── Guardar reunião ─────────────────────────────
-function guardarReuniao() {
+// ── Guardar reunião no Firestore via REST (sem auth — janela popup) ──
+async function guardarReuniao() {
   const texto = document.getElementById('np-textarea').value.trim();
   if (!texto) { toast('Sem notas para guardar.'); return; }
 
   const agora = new Date();
   const data  = agora.toLocaleDateString('pt-PT');
   const hora  = pad(agora.getHours()) + ':' + pad(agora.getMinutes());
+  const id    = Date.now();
 
-  const reuniao = {
-    id: Date.now(),
-    data, hora, horaInicio: hInicio,
-    projId: PROJ_ID, projNome: PROJ_NOME,
-    texto,
-  };
+  const reuniao = { id, data, hora, horaInicio: hInicio, projId: PROJ_ID, projNome: PROJ_NOME, texto };
 
-  _reunioes.unshift(reuniao);
-  salvarReunioesLS(_reunioes);
-  toast('✓ Reunião guardada — ' + data + ' ' + hora);
-
-  setTimeout(() => {
-    if (confirm('Reunião guardada! Limpar notas para nova sessão?')) {
-      document.getElementById('np-textarea').value = '';
-    }
-  }, 350);
+  try {
+    const url = FB_URL + '/reunioes/' + PROJ_ID + '/lista/' + id;
+    const body = {
+      fields: {
+        id:        { integerValue: String(id) },
+        data:      { stringValue: data },
+        hora:      { stringValue: hora },
+        horaInicio:{ stringValue: hInicio },
+        projId:    { stringValue: PROJ_ID },
+        projNome:  { stringValue: PROJ_NOME },
+        texto:     { stringValue: texto },
+      }
+    };
+    const r = await fetch(url, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    _reunioes.unshift(reuniao);
+    toast('✓ Reunião guardada — ' + data + ' ' + hora);
+    setTimeout(() => {
+      if (confirm('Reunião guardada! Limpar notas para nova sessão?')) {
+        document.getElementById('np-textarea').value = '';
+      }
+    }, 350);
+  } catch(e) {
+    toast('✗ Erro ao guardar. Verifica a ligação.');
+    console.error('Firestore REST error:', e);
+  }
 }
 
 // ── Visibilidade do painel ──────────────────────
@@ -250,17 +244,21 @@ function toggleNotas() {
   const np  = document.getElementById('np');
   const bbl = document.getElementById('np-bubble');
   if (np.classList.contains('np-hidden')) {
+    // estava oculto → mostrar painel
     np.classList.remove('np-hidden');
     bbl.classList.remove('vis');
   } else {
+    // estava visível → ocultar (sem bolha — botão na topbar serve)
     np.classList.add('np-hidden');
     bbl.classList.remove('vis');
   }
 }
 
 function miniNotas() {
+  // Minimizar para bolha flutuante
   const np  = document.getElementById('np');
   const bbl = document.getElementById('np-bubble');
+  // Sincronizar posição da bolha com a do painel
   bbl.style.top  = np.style.top  || '56px';
   bbl.style.left = np.style.left || 'auto';
   bbl.style.right= np.style.right || '16px';
@@ -269,8 +267,10 @@ function miniNotas() {
 }
 
 function expandirNotas() {
+  // Expandir a partir da bolha
   const np  = document.getElementById('np');
   const bbl = document.getElementById('np-bubble');
+  // Colocar painel na posição da bolha
   np.style.top   = bbl.style.top   || '56px';
   np.style.left  = bbl.style.left  || 'auto';
   np.style.right = bbl.style.right || '16px';
@@ -288,6 +288,7 @@ function expandirNotas() {
   handle.addEventListener('mousedown', e => {
     if (e.target.tagName === 'BUTTON') return;
     drag = true;
+    // Calcular posição actual (pode estar posicionado por right:)
     const rect = panel.getBoundingClientRect();
     panel.style.left  = rect.left + 'px';
     panel.style.top   = rect.top  + 'px';
@@ -377,9 +378,9 @@ export function sairModoApresentacao() {
 }
 
 // ── Histórico de reuniões (painel de edição) ──────
-export function renderHistoricoReunioes(projId, containerEl) {
+export async function renderHistoricoReunioes(projId, containerEl) {
   if (!containerEl) return;
-  const lista = carregarReunioes(projId);
+  const lista = await carregarReunioesFirebase(projId);
 
   if (!lista.length) {
     containerEl.innerHTML = `<p class="form-note" style="color:rgba(255,255,255,.3);font-style:italic;padding:4px 0">Sem reuniões registadas para este projeto.</p>`;
@@ -387,31 +388,30 @@ export function renderHistoricoReunioes(projId, containerEl) {
   }
 
   containerEl.innerHTML = lista.map(r => `
-    <div style="margin-bottom:8px;border:1px solid rgba(103,171,47,.15);border-radius:8px;overflow:hidden">
+    <div style="margin-bottom:8px;border:1px solid rgba(103,171,47,.2);border-radius:8px;overflow:hidden;background:#f8fcf5">
       <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'':'none'"
            style="display:flex;align-items:center;gap:8px;padding:8px 12px;
                   background:rgba(103,171,47,.07);cursor:pointer;user-select:none">
         <span>📅</span>
-        <span style="font-size:12px;font-weight:600;color:#A8D878;flex:1">${r.data} — ${r.hora}</span>
-        ${r.horaInicio ? `<span style="font-size:10px;color:rgba(255,255,255,.3)">Início: ${r.horaInicio}</span>` : ''}
+        <span style="font-size:12px;font-weight:600;color:#2d5a0e;flex:1">${r.data} — ${r.hora}</span>
+        ${r.horaInicio ? `<span style="font-size:10px;color:rgba(0,0,0,.4)">Início: ${r.horaInicio}</span>` : ''}
         <button onclick="event.stopPropagation();window._apagarReuniaoLocal(${r.id},'${projId}')"
                 style="background:none;border:none;color:rgba(220,80,80,.45);cursor:pointer;
                        font-size:17px;line-height:1;padding:0 2px;margin-left:6px"
                 title="Apagar esta reunião">×</button>
       </div>
-      <div style="padding:10px 12px">
-        <div style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.6;white-space:pre-wrap">${r.texto || ''}</div>
+      <div style="padding:10px 12px;background:#f4f9f0">
+        <div style="font-size:12px;color:#2a3a1a;line-height:1.6;white-space:pre-wrap;word-break:break-word">${r.texto || ''}</div>
       </div>
     </div>`).join('');
 }
 
 // ── Apagar reunião individual ─────────────────────
-window._apagarReuniaoLocal = function(reuniaoId, projId) {
+window._apagarReuniaoLocal = async function(reuniaoId, projId) {
   if (!confirm('Apagar esta reunião?')) return;
   try {
-    const key  = LS_KEY(projId);
-    const nova = (JSON.parse(localStorage.getItem(key) || '[]')).filter(r => r.id !== reuniaoId);
-    localStorage.setItem(key, JSON.stringify(nova));
+    await apagarReuniaoFirebase(projId, reuniaoId);
+    const nova = (await carregarReunioesFirebase(projId));
     const cont  = document.getElementById('reunioes-historico-lista');
     const bloco = document.getElementById('bloco-reunioes');
     if (cont) renderHistoricoReunioes(projId, cont);

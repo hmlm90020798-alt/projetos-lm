@@ -5,46 +5,23 @@
 // rules_version = '2';
 // service cloud.firestore {
 //   match /databases/{database}/documents {
-//
 //     match /projetos/{projetoId} {
-//       // Leitura publica — qualquer cliente pode ver a sua proposta via link
 //       allow read: if true;
-//
-//       // Escrita completa — so autenticado (painel HM)
-//       allow write: if request.auth != null;
-//
-//       // Aprovacao pelo cliente — sem autenticacao, mas com restricoes estritas:
-//       //   1. So pode tocar em 'aprovacao' e 'fase'
-//       //   2. A fase so pode passar de proposta/retificacao para 'aprovado'
-//       //      (impede forcagem de 'concluido' ou outra fase via REST)
-//       //   3. O campo aprovacao.origem tem de ser 'cliente'
-//       allow update: if
-//         request.resource.data.diff(resource.data).affectedKeys()
-//           .hasOnly(['aprovacao', 'fase'])
-//         && request.resource.data.fase == 'aprovado'
-//         && (resource.data.fase == 'proposta' || resource.data.fase == 'retificacao')
-//         && request.resource.data.aprovacao.origem == 'cliente';
+//       allow write: if request.auth != null
+//         || (request.resource.data.diff(resource.data).affectedKeys()
+//             .hasOnly(['aprovacao','fase']));
 //     }
-//
-//     // Mensagens — subcollection publica para escrita do cliente
-//     match /mensagens/{projId}/msgs/{msgId} {
-//       allow read: if true;
-//       // Cliente pode criar (origem: 'cliente') — nao pode escrever como 'hm'
-//       allow create: if request.resource.data.origem == 'cliente';
-//       // So autenticado pode marcar como lida ou responder
-//       allow update, delete: if request.auth != null;
+//     // Reunioes — escrita publica (janela apresentacao sem auth), leitura so autenticado
+//     match /reunioes/{projId}/lista/{reuniaoId} {
+//       allow read: if request.auth != null;
+//       allow create, update: if true;
+//       allow delete: if request.auth != null;
 //     }
 //
 //     match /visitas/{projetoId} {
 //       allow read, write: if true;
 //     }
-//
-//     // Config interna (Groq key, contactos, templates) — so autenticado
-//     match /config/{docId} {
-//       allow read, write: if request.auth != null;
-//     }
-//
-//     // Reclamacoes — so autenticado (dados internos)
+//     // Reclamações — só autenticado (dados internos)
 //     match /reclamacoes/{recId} {
 //       allow read, write: if request.auth != null;
 //     }
@@ -164,14 +141,7 @@ export async function carregarVisitas(ids) {
 // Substitui o polling de 2 em 2 minutos por um listener que reage
 // instantaneamente a qualquer alteração nos campos aprovacao e fase.
 // Retorna a função de cancelamento (chamar ao fazer logout).
-// Canceladores activos — garantem cleanup em re-auth e logout
-let _cancelarAprovacoes = null;
-let _cancelarMensagens  = null;
-
 export function iniciarListenerAprovacoes(onNova) {
-  // Cancelar listeners anteriores antes de criar novos
-  if (_cancelarAprovacoes) { _cancelarAprovacoes(); _cancelarAprovacoes = null; }
-
   const unsubscribes = [];
   for (const p of getState('projetos')) {
     const unsub = onSnapshot(doc(_db, 'projetos', p.id), snap => {
@@ -181,21 +151,40 @@ export function iniciarListenerAprovacoes(onNova) {
       p.aprovacao = d.aprovacao;
       p.fase      = d.fase;
       if (nova) onNova(p, d);
-    }, () => {});
+    }, () => {}); // ignora erros silenciosamente
     unsubscribes.push(unsub);
   }
-  _cancelarAprovacoes = () => unsubscribes.forEach(u => u());
-  return _cancelarAprovacoes;
+  // Retorna função que cancela todos os listeners de uma vez
+  return () => unsubscribes.forEach(u => u());
+}
+
+// ── Reuniões ──────────────────────────────────────
+// Subcoleção: reunioes/{projId}/lista/{reuniaoId}
+// Escrita pública (janela apresentação sem auth) — leitura só autenticado
+
+export async function guardarReuniaoFirebase(projId, reuniao) {
+  const ref = doc(_db, 'reunioes', projId, 'lista', String(reuniao.id));
+  await setDoc(ref, reuniao);
+}
+
+export async function carregarReunioesFirebase(projId) {
+  try {
+    const ref  = collection(_db, 'reunioes', projId, 'lista');
+    const q    = query(ref, orderBy('id', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ ...d.data() }));
+  } catch (_) { return []; }
+}
+
+export async function apagarReuniaoFirebase(projId, reuniaoId) {
+  try {
+    await deleteDoc(doc(_db, 'reunioes', projId, 'lista', String(reuniaoId)));
+  } catch (e) { console.error('Erro ao apagar reunião:', e); }
 }
 
 // ── Auth ──────────────────────────────────────────
 export const doLogin  = (e, p) => signInWithEmailAndPassword(_auth, e, p);
-export const doLogout = () => {
-  // Cancelar todos os listeners realtime antes de sair
-  if (_cancelarAprovacoes) { _cancelarAprovacoes(); _cancelarAprovacoes = null; }
-  if (_cancelarMensagens)  { _cancelarMensagens();  _cancelarMensagens  = null; }
-  return signOut(_auth);
-};
+export const doLogout = ()     => signOut(_auth);
 export const onAuth   = cb     => onAuthStateChanged(_auth, cb);
 
 // ── Contactos e Templates de Ocorrências ─────────
@@ -283,9 +272,9 @@ export async function marcarMensagensLidas(projId) {
 }
 
 export function iniciarListenerMensagens(projetos, onNovaMensagem) {
-  // Cancelar listeners anteriores antes de criar novos
-  if (_cancelarMensagens) { _cancelarMensagens(); _cancelarMensagens = null; }
-
+  // Listener realtime por projeto — reage instantaneamente a novas mensagens
+  // Usa onSnapshot — mesma abordagem das aprovações
+  // Retorna função de cancelamento
   const unsubscribes = projetos.map(p => {
     const ref = collection(_db, 'mensagens', p.id, 'msgs');
     const q   = query(ref, orderBy('ts', 'asc'));
@@ -296,6 +285,5 @@ export function iniciarListenerMensagens(projetos, onNovaMensagem) {
     }, () => {});
   });
 
-  _cancelarMensagens = () => unsubscribes.forEach(u => u());
-  return _cancelarMensagens;
+  return () => unsubscribes.forEach(u => u());
 }
