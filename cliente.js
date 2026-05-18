@@ -1039,7 +1039,7 @@ export function renderPaginaCliente(p) {
     'sec-header-orcamento': { num: '02', eyebrow: t.orcamento.eyebrow, titulo: t.orcamento.titulo, light: true  },
     'sec-header-notas':     { num: '03', eyebrow: t.notas.eyebrow, titulo: t.notas.titulo, desc: lang==='pt' ? 'Definimos claramente as responsabilidades de cada parte para que o projeto decorra sem surpresas. Toque em cada tema para saber mais.' : 'We clearly define the responsibilities of each party so the project runs without surprises. Tap each topic to learn more.', light: false },
     'sec-header-timeline':  { num: '04', eyebrow: t.timeline.eyebrow,  titulo: t.timeline.titulo, desc: lang==='pt' ? 'Cada fase é gerida com rigor e transparência, para que tudo aconteça como planeado.' : 'Every phase is managed with rigour and transparency, so everything happens as planned.', light: true  },
-    'sec-header-docs':      { num: '05', eyebrow: lang==='pt'?'Documentos':'Documents', titulo: lang==='pt'?'Plantas & Documentos':'Plans & Documents', light: false },
+    // sec-header-docs injectado condicionalmente no bloco wrap-docs abaixo
   };
   Object.entries(secTitulos).forEach(([id, s]) => {
     const el = document.getElementById(id);
@@ -1092,11 +1092,45 @@ export function renderPaginaCliente(p) {
   _renderDocsPorSeccao(docs, lang);
   _renderNotasPorSeccao(p.notas || [], lang);
 
-  // ── wrap-docs: ocultar se não há documentos válidos
+  // ── wrap-docs: só mostrar se houver docs sem secção definida
+  // Docs com secção (galeria/orcamento/notas) são distribuídos por _renderDocsPorSeccao
+  // e nunca chegam ao sec-docs — o wrap-docs só faz sentido se houver docs "soltos"
   const wrapDocs = document.getElementById('wrap-docs');
   if (wrapDocs) {
-    const docsValidos = (p.docs || []).filter(d => d.url && d.nome);
-    wrapDocs.style.display = docsValidos.length ? '' : 'none';
+    const docsSoltos = (p.docs || []).filter(d => d.url && d.nome && !['galeria','orcamento','notas'].includes(d.seccao));
+    const mostrarWrapDocs = docsSoltos.length > 0;
+    wrapDocs.style.display = mostrarWrapDocs ? '' : 'none';
+    // Só injectar título e conteúdo no sec-docs se o wrap for visível
+    if (mostrarWrapDocs) {
+      const headerDocs = document.getElementById('sec-header-docs');
+      if (headerDocs) {
+        const eyebrow = lang === 'en' ? 'Documents' : 'Documentos';
+        const titulo  = lang === 'en' ? 'Plans & Documents' : 'Plantas & Documentos';
+        headerDocs.innerHTML = `
+          <span class="sec-num">05</span>
+          <div>
+            <div class="sec-eyebrow">${eyebrow}</div>
+            <h2 class="sec-titulo">${titulo}</h2>
+          </div>`;
+      }
+      const secDocs = document.getElementById('sec-docs');
+      if (secDocs) {
+        const hint = lang === 'en' ? '↗ Open document' : '↗ Abrir documento';
+        secDocs.innerHTML = docsSoltos.map(d => `
+          <a href="${safeUrl(d.url)}" target="_blank" rel="noopener noreferrer" class="doc-card">
+            <div class="doc-card-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+              </svg>
+            </div>
+            <div class="doc-card-info">
+              <div class="doc-card-nome">${esc(d.nome)}</div>
+              <div class="doc-card-hint">${hint}</div>
+            </div>
+          </a>`).join('');
+      }
+    }
   }
 
   // ── Ocultar secções de suporte no modo apresentação
