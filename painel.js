@@ -908,6 +908,7 @@ let _acompProjId = null;
 
 export function abrirDrawerAcompanhamento(id) {
   _acompProjId = id;
+  window._acompProjId = id; // expor para os onclick do HTML
   setState({ editId: id }); // necessário para renderMensagensModal usar getEditId()
   const p = getProjects().find(x => x.id === id);
   if (!p) return;
