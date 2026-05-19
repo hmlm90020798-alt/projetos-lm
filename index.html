@@ -463,14 +463,9 @@
 
       <!-- Tarefas do projecto -->
       <div class="form-bloco" id="bloco-tarefas">
-        <div class="form-bloco-header" onclick="this.closest('.form-bloco').classList.toggle('collapsed')">
-          <span class="form-bloco-titulo">✓ Tarefas</span>
-          <span class="form-bloco-chevron">▾</span>
-        </div>
-        <div class="form-bloco-body">
-          <div id="f-tarefas-lista"></div>
-          <button type="button" class="btn-add" onclick="window.addTarefaForm()">+ Nova tarefa</button>
-        </div>
+        <div class="form-bloco-titulo accordion-titulo" onclick="this.closest('.form-bloco').classList.toggle('collapsed')"><span>✓ Tarefas</span><span class="accordion-arrow">&#9662;</span></div>
+        <div id="f-tarefas-lista"></div>
+        <button type="button" class="btn-add" onclick="window.addTarefaForm()">+ Nova tarefa</button>
       </div>
 
       <!-- Interacções e Ocorrências — geridas no drawer de Acompanhamento -->
