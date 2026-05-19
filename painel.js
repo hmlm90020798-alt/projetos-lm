@@ -237,8 +237,10 @@ export async function guardarProjeto() {
   const tarefas = Array.from(document.querySelectorAll('#f-tarefas-lista .tarefa-form-item'))
     .map(el => ({
       id:          el.dataset.id || ('t-' + Date.now()),
-      texto:       el.querySelector('.tarefa-form-texto')?.value?.trim() || '',
-      prazo:       el.querySelector('.tarefa-form-prazo')?.value || null,
+      texto:       el.querySelector('.tarefa-form-texto')?.value?.trim()   || '',
+      tipo:        el.querySelector('.tarefa-form-tipo')?.value             || 'geral',
+      urgencia:    el.querySelector('.tarefa-form-urgencia')?.value         || 'normal',
+      prazo:       el.querySelector('.tarefa-form-prazo')?.value            || null,
       concluida:   el.dataset.concluida === '1',
       dataCriacao: el.dataset.dataCriacao || new Date().toISOString(),
     }))

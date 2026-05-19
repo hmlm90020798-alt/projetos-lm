@@ -804,10 +804,31 @@
   <div class="acomp-tab-content" id="acomp-tab-tarefas" style="display:none">
     <div id="acomp-tarefas-lista"></div>
     <div class="acomp-tarefa-form">
-      <input type="text" id="acomp-tarefa-texto" class="f-input" placeholder="Nova tarefa…" style="flex:1"
-        onkeydown="if(event.key==='Enter')window._adicionarTarefaDrawer(window._acompProjId)">
-      <input type="date" id="acomp-tarefa-prazo" class="f-input" style="width:130px" title="Prazo">
-      <button class="btn-add" onclick="window._adicionarTarefaDrawer(window._acompProjId)">+ Adicionar</button>
+      <input type="text" id="acomp-tarefa-texto" class="f-input" placeholder="Descrição da tarefa…"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey)window._adicionarTarefaDrawer(window._acompProjId)"
+        style="flex:1;min-width:0">
+      <div class="acomp-tarefa-form-row2">
+        <select id="acomp-tarefa-tipo" class="f-select" style="flex:1">
+          <option value="geral">📌 Geral</option>
+          <option value="entrega">🚚 Entrega</option>
+          <option value="material">⚠️ Material danificado</option>
+          <option value="instalacao">🔧 Instalação</option>
+          <option value="cliente">👤 Cliente</option>
+        </select>
+        <select id="acomp-tarefa-urgencia" class="f-select" style="width:130px">
+          <option value="normal">🟡 Normal</option>
+          <option value="urgente">🔴 Urgente</option>
+          <option value="baixa">🟢 Baixa</option>
+        </select>
+        <input type="date" id="acomp-tarefa-prazo" class="f-input" style="width:130px" title="Prazo">
+      </div>
+      <div class="acomp-tarefa-form-row3">
+        <label class="acomp-notificar-label">
+          <input type="checkbox" id="acomp-tarefa-notificar">
+          <span>Notificar equipa por email</span>
+        </label>
+        <button class="btn-add" onclick="window._adicionarTarefaDrawer(window._acompProjId)">+ Adicionar</button>
+      </div>
     </div>
   </div>
 </div>

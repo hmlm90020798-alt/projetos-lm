@@ -2925,3 +2925,34 @@ img   { display: block; max-width: 100%; }
 }
 .tarefa-form-check { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; accent-color: var(--green); }
 .tarefa-form-texto { flex: 1; }
+
+/* ── Tarefas — tipo e urgência ── */
+.tarefa-tipo-badge {
+  font-family: var(--mono); font-size: 10px;
+  padding: 1px 7px; border-radius: 99px;
+  background: var(--border); color: var(--ink3);
+  font-weight: 600; letter-spacing: .02em;
+}
+.tarefa-tipo-entrega    { background: rgba(44,94,26,.1);   color: var(--green); }
+.tarefa-tipo-material   { background: rgba(184,48,48,.08); color: var(--red); }
+.tarefa-tipo-instalacao { background: rgba(61,93,130,.1);  color: #3d5d82; }
+.tarefa-tipo-cliente    { background: var(--mocha-pale);   color: var(--mocha-dark); }
+.tarefa-tipo-geral      { background: var(--border);       color: var(--ink3); }
+
+.tarefa-urg-badge { font-size: 11px; }
+.tarefa-urg-badge-urgente { font-weight: 800; }
+
+/* Borda esquerda por urgência */
+.tarefa-card.tarefa-urg-urgente { border-left: 3px solid var(--red); }
+.tarefa-card.tarefa-urg-normal  { border-left: 3px solid var(--amber); }
+.tarefa-card.tarefa-urg-baixa   { border-left: 3px solid var(--green-light); }
+
+/* Drawer — form em duas linhas */
+.acomp-tarefa-form       { flex-direction: column; gap: 8px; }
+.acomp-tarefa-form-row2  { display: flex; gap: 6px; flex-wrap: wrap; }
+.acomp-tarefa-form-row3  { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.acomp-notificar-label   { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--ink3); cursor: pointer; }
+.acomp-notificar-label input { accent-color: var(--green); width: 14px; height: 14px; }
+
+/* Meta no drawer */
+.tarefa-drawer-meta { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; align-items: center; }
