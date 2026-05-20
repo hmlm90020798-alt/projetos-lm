@@ -2978,14 +2978,122 @@ img   { display: block; max-width: 100%; }
 .tarefa-notificar-drawer:hover { background: #dcefd0; }
 
 /* ── Modal de Notificação de Tarefa ── */
+
+/* Overlay */
+.notif-overlay {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(26,24,20,.55);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+
+/* Caixa do modal */
+.notif-modal {
+  width: 100%; max-width: 540px;
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+
+/* Header */
+.notif-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.notif-header-left { display: flex; align-items: center; gap: 12px; }
+.notif-icone { font-size: 22px; line-height: 1; }
+.notif-titulo {
+  font-family: var(--serif); font-size: 18px;
+  color: var(--ink); line-height: 1.2;
+}
+.notif-subtitulo {
+  font-family: var(--mono); font-size: 10px;
+  color: var(--ink4); letter-spacing: .06em;
+  text-transform: uppercase; margin-top: 2px;
+}
+.notif-fechar {
+  width: 32px; height: 32px; border-radius: 8px;
+  border: 1px solid var(--border); background: none;
+  color: var(--ink4); font-size: 18px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s;
+}
+.notif-fechar:hover { background: var(--cli-bg-soft); color: var(--ink); }
+
+/* Contexto */
 .notif-contexto {
+  margin: 0 24px; padding: 12px 16px;
   background: var(--cli-bg-soft);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px 14px;
+  border-radius: 10px;
+  margin-top: 16px;
 }
 .notif-ctx-proj {
-  font-family: var(--serif); font-size: 16px;
-  color: var(--ink); margin-bottom: 6px;
+  font-family: var(--serif); font-size: 15px;
+  color: var(--ink); margin-bottom: 6px; font-weight: 400;
 }
-.notif-ctx-meta { display: flex; gap: 6px; flex-wrap: wrap; }
+.notif-ctx-meta { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+
+/* Corpo */
+.notif-corpo {
+  padding: 16px 24px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.notif-field { display: flex; flex-direction: column; gap: 5px; }
+.notif-label {
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  color: var(--ink3); text-transform: uppercase; letter-spacing: .08em;
+}
+.notif-label-hint {
+  font-family: var(--sans); font-weight: 400;
+  text-transform: none; letter-spacing: 0;
+  color: var(--ink4); font-size: 10px;
+}
+.notif-input {
+  padding: 9px 12px;
+  border: 1.5px solid var(--border-mid);
+  border-radius: 8px; font-family: var(--sans);
+  font-size: 13px; color: var(--ink);
+  background: var(--white); outline: none;
+  transition: border-color .15s;
+}
+.notif-input:focus { border-color: var(--green); }
+.notif-textarea {
+  padding: 10px 12px;
+  border: 1.5px solid var(--border-mid);
+  border-radius: 8px; font-family: var(--sans);
+  font-size: 13px; color: var(--ink); line-height: 1.65;
+  background: var(--white); outline: none;
+  resize: vertical; min-height: 140px;
+  transition: border-color .15s;
+}
+.notif-textarea:focus { border-color: var(--green); }
+
+/* Footer */
+.notif-footer {
+  display: flex; gap: 10px; justify-content: flex-end;
+  padding: 14px 24px 20px;
+  border-top: 1px solid var(--border);
+}
+.notif-btn-cancel {
+  padding: 9px 20px; border-radius: 9px;
+  border: 1.5px solid var(--border-mid);
+  background: none; color: var(--ink3);
+  font-family: var(--sans); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: background .15s;
+}
+.notif-btn-cancel:hover { background: var(--cli-bg-soft); color: var(--ink); }
+.notif-btn-enviar {
+  padding: 9px 22px; border-radius: 9px;
+  border: none;
+  background: var(--green); color: #fff;
+  font-family: var(--sans); font-size: 13px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; gap: 7px;
+  transition: background .15s; box-shadow: 0 2px 8px rgba(44,94,26,.25);
+}
+.notif-btn-enviar:hover { background: var(--green-mid); }
+.notif-btn-enviar:disabled { opacity: .6; cursor: not-allowed; }

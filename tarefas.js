@@ -377,7 +377,7 @@ window._notificarTarefa = function(projId, tarefaId) {
   const paraEl = document.getElementById('notif-para');
   const assEl  = document.getElementById('notif-assunto');
   const msgEl  = document.getElementById('notif-mensagem');
-  if (paraEl) paraEl.value = destinatarios;
+  if (paraEl) paraEl.textContent = destinatarios;
   if (assEl)  assEl.value  = assunto;
   if (msgEl)  msgEl.value  = mensagem;
 
