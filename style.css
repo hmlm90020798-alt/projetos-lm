@@ -3243,3 +3243,29 @@ img   { display: block; max-width: 100%; }
 .elem-cat-grupo select,
 .orc-cat-grupo  input,
 .orc-cat-grupo  select { border-radius: 7px !important; }
+
+/* ── Override definitivo — eliminar fundos brancos em foco ── */
+.modal-box input:focus,
+.modal-box select:focus,
+.modal-box textarea:focus,
+.acomp-drawer input:focus,
+.acomp-drawer select:focus,
+.acomp-drawer textarea:focus {
+  background: var(--bg3) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(103,171,47,.3) !important;
+}
+
+/* Garantir que NENHUM input no modal tem fundo claro */
+.modal-box input,
+.modal-box select,
+.modal-box textarea {
+  background: var(--bg3) !important;
+  color: var(--ink) !important;
+  border-color: var(--border-mid) !important;
+}
+.modal-box input:focus,
+.modal-box select:focus,
+.modal-box textarea:focus {
+  border-color: var(--green-light) !important;
+}
