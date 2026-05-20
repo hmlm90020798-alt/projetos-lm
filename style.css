@@ -3269,3 +3269,17 @@ img   { display: block; max-width: 100%; }
 .modal-box textarea:focus {
   border-color: var(--green-light) !important;
 }
+
+/* ── Override autofill do browser (Chrome/Edge) ── */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px var(--bg3) inset !important;
+  -webkit-text-fill-color: var(--ink) !important;
+  caret-color: var(--ink);
+  border-color: var(--border-mid) !important;
+  border-radius: 7px !important;
+}
