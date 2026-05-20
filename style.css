@@ -654,7 +654,7 @@ img   { display: block; max-width: 100%; }
 .acomp-drawer .int-data  { color: var(--ink4); }
 
 /* Ocorrências no drawer */
-.acomp-drawer .ocorr-item    { background: #fff; border-color: rgba(186,117,23,.25); }
+.acomp-drawer .ocorr-item    { background: var(--bg3); border-color: rgba(186,117,23,.25); }
 .acomp-drawer .ocorr-desc    { color: var(--ink3); }
 .acomp-drawer .ocorr-act-nota { color: var(--ink3); }
 .acomp-drawer .ocorr-act-data { color: var(--ink4); }
@@ -663,12 +663,12 @@ img   { display: block; max-width: 100%; }
 
 /* Mensagens no drawer */
 .acomp-drawer .modal-msgs-wrap    { background: var(--cli-bg-soft); border-radius: 10px; padding: 16px; }
-.acomp-drawer .modal-msg-item     { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+.acomp-drawer .modal-msg-item     { background: var(--bg3); border: 1px solid var(--border-mid); border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
 .acomp-drawer .modal-msg-origem   { color: var(--ink3); font-size: 11px; margin-bottom: 4px; }
 .acomp-drawer .modal-msg-texto    { color: var(--ink); font-size: 13px; line-height: 1.6; }
 .acomp-drawer .modal-msg-hm       { border-left: 3px solid var(--green); }
 .acomp-drawer .modal-msg-cliente  { border-left: 3px solid var(--champ); }
-.acomp-drawer .modal-msg-textarea { background: #fff; color: var(--ink); border-color: var(--border-mid); margin-top: 12px; width: 100%; border-radius: 7px; padding: 10px 12px; font-family: var(--sans); font-size: 13px; border: 1.5px solid var(--border-mid); outline: none; resize: vertical; }
+.acomp-drawer .modal-msg-textarea { background: var(--bg3); color: var(--ink); border-color: var(--border-mid); margin-top: 12px; width: 100%; border-radius: 7px; padding: 10px 12px; font-family: var(--sans); font-size: 13px; border: 1.5px solid var(--border-mid); outline: none; resize: vertical; }
 .acomp-drawer .modal-msg-textarea:focus { border-color: var(--green); }
 .acomp-drawer .modal-msg-footer   { background: transparent; display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 8px; }
 .empty-icon         { font-size: 48px; margin-bottom: 16px; }
@@ -693,8 +693,8 @@ img   { display: block; max-width: 100%; }
 .form-campo         { display: flex; flex-direction: column; gap: 5px; }
 .form-label         { font-family: var(--sans); font-size: 10px; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: .7px; }
 .label-hint         { font-size: 9px; font-weight: 400; color: var(--ink4); letter-spacing: 0; }
-.f-input, .f-select, .f-textarea { padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 7px; font-family: var(--sans); font-size: 13px; color: var(--ink); background: var(--parchment); outline: none; transition: border-color .15s; }
-.f-input:focus, .f-select:focus, .f-textarea:focus { border-color: var(--green); background: #fff; }
+.f-input, .f-select, .f-textarea { padding: 10px 12px; border: 1.5px solid var(--border-mid); border-radius: 7px; font-family: var(--sans); font-size: 13px; color: var(--ink); background: var(--bg3); outline: none; transition: border-color .15s; }
+.f-input:focus, .f-select:focus, .f-textarea:focus { border-color: var(--green-light); background: var(--bg3); }
 .f-textarea         { resize: vertical; min-height: 90px; }
 .prazo-wrap         { display: flex; gap: 8px; align-items: center; }
 .prazo-wrap .f-input { flex: 1; }
@@ -706,7 +706,7 @@ img   { display: block; max-width: 100%; }
 .elem-line-nome:focus { border-color: var(--green-light); background: var(--bg3); }
 .elem-line-url      { padding: 9px 11px; border: 1.5px solid var(--border-mid); border-radius: 7px; font-family: var(--mono); font-size: 11px; color: var(--ink3); background: var(--bg3); outline: none; }
 .elem-line-url:focus { border-color: var(--green-light); background: var(--bg3); }
-.elem-cat-grupo     { background: var(--parchment); border: 1px solid var(--border); border-radius: 9px; padding: 12px; margin-bottom: 10px; }
+.elem-cat-grupo     { background: var(--bg3); border: 1px solid var(--border-mid); border-radius: 9px; padding: 12px; margin-bottom: 10px; }
 
 /* Linhas de orçamento (nome + preço) */
 .prod-line          { display: grid; grid-template-columns: 1fr auto auto; gap: 7px; align-items: center; margin-bottom: 7px; }
@@ -718,7 +718,7 @@ img   { display: block; max-width: 100%; }
 .prod-line-del:hover { color: var(--red); background: var(--red-pale); }
 .btn-add            { width: 100%; padding: 8px; border: 1.5px dashed var(--border-mid); border-radius: 7px; background: transparent; color: var(--ink3); font-family: var(--sans); font-size: 11px; font-weight: 600; cursor: pointer; margin-top: 4px; transition: all .15s; letter-spacing: .04em; }
 .btn-add:hover      { border-color: var(--green-light); color: var(--green-light); background: rgba(103,171,47,.08); }
-.orc-cat-grupo      { background: var(--parchment); border: 1px solid var(--border); border-radius: 9px; padding: 12px; margin-bottom: 10px; }
+.orc-cat-grupo      { background: var(--bg3); border: 1px solid var(--border-mid); border-radius: 9px; padding: 12px; margin-bottom: 10px; }
 .cat-header         { display: flex; align-items: center; gap: 8px; margin-bottom: 0; }
 .cat-nome           { flex: 1; }
 .modal-total        { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 16px; padding-top: 14px; border-top: 1.5px solid var(--border); }
@@ -3230,3 +3230,16 @@ img   { display: block; max-width: 100%; }
 
 /* Toast */
 .toast-container .toast { background: var(--surface2); border-color: var(--border-mid); color: var(--ink); }
+
+/* ── Corrigir cantos retos dentro de grupos ── */
+.elem-cat-grupo .elem-line:first-child input,
+.elem-cat-grupo .elem-line:first-child select,
+.orc-cat-grupo  .elem-line:first-child input,
+.orc-cat-grupo  .elem-line:first-child select { border-radius: 7px; }
+.elem-cat-grupo,
+.orc-cat-grupo  { overflow: hidden; }
+/* Garantir que todos os inputs dentro de grupos têm cantos arredondados */
+.elem-cat-grupo input,
+.elem-cat-grupo select,
+.orc-cat-grupo  input,
+.orc-cat-grupo  select { border-radius: 7px !important; }
