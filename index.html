@@ -89,22 +89,23 @@
     <!-- Separadores principais -->
     <div class="tabs-nav">
       <button class="tab-btn active" onclick="window.setTab(this,'projetos')">
-        📁 Projetos
+        <span class="tab-icon">📁</span><span class="tab-label">Projetos</span>
         <span class="tab-badge" id="tab-badge-projetos"></span>
       </button>
       <button class="tab-btn" onclick="window.setTab(this,'alertas')">
-        📅 Alertas &amp; Agenda
+        <span class="tab-icon">📅</span><span class="tab-label">Alertas &amp; Agenda</span>
         <span class="tab-badge tab-badge-warn" id="tab-badge-alertas"></span>
       </button>
+      <button class="tab-btn" onclick="window.setTab(this,'tarefas')">
+        <span class="tab-icon">✓</span><span class="tab-label">Tarefas</span>
+        <span class="tab-badge tab-badge-danger" id="tab-badge-tarefas" style="display:none"></span>
+      </button>
       <button class="tab-btn" onclick="window.setTab(this,'ocorrencias')">
-        ⚠️ Ocorrências
+        <span class="tab-icon">⚠️</span><span class="tab-label">Ocorrências</span>
         <span class="tab-badge tab-badge-danger" id="tab-badge-ocorr"></span>
       </button>
       <button class="tab-btn" onclick="window.setTab(this,'arquivo');window.renderArquivo()">
-        📦 Arquivo
-      </button>
-      <button class="tab-btn" onclick="window.setTab(this,'tarefas')">
-        ✓ Tarefas<span class="tab-badge tab-badge-danger" id="tab-badge-tarefas" style="display:none"></span>
+        <span class="tab-icon">📦</span><span class="tab-label">Arquivo</span>
       </button>
     </div>
 
