@@ -326,11 +326,9 @@ function popularTiposSelect() {
       await carregarGroqKey();
       window._LANG = 'pt';
       inicializarPainel();
-      renderPainel();
       setView('painel');
+      renderPainel();
       iniciarPollingAprovacoes();
-      // Re-renderizar após DOM estar pronto para garantir banner de tarefas
-      setTimeout(() => renderPainel(), 800);
       if (o) o.remove();
     } else {
       if (o) o.remove();
