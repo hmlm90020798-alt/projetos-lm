@@ -219,6 +219,7 @@ function _tarefaCardHtml(t) {
     + '<span class="tarefa-tipo-badge tarefa-tipo-' + (t.tipo || 'geral') + '">' + tipoInfo.label + '</span>'
     + '<span class="tarefa-urg-badge tarefa-urg-badge-' + urgInfo.value + '">' + urgInfo.label + '</span>'
     + (prazoFmt ? '<span class="tarefa-prazo' + (atrasada ? ' tarefa-prazo-atrasada' : '') + '">' + prazoFmt + '</span>' : '')
+    + '<div class="tarefa-acoes"><button class="tarefa-notificar" onclick="window._notificarTarefa(\'' + t.projId + '\',\'' + t.id + '\')" title="Notificar equipa por email">📧 Notificar</button></div>'
     + '</div></div>'
     + '<button class="tarefa-del" onclick="window._apagarTarefa(\'' + t.projId + '\',\'' + t.id + '\')" title="Apagar">×</button>'
     + '</div>';
@@ -261,6 +262,7 @@ export function renderTarefasDrawer(projId) {
       + '<span class="tarefa-urg-badge tarefa-urg-badge-' + urgInfo.value + '">' + urgInfo.label + '</span>'
       + (prazoFmt ? '<span class="tarefa-drawer-prazo' + (atrasada ? ' atrasada' : '') + '">' + (atrasada ? '⚠️ ' : '') + prazoFmt + '</span>' : '')
       + '</div></div>'
+      + (!isConcluida ? '<button class="tarefa-notificar-drawer" onclick="window._notificarTarefa(\'' + projId + '\',\'' + t.id + '\')" title="Notificar equipa">📧</button>' : '')
       + '<button class="tarefa-del-drawer" onclick="window._apagarTarefa(\'' + projId + '\',\'' + t.id + '\')" title="Apagar">×</button>'
       + '</div>';
   };
@@ -328,6 +330,14 @@ export function _actualizarBadgeTarefas() {
 }
 
 // ── Handlers globais ──────────────────────────────
+
+window._notificarTarefa = async function(projId, tarefaId) {
+  const p = getProjects().find(x => x.id === projId);
+  if (!p) return;
+  const t = (p.tarefas || []).find(x => x.id === tarefaId);
+  if (!t) return;
+  await _enviarNotificacao(t, p);
+};
 
 window._concluirTarefa = async function(projId, tarefaId) {
   await concluirTarefa(projId, tarefaId);

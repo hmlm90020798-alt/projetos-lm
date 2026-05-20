@@ -2956,3 +2956,23 @@ img   { display: block; max-width: 100%; }
 
 /* Meta no drawer */
 .tarefa-drawer-meta { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; align-items: center; }
+
+/* ── Botão Notificar nas tarefas ── */
+.tarefa-acoes { margin-top: 8px; }
+.tarefa-notificar {
+  padding: 5px 12px; border-radius: 7px;
+  border: 1.5px solid var(--green-mid);
+  background: var(--green-pale); color: var(--green);
+  font-size: 11px; font-weight: 700; cursor: pointer;
+  font-family: var(--sans); transition: background .15s;
+}
+.tarefa-notificar:hover { background: #dcefd0; }
+
+.tarefa-notificar-drawer {
+  padding: 4px 8px; border-radius: 6px;
+  border: 1px solid var(--green-mid);
+  background: var(--green-pale); color: var(--green);
+  font-size: 13px; cursor: pointer; flex-shrink: 0;
+  transition: background .15s; line-height: 1;
+}
+.tarefa-notificar-drawer:hover { background: #dcefd0; }
