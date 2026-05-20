@@ -3,7 +3,7 @@
 // Cache dos assets estáticos para instalação PWA
 // ════════════════════════════════════════════════
 
-const CACHE = 'projetos-lm-v6'; // incrementar a cada deploy significativo
+const CACHE = 'projetos-lm-v7'; // incrementar a cada deploy significativo
 
 // Assets estáticos — cache-first (imagens, fontes, html)
 const ASSETS_STATIC = [

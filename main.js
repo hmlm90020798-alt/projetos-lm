@@ -330,7 +330,7 @@ function popularTiposSelect() {
       setView('painel');
       iniciarPollingAprovacoes();
       // Re-renderizar após DOM estar pronto para garantir banner de tarefas
-      setTimeout(() => renderPainel(), 300);
+      setTimeout(() => renderPainel(), 800);
       if (o) o.remove();
     } else {
       if (o) o.remove();
