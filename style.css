@@ -2976,3 +2976,16 @@ img   { display: block; max-width: 100%; }
   transition: background .15s; line-height: 1;
 }
 .tarefa-notificar-drawer:hover { background: #dcefd0; }
+
+/* ── Modal de Notificação de Tarefa ── */
+.notif-contexto {
+  background: var(--cli-bg-soft);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+.notif-ctx-proj {
+  font-family: var(--serif); font-size: 16px;
+  color: var(--ink); margin-bottom: 6px;
+}
+.notif-ctx-meta { display: flex; gap: 6px; flex-wrap: wrap; }

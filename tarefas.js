@@ -331,12 +331,113 @@ export function _actualizarBadgeTarefas() {
 
 // ── Handlers globais ──────────────────────────────
 
-window._notificarTarefa = async function(projId, tarefaId) {
+window._notificarTarefa = function(projId, tarefaId) {
   const p = getProjects().find(x => x.id === projId);
   if (!p) return;
   const t = (p.tarefas || []).find(x => x.id === tarefaId);
   if (!t) return;
-  await _enviarNotificacao(t, p);
+
+  const tipoInfo = _tipoInfo(t.tipo);
+  const urgInfo  = _urgenciaInfo(t.urgencia);
+  const prazoFmt = t.prazo
+    ? new Date(t.prazo + 'T12:00:00').toLocaleDateString('pt-PT') : 'Sem prazo';
+
+  // Destinatários conforme tipo
+  const destinatarios = tipoInfo.template === TEMPLATE_ALL
+    ? 'Hélder Melo + Serviços Leroy Merlin Viseu'
+    : 'Hélder Melo';
+
+  // Assunto pré-preenchido
+  const assunto = tipoInfo.label + ' — ' + (p.nome || '—') + (p.refPc ? ' · PC ' + p.refPc : '');
+
+  // Mensagem pré-preenchida
+  const linhas = [
+    'Assunto: ' + tipoInfo.label + ' (' + urgInfo.label + ')',
+    'Projecto: ' + (p.nome || '—'),
+    p.refPc      ? 'Ref. PC: '      + p.refPc      : '',
+    p.localidade ? 'Localidade: '   + p.localidade  : '',
+    'Prazo: ' + prazoFmt,
+    '',
+    'Situação:',
+    t.texto,
+    '',
+    'Por favor, confirma recepção e indica como pretendes proceder.',
+  ].filter((l, i) => l !== '' || i > 3);
+  const mensagem = linhas.join('\n');
+
+  // Contexto (só leitura)
+  const ctxEl = document.getElementById('notif-contexto');
+  if (ctxEl) ctxEl.innerHTML = '<div class="notif-ctx-proj">' + esc(p.nome || '—') + '</div>'
+    + '<div class="notif-ctx-meta">'
+    + '<span class="tarefa-tipo-badge tarefa-tipo-' + (t.tipo||'geral') + '">' + tipoInfo.label + '</span>'
+    + '<span class="tarefa-urg-badge tarefa-urg-badge-' + urgInfo.value + '">' + urgInfo.label + '</span>'
+    + '</div>';
+
+  // Preencher campos
+  const paraEl = document.getElementById('notif-para');
+  const assEl  = document.getElementById('notif-assunto');
+  const msgEl  = document.getElementById('notif-mensagem');
+  if (paraEl) paraEl.value = destinatarios;
+  if (assEl)  assEl.value  = assunto;
+  if (msgEl)  msgEl.value  = mensagem;
+
+  // Guardar contexto para envio
+  const modal = document.getElementById('modal-notif-tarefa');
+  if (modal) {
+    modal._projId   = projId;
+    modal._tarefaId = tarefaId;
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => msgEl?.focus(), 100);
+  }
+};
+
+window._fecharModalNotif = function() {
+  const modal = document.getElementById('modal-notif-tarefa');
+  if (modal) { modal.style.display = 'none'; }
+  document.body.style.overflow = '';
+};
+
+window._enviarNotifModal = async function() {
+  const modal  = document.getElementById('modal-notif-tarefa');
+  const assunto= document.getElementById('notif-assunto')?.value?.trim();
+  const mensagem=document.getElementById('notif-mensagem')?.value?.trim();
+  const btn    = document.getElementById('notif-btn-enviar');
+
+  if (!assunto || !mensagem) {
+    mostrarToast('⚠️ Preenche o assunto e a mensagem', ''); return;
+  }
+
+  const projId   = modal?._projId;
+  const tarefaId = modal?._tarefaId;
+  const p = getProjects().find(x => x.id === projId);
+  const t = p ? (p.tarefas || []).find(x => x.id === tarefaId) : null;
+  if (!p || !t) return;
+
+  if (btn) { btn.disabled = true; btn.textContent = 'A enviar…'; }
+
+  try {
+    const tipoInfo = _tipoInfo(t.tipo);
+    await emailjs.send(EMAILJS_SERVICE, tipoInfo.template, {
+      tarefa_tipo:     tipoInfo.label,
+      tarefa_urgencia: _urgenciaInfo(t.urgencia).label,
+      tarefa_assunto:  assunto,
+      tarefa_mensagem: mensagem,
+      proj_nome:       p.nome       || '—',
+      proj_refPc:      p.refPc      || '—',
+      proj_refOs:      p.refOs      || '—',
+      proj_localidade: p.localidade || '—',
+      proj_link:       p.id ? 'https://hmlm90020798-alt.github.io/projetos-lm/?p=' + p.id : '—',
+      data_hora:       new Date().toLocaleString('pt-PT'),
+    });
+    mostrarToast('📧 Email enviado', tipoInfo.label + ' — ' + (p.nome || '—'));
+    window._fecharModalNotif();
+  } catch (e) {
+    console.error('EmailJS notif:', e);
+    mostrarToast('✗ Erro ao enviar', '');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📧 Enviar'; }
+  }
 };
 
 window._concluirTarefa = async function(projId, tarefaId) {

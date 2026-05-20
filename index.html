@@ -833,6 +833,48 @@
   </div>
 </div>
 
+<!-- Modal de notificação de tarefa -->
+<div class="overlay-modal" id="modal-notif-tarefa" style="display:none">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-header">
+      <div class="modal-titulo">📧 Notificar Equipa</div>
+      <button class="modal-close" onclick="window._fecharModalNotif()">×</button>
+    </div>
+    <div class="modal-body" style="padding:20px 24px;display:flex;flex-direction:column;gap:14px">
+
+      <!-- Projecto e tarefa (só leitura) -->
+      <div class="notif-contexto" id="notif-contexto"></div>
+
+      <!-- Para (destinatários) -->
+      <div class="f-group">
+        <label class="f-label">Para</label>
+        <input type="text" id="notif-para" class="f-input" readonly
+          style="background:var(--cli-bg-soft);color:var(--ink3);cursor:default">
+      </div>
+
+      <!-- Assunto -->
+      <div class="f-group">
+        <label class="f-label">Assunto</label>
+        <input type="text" id="notif-assunto" class="f-input" placeholder="Assunto do email…">
+      </div>
+
+      <!-- Mensagem -->
+      <div class="f-group">
+        <label class="f-label">Mensagem</label>
+        <textarea id="notif-mensagem" class="f-input" rows="6"
+          placeholder="Descreve a situação com o detalhe necessário para os teus colegas agirem…"
+          style="resize:vertical;min-height:120px;font-family:var(--sans);line-height:1.6"></textarea>
+      </div>
+
+      <!-- Acções -->
+      <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:4px">
+        <button class="btn-sec" onclick="window._fecharModalNotif()">Cancelar</button>
+        <button class="btn-prim" id="notif-btn-enviar" onclick="window._enviarNotifModal()">📧 Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script type="module" src="main.js"></script>
   <style>
     /* Cards de documentos clicáveis */
