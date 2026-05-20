@@ -6,7 +6,7 @@
 
 import { getState, setState, getProjects } from './state.js';
 import { calcTotal } from './utils.js';
-import { tarefasPendentes, tarefasEmAtraso, _actualizarBadgeTarefas } from './tarefas.js';
+import { tarefasDoProj, tarefasPendentes, tarefasEmAtraso, totalTarefasEmAtraso, _actualizarBadgeTarefas } from './tarefas.js';
 import { mostrarToast, fmt, formatarData }  from './ui.js';
 import { carregarVisitas }                  from './firebase.js';
 
@@ -226,6 +226,24 @@ export function renderPainel() {
 
   const grid = document.getElementById('proj-grid');
   if (!grid) return;
+
+  // ── Banner de tarefas urgentes/em atraso ──
+  const _banner = document.getElementById('tarefas-banner');
+  if (_banner) {
+    const nAtraso  = totalTarefasEmAtraso();
+    const nUrgente = getProjects().reduce((acc, p) =>
+      acc + tarefasDoProj(p).filter(t => !t.concluida && t.urgencia === 'urgente').length, 0);
+    if (nAtraso > 0 || nUrgente > 0) {
+      const partes = [];
+      if (nAtraso  > 0) partes.push('⏰ ' + nAtraso  + ' tarefa' + (nAtraso  > 1 ? 's' : '') + ' em atraso');
+      if (nUrgente > 0) partes.push('🔴 ' + nUrgente + ' urgente' + (nUrgente > 1 ? 's' : ''));
+      _banner.innerHTML = '<span class="tarefas-banner-texto">' + partes.join(' · ') + '</span>'
+        + '<button class="tarefas-banner-btn" onclick="window._irParaTarefas()">Ver todas →</button>';
+      _banner.style.display = 'flex';
+    } else {
+      _banner.style.display = 'none';
+    }
+  }
 
   if (!filtrados.length) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">

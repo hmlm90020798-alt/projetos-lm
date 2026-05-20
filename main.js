@@ -112,6 +112,10 @@ window.carregarMensagens        = carregarMensagens;
 window.ativarModoApresentacao   = ativarModoApresentacao;
 window.sairModoApresentacao     = sairModoApresentacao;
 window.renderTarefasTab         = renderTarefasTab;
+window._irParaTarefas           = () => {
+  const btn = document.querySelector('[onclick*="tarefas"]');
+  if (btn) btn.click();
+};
 window.enviarEmailResumo        = enviarEmailResumo;
 window.addTarefaForm            = addTarefaForm;
 window._actualizarBadgeTarefas  = _actualizarBadgeTarefas;
