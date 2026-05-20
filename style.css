@@ -1418,12 +1418,28 @@ img   { display: block; max-width: 100%; }
 }
 
 @media (max-width: 480px) {
-  .dashboard        { grid-template-columns: 1fr 1fr; }
+  /* Dashboard — 2 colunas compactas */
+  .dashboard        { grid-template-columns: 1fr 1fr; gap: 8px; }
   .proj-grid        { grid-template-columns: 1fr; }
   .sec-num          { font-size: 48px; }
   .sec-titulo       { font-size: 26px; }
   .orc-total-card   { padding: 20px 20px; }
   .orc-total-val    { font-size: clamp(24px, 7vw, 36px); }
+
+  /* Tabs — compactas, sem quebra de linha */
+  .tabs-nav         { gap: 2px; padding-bottom: 0; overflow-x: auto; -webkit-overflow-scrolling: touch; flex-wrap: nowrap; }
+  .tab-btn          { padding: 7px 10px; font-size: 11px; gap: 4px; flex-shrink: 0; }
+  .tab-icon         { font-size: 12px; }
+
+  /* Header */
+  .painel-header    { padding: 0 16px; }
+  .painel-titulo    { font-size: 22px; }
+  .btn-novo         { padding: 8px 14px; font-size: 12px; }
+
+  /* Toolbar */
+  .tab-content      { padding: 16px; }
+  .painel-toolbar   { gap: 8px; }
+  .filtro-btn       { padding: 6px 10px; font-size: 11px; }
 }
 
 /* ══════════════════════════════════════════════
