@@ -487,7 +487,7 @@ img   { display: block; max-width: 100%; }
   padding: 24px 28px 20px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  background: var(--white);
+  background: var(--bg3);
 }
 .acomp-eyebrow {
   font-family: var(--mono);
@@ -535,7 +535,7 @@ img   { display: block; max-width: 100%; }
   gap: 0;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  background: var(--cli-bg-soft);
+  background: var(--bg3);
   padding: 0 16px;
 }
 .acomp-tab {
@@ -578,6 +578,7 @@ img   { display: block; max-width: 100%; }
   flex: 1;
   overflow-y: auto;
   padding: 20px 28px;
+  background: var(--surface);
 }
 .acomp-form-row {
   display: flex;
@@ -638,17 +639,17 @@ img   { display: block; max-width: 100%; }
 }
 .modal-box .elem-line:nth-child(odd) { background: rgba(255,255,255,.03); }
 
-.modal-box .elem-cat-grupo  { background: var(--cli-bg-soft); border-color: var(--border); }
-.modal-box .orc-cat-grupo   { background: var(--cli-bg-soft); border-color: var(--border); }
-.modal-box .nota-form-item  { background: var(--cli-bg-soft); border-color: var(--border); }
-.modal-box .doc-form-item   { background: var(--cli-bg-soft); border-color: var(--border); }
-.modal-box .interacao-item  { background: var(--cli-bg-soft); border-color: var(--border); }
-.modal-box .ocorr-item      { background: var(--cli-bg-soft); }
+.modal-box .elem-cat-grupo  { background: var(--bg3); border-color: var(--border-mid); }
+.modal-box .orc-cat-grupo   { background: var(--bg3); border-color: var(--border-mid); }
+.modal-box .nota-form-item  { background: var(--bg3); border-color: var(--border-mid); }
+.modal-box .doc-form-item   { background: var(--bg3); border-color: var(--border-mid); }
+.modal-box .interacao-item  { background: var(--bg3); border-color: var(--border-mid); }
+.modal-box .ocorr-item      { background: var(--bg3); }
 .modal-box .form-bloco-titulo { color: var(--ink2); border-bottom-color: var(--border-mid); background: var(--bg3); }
 .modal-box .form-bloco-titulo.accordion-titulo:hover { color: var(--green); }
 
 /* Interacções no drawer */
-.acomp-drawer .interacao-item { background: var(--cli-bg-soft); border: 1px solid var(--border); }
+.acomp-drawer .interacao-item { background: var(--bg3); border: 1px solid var(--border-mid); }
 .acomp-drawer .int-tipo { font-weight: 600; }
 .acomp-drawer .int-texto { color: var(--ink2); }
 .acomp-drawer .int-data  { color: var(--ink4); }
@@ -2809,7 +2810,7 @@ img   { display: block; max-width: 100%; }
    11. TAREFAS
 ────────────────────────────────────────────── */
 .tarefas-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 0 12px; }
-.btn-email-resumo { padding: 7px 14px; border-radius: 7px; border: 1.5px solid var(--green-mid); background: var(--green-pale); color: var(--green-light); font-size: 11px; font-weight: 700; cursor: pointer; font-family: var(--mono); letter-spacing: .04em; transition: background .15s; }
+.btn-email-resumo { padding: 7px 14px; border-radius: 7px; border: 1.5px solid var(--green-light); background: rgba(103,171,47,.15); color: var(--green-light); font-size: 11px; font-weight: 700; cursor: pointer; font-family: var(--mono); letter-spacing: .04em; transition: all .15s; }
 .btn-email-resumo:hover { background: rgba(103,171,47,.2); }
 
 .tarefas-grupo  { margin-bottom: 28px; }
