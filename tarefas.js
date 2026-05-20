@@ -12,9 +12,9 @@ import { esc }          from './sanitize.js';
 
 // ── Configuração ──────────────────────────────────
 
-const EMAILJS_SERVICE   = 'service_ijgsl8w';
-const TEMPLATE_HM       = 'template_xr3958i';  // só HM
-const TEMPLATE_ALL      = 'template_5j5erdi';  // HM + Serviços
+const EMAILJS_SERVICE   = 'service_fx8mriy';
+const TEMPLATE_HM       = 'template_5lihxq4';  // só HM
+const TEMPLATE_ALL      = 'template_8j2gn0e';  // HM + Serviços
 
 export const TIPOS_TAREFA = [
   { value: 'entrega',    label: '🚚 Entrega',          template: TEMPLATE_ALL },
