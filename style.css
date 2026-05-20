@@ -181,7 +181,7 @@ img   { display: block; max-width: 100%; }
 /* Dashboard */
 .dashboard          { display: grid; grid-template-columns: repeat(7,1fr); gap: 10px; margin-bottom: 28px; }
 .dash-card          { background: var(--surface); border: 1.5px solid var(--border-mid); border-radius: 10px; padding: 14px 16px; }
-.dash-destaque      { border-color: var(--green); background: var(--green-pale); }
+.dash-destaque      { border-color: var(--green-light); background: rgba(103,171,47,.1); }
 .dash-alerta        { border-color: rgba(184,48,48,.3); }
 .dash-ocorr         { border-color: rgba(255,180,80,.5); background: rgba(255,160,50,.18); }
 .dash-num           { font-family: var(--serif); font-size: 26px; color: var(--ink); line-height: 1; margin-bottom: 4px; }
@@ -2907,6 +2907,36 @@ img   { display: block; max-width: 100%; }
 .notif-btn-enviar { padding: 9px 22px; border-radius: 9px; border: none; background: var(--green); color: #fff; font-family: var(--sans); font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 7px; transition: background .15s; }
 .notif-btn-enviar:hover { background: var(--green-mid); }
 .notif-btn-enviar:disabled { opacity: .6; cursor: not-allowed; }
+
+/* ── Banner de tarefas urgentes — neon ── */
+.tarefas-banner {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 20px; margin-bottom: 18px;
+  background: rgba(20,8,8,.85);
+  border: 1.5px solid rgba(255,60,60,.5);
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgba(255,60,60,.25), 0 0 28px rgba(255,60,60,.1);
+  animation: banner-pulse 2.4s ease-in-out infinite;
+  gap: 12px;
+}
+@keyframes banner-pulse {
+  0%,100% { box-shadow: 0 0 12px rgba(255,60,60,.25), 0 0 28px rgba(255,60,60,.1); }
+  50%      { box-shadow: 0 0 20px rgba(255,60,60,.45), 0 0 44px rgba(255,60,60,.2); }
+}
+.tarefas-banner-texto {
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  color: #ff6b6b; letter-spacing: .04em;
+  text-shadow: 0 0 8px rgba(255,80,80,.8), 0 0 16px rgba(255,80,80,.4);
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.tarefas-banner-btn {
+  padding: 6px 16px; border-radius: 7px;
+  border: 1px solid rgba(255,80,80,.4); background: rgba(255,60,60,.1); color: #ff8080;
+  font-family: var(--mono); font-size: 10px; font-weight: 700;
+  cursor: pointer; white-space: nowrap; flex-shrink: 0;
+  letter-spacing: .06em; text-transform: uppercase; transition: all .2s;
+}
+.tarefas-banner-btn:hover { background: rgba(255,60,60,.2); border-color: rgba(255,80,80,.7); }
 
 /* ──────────────────────────────────────────────
    13. AUTOFILL OVERRIDE
