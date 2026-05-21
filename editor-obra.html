@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor de Obra · HM</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700&display=swap');
+
+  :root {
+    --bg:       #0d0f14;
+    --surface:  #13161d;
+    --border:   #1e2330;
+    --accent:   #3b82f6;
+    --accent2:  #f59e0b;
+    --danger:   #ef4444;
+    --text:     #e2e8f0;
+    --muted:    #4a5568;
+    --mono:     'DM Mono', monospace;
+    --sans:     'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP BAR ── */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: .75rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    font-size: .7rem;
+    letter-spacing: .15em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .logo span { color: var(--accent); }
+  .project-label {
+    font-size: .8rem;
+    color: var(--muted);
+    font-family: var(--mono);
+    border-left: 1px solid var(--border);
+    padding-left: 1rem;
+  }
+  #project-name-display {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .header-actions { margin-left: auto; display: flex; gap: .5rem; }
+
+  /* ── LAYOUT ── */
+  .workspace {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 49px);
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  aside {
+    width: 280px;
+    min-width: 280px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-section {
+    border-bottom: 1px solid var(--border);
+    padding: 1rem;
+  }
+  .section-title {
+    font-size: .65rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .75rem;
+  }
+
+  /* Projeto input */
+  .input-group { display: flex; flex-direction: column; gap: .4rem; margin-bottom: .75rem; }
+  label.field-label { font-size: .75rem; color: var(--muted); }
+  input[type=text], select, textarea {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: .8rem;
+    padding: .5rem .75rem;
+    border-radius: 4px;
+    width: 100%;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input[type=text]:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 60px; }
+  select option { background: var(--surface); }
+
+  /* Alçados list */
+  .alcados-list { display: flex; flex-direction: column; gap: .35rem; }
+  .alcado-item {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .5rem .75rem;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all .15s;
+    font-size: .8rem;
+  }
+  .alcado-item:hover { border-color: var(--accent); background: rgba(59,130,246,.05); }
+  .alcado-item.active { border-color: var(--accent); background: rgba(59,130,246,.1); }
+  .alcado-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+  .alcado-item.active .alcado-dot { background: var(--accent); }
+  .alcado-count {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: var(--muted);
+  }
+
+  .btn-add-alcado {
+    margin-top: .5rem;
+    width: 100%;
+    padding: .45rem;
+    border: 1px dashed var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-size: .75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all .15s;
+    font-family: var(--sans);
+  }
+  .btn-add-alcado:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Hotspot list */
+  .hotspot-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: .75rem;
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+  }
+  .hotspot-list::-webkit-scrollbar { width: 4px; }
+  .hotspot-list::-webkit-scrollbar-track { background: transparent; }
+  .hotspot-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .hs-card {
+    padding: .6rem .75rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all .15s;
+    position: relative;
+  }
+  .hs-card:hover { border-color: var(--accent); }
+  .hs-card.selected { border-color: var(--accent2); background: rgba(245,158,11,.05); }
+  .hs-card-header { display: flex; align-items: center; gap: .5rem; margin-bottom: .3rem; }
+  .hs-badge {
+    font-family: var(--mono);
+    font-size: .65rem;
+    padding: .1rem .35rem;
+    border-radius: 3px;
+    background: var(--border);
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .hs-badge.tomada { background: rgba(245,158,11,.15); color: var(--accent2); }
+  .hs-badge.agua { background: rgba(59,130,246,.15); color: var(--accent); }
+  .hs-badge.equipamento { background: rgba(16,185,129,.15); color: #10b981; }
+  .hs-badge.nota { background: rgba(139,92,246,.15); color: #8b5cf6; }
+  .hs-label { font-size: .8rem; font-weight: 600; flex: 1; }
+  .hs-del {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: .9rem; padding: .1rem .3rem;
+    border-radius: 3px; transition: all .15s;
+    margin-left: auto;
+  }
+  .hs-del:hover { color: var(--danger); background: rgba(239,68,68,.1); }
+  .hs-preview { font-size: .7rem; color: var(--muted); font-family: var(--mono); line-height: 1.4; }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: var(--muted);
+    font-size: .8rem;
+    line-height: 1.6;
+  }
+  .empty-state span { display: block; font-size: 1.5rem; margin-bottom: .5rem; }
+
+  /* ── CANVAS AREA ── */
+  .canvas-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .canvas-toolbar {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    padding: .6rem 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  .mode-toggle {
+    display: flex;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .mode-btn {
+    padding: .35rem .75rem;
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: .75rem;
+    font-family: var(--sans);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .mode-btn.active { background: var(--accent); color: #fff; }
+
+  .upload-zone {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed var(--border);
+    margin: 1.5rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s;
+    color: var(--muted);
+    gap: .75rem;
+  }
+  .upload-zone:hover { border-color: var(--accent); color: var(--accent); }
+  .upload-zone svg { opacity: .4; }
+  .upload-zone p { font-size: .85rem; }
+  .upload-zone small { font-size: .7rem; opacity: .6; font-family: var(--mono); }
+  #file-input { display: none; }
+
+  /* Image + hotspot overlay */
+  .image-container {
+    flex: 1;
+    overflow: auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1.5rem;
+    position: relative;
+  }
+  .image-wrapper {
+    position: relative;
+    display: inline-block;
+    user-select: none;
+  }
+  .image-wrapper img {
+    display: block;
+    max-width: 100%;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+  .image-wrapper.placing-mode { cursor: crosshair; }
+
+  /* Hotspot markers */
+  .hs-marker {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+  }
+  .hs-pin {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: rgba(13,15,20,.85);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .65rem;
+    font-family: var(--mono);
+    font-weight: 500;
+    color: var(--accent);
+    cursor: pointer;
+    transition: all .15s;
+    box-shadow: 0 0 0 0 rgba(59,130,246,.4);
+  }
+  .hs-pin:hover, .hs-pin.active {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 0 4px rgba(59,130,246,.2);
+  }
+  .hs-pin.tipo-tomada { border-color: var(--accent2); color: var(--accent2); }
+  .hs-pin.tipo-tomada:hover, .hs-pin.tipo-tomada.active { background: var(--accent2); color: #000; }
+  .hs-pin.tipo-agua { border-color: #38bdf8; color: #38bdf8; }
+  .hs-pin.tipo-agua:hover, .hs-pin.tipo-agua.active { background: #38bdf8; color: #000; }
+  .hs-pin.tipo-equipamento { border-color: #10b981; color: #10b981; }
+  .hs-pin.tipo-equipamento:hover, .hs-pin.tipo-equipamento.active { background: #10b981; color: #000; }
+  .hs-pin.tipo-nota { border-color: #8b5cf6; color: #8b5cf6; }
+  .hs-pin.tipo-nota:hover, .hs-pin.tipo-nota.active { background: #8b5cf6; color: #fff; }
+
+  /* ── HOTSPOT FORM PANEL ── */
+  .hs-form-panel {
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 300px;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    padding: 1.25rem;
+    transform: translateX(100%);
+    transition: transform .2s ease;
+    overflow-y: auto;
+    z-index: 50;
+  }
+  .hs-form-panel.open { transform: translateX(0); }
+  .hs-form-title {
+    font-size: .85rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+  }
+  .hs-form-close {
+    margin-left: auto;
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 1rem; padding: .1rem;
+    transition: color .15s;
+  }
+  .hs-form-close:hover { color: var(--text); }
+  .form-fields { display: flex; flex-direction: column; gap: .75rem; }
+  .tipo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .4rem;
+  }
+  .tipo-opt {
+    padding: .4rem;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    text-align: center;
+    font-size: .7rem;
+    cursor: pointer;
+    transition: all .15s;
+    font-family: var(--mono);
+    color: var(--muted);
+  }
+  .tipo-opt[data-tipo="tomada"].sel { border-color: var(--accent2); color: var(--accent2); background: rgba(245,158,11,.1); }
+  .tipo-opt[data-tipo="agua"].sel { border-color: #38bdf8; color: #38bdf8; background: rgba(56,189,248,.1); }
+  .tipo-opt[data-tipo="equipamento"].sel { border-color: #10b981; color: #10b981; background: rgba(16,185,129,.1); }
+  .tipo-opt[data-tipo="nota"].sel { border-color: #8b5cf6; color: #8b5cf6; background: rgba(139,92,246,.1); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    padding: .5rem 1rem;
+    border-radius: 4px;
+    border: none;
+    font-family: var(--sans);
+    font-size: .8rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .15s;
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #2563eb; }
+  .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border); }
+  .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+  .btn-success { background: #10b981; color: #fff; }
+  .btn-success:hover { background: #059669; }
+  .btn-sm { padding: .35rem .65rem; font-size: .75rem; }
+
+  .coords-display {
+    font-family: var(--mono);
+    font-size: .7rem;
+    color: var(--muted);
+    padding: .3rem .6rem;
+    background: var(--bg);
+    border-radius: 3px;
+    border: 1px solid var(--border);
+  }
+
+  /* ── MODAL ALCADO ── */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    width: 380px;
+    max-width: 95vw;
+  }
+  .modal-title { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; }
+  .modal-actions { display: flex; gap: .5rem; justify-content: flex-end; margin-top: 1.25rem; }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(1rem);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: .6rem 1.25rem;
+    border-radius: 6px;
+    font-size: .8rem;
+    font-family: var(--mono);
+    opacity: 0;
+    pointer-events: none;
+    transition: all .25s;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  #toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  #toast.success { border-color: #10b981; color: #10b981; }
+  #toast.error { border-color: var(--danger); color: var(--danger); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">HM · <span>Obra</span></div>
+  <div class="project-label">
+    Projecto: <span id="project-name-display">—</span>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="exportJSON()">↓ Exportar JSON</button>
+    <button class="btn btn-success btn-sm" onclick="saveFirestore()">✓ Guardar</button>
+  </div>
+</header>
+
+<div class="workspace">
+
+  <!-- SIDEBAR -->
+  <aside>
+    <!-- Projecto -->
+    <div class="sidebar-section">
+      <div class="section-title">Projecto</div>
+      <div class="input-group">
+        <label class="field-label">ID do Projecto (Firestore)</label>
+        <input type="text" id="project-id" placeholder="ex: abc123xyz" oninput="onProjectIdChange()">
+      </div>
+      <button class="btn btn-ghost btn-sm" style="width:100%" onclick="loadProject()">Carregar</button>
+    </div>
+
+    <!-- Alçados -->
+    <div class="sidebar-section">
+      <div class="section-title">Alçados</div>
+      <div class="alcados-list" id="alcados-list"></div>
+      <button class="btn-add-alcado" onclick="showAddAlcadoModal()">+ Adicionar alçado</button>
+    </div>
+
+    <!-- Hotspots do alçado activo -->
+    <div class="section-title" style="padding: .75rem 1rem .25rem; font-size:.65rem; letter-spacing:.12em; text-transform:uppercase; color:var(--muted)">
+      Hotspots
+    </div>
+    <div class="hotspot-list" id="hotspot-list">
+      <div class="empty-state">
+        <span>📐</span>
+        Selecciona um alçado e<br>clica na imagem para<br>adicionar hotspots
+      </div>
+    </div>
+  </aside>
+
+  <!-- CANVAS -->
+  <div class="canvas-area" id="canvas-area">
+
+    <div class="canvas-toolbar">
+      <div class="mode-toggle">
+        <button class="mode-btn active" id="btn-view" onclick="setMode('view')">👁 Ver</button>
+        <button class="mode-btn" id="btn-place" onclick="setMode('place')">＋ Colocar</button>
+      </div>
+      <span class="coords-display" id="coords-display">x: — · y: —</span>
+      <span style="font-size:.75rem; color:var(--muted)" id="mode-hint">Muda para "Colocar" para adicionar hotspots</span>
+    </div>
+
+    <!-- Upload zone (mostrada quando não há imagem) -->
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+      </svg>
+      <p>Clica para fazer upload do alçado</p>
+      <small>JPG, PNG — máx. 8MB</small>
+    </div>
+
+    <!-- Image container (escondida inicialmente) -->
+    <div class="image-container" id="image-container" style="display:none">
+      <div class="image-wrapper" id="image-wrapper">
+        <img id="alcado-img" src="" alt="Alçado">
+        <!-- hotspot markers injectados aqui -->
+      </div>
+    </div>
+
+    <input type="file" id="file-input" accept="image/*" onchange="handleImageUpload(event)">
+
+    <!-- Hotspot form panel (desliza da direita) -->
+    <div class="hs-form-panel" id="hs-form-panel">
+      <div class="hs-form-title">
+        <span id="form-panel-title">Novo Hotspot</span>
+        <button class="hs-form-close" onclick="closeHsForm()">✕</button>
+      </div>
+      <div class="form-fields">
+        <div class="input-group">
+          <label class="field-label">Tipo</label>
+          <div class="tipo-grid">
+            <div class="tipo-opt sel" data-tipo="tomada" onclick="selectTipo('tomada')">⚡ Tomada</div>
+            <div class="tipo-opt" data-tipo="agua" onclick="selectTipo('agua')">💧 Água</div>
+            <div class="tipo-opt" data-tipo="equipamento" onclick="selectTipo('equipamento')">📦 Equipamento</div>
+            <div class="tipo-opt" data-tipo="nota" onclick="selectTipo('nota')">📝 Nota</div>
+          </div>
+        </div>
+        <div class="input-group">
+          <label class="field-label">Label curto</label>
+          <input type="text" id="hs-label" placeholder="ex: Tomada Placa Indução">
+        </div>
+        <div class="input-group">
+          <label class="field-label">Texto para o técnico</label>
+          <textarea id="hs-tecnico" placeholder="Detalhes operacionais: medidas, amperagem, notas de instalação..."></textarea>
+        </div>
+        <div class="input-group">
+          <label class="field-label">Texto para o cliente</label>
+          <textarea id="hs-cliente" placeholder="Descrição simples para o cliente..."></textarea>
+        </div>
+        <div style="display:flex; gap:.5rem; margin-top:.25rem">
+          <button class="btn btn-primary" style="flex:1" onclick="saveHotspot()">Guardar</button>
+          <button class="btn btn-ghost" onclick="closeHsForm()">Cancelar</button>
+        </div>
+        <div id="hs-coords" style="font-family:var(--mono); font-size:.65rem; color:var(--muted); text-align:center; margin-top:-.25rem"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal adicionar alçado -->
+<div class="modal-overlay" id="modal-alcado">
+  <div class="modal">
+    <div class="modal-title">Novo Alçado</div>
+    <div class="form-fields">
+      <div class="input-group">
+        <label class="field-label">Nome do alçado</label>
+        <input type="text" id="new-alcado-name" placeholder="ex: Alçado A — Lava-loiça">
+      </div>
+      <div class="input-group">
+        <label class="field-label">Identificador (key)</label>
+        <input type="text" id="new-alcado-key" placeholder="ex: alcado_a">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmAddAlcado()">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+// ─── Firebase Config ───────────────────────────────────────────────────
+// Substitui pelos teus dados reais
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, getDoc, setDoc, updateDoc }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getStorage, ref, uploadBytes, getDownloadURL }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+import { getAuth, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+const firebaseConfig = {
+  // TODO: substituir pela config do hm-projetos-lm
+  apiKey: "AIzaSyALyrpFSGx4evXtOYCfRIvWc_jTjByz0R8",
+  authDomain: "hm-projetos-lm.firebaseapp.com",
+  projectId: "hm-projetos-lm",
+  storageBucket: "hm-projetos-lm.firebasestorage.app",
+  messagingSenderId: "772658359928",
+  appId: "1:772658359928:web:98332ec006329f380ec78d"
+};
+
+const app    = initializeApp(firebaseConfig);
+const db     = getFirestore(app);
+const auth   = getAuth(app);
+const storage = getStorage(app);
+
+// ─── State ─────────────────────────────────────────────────────────────
+let state = {
+  projectId: '',
+  projectData: null,
+  alcados: [],        // [{ key, name, imageUrl }]
+  activeAlcado: null, // key
+  hotspots: {},       // { alcado_key: [{ id, x, y, tipo, label, tecnico, cliente }] }
+  mode: 'view',       // 'view' | 'place'
+  editingHsId: null,
+  pendingCoords: null, // { x, y } percentual
+  selectedHsId: null,
+};
+
+// ─── Init ───────────────────────────────────────────────────────────────
+onAuthStateChanged(auth, user => {
+  if (!user) {
+    toast('Sem sessão. Abre o editor a partir do painel HM.', 'error');
+  }
+});
+
+// URL params
+const params = new URLSearchParams(location.search);
+if (params.get('p')) {
+  document.getElementById('project-id').value = params.get('p');
+  window.loadProject();
+}
+
+// ─── Project ────────────────────────────────────────────────────────────
+window.onProjectIdChange = () => {
+  const id = document.getElementById('project-id').value.trim();
+  document.getElementById('project-name-display').textContent = id || '—';
+};
+
+window.loadProject = async () => {
+  const id = document.getElementById('project-id').value.trim();
+  if (!id) return toast('Insere um ID de projecto', 'error');
+  state.projectId = id;
+
+  try {
+    const snap = await getDoc(doc(db, 'projetos', id));
+    if (!snap.exists()) return toast('Projecto não encontrado', 'error');
+
+    state.projectData = snap.data();
+    const obra = state.projectData.obra || {};
+
+    document.getElementById('project-name-display').textContent =
+      state.projectData.nome || id;
+
+    // Restaurar alçados e hotspots guardados
+    state.alcados   = obra.alcados  || [];
+    state.hotspots  = obra.hotspots || {};
+
+    renderAlcadosList();
+    toast('Projecto carregado', 'success');
+
+    // Activar primeiro alçado se existir
+    if (state.alcados.length > 0) activateAlcado(state.alcados[0].key);
+
+  } catch(e) {
+    console.error(e);
+    toast('Erro ao carregar: ' + e.message, 'error');
+  }
+};
+
+// ─── Alçados ────────────────────────────────────────────────────────────
+window.showAddAlcadoModal = () => {
+  document.getElementById('modal-alcado').classList.add('open');
+  document.getElementById('new-alcado-name').focus();
+};
+window.closeModal = () => document.getElementById('modal-alcado').classList.remove('open');
+
+window.confirmAddAlcado = () => {
+  const name = document.getElementById('new-alcado-name').value.trim();
+  const key  = document.getElementById('new-alcado-key').value.trim()
+    .toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'');
+  if (!name || !key) return toast('Preenche nome e identificador', 'error');
+  if (state.alcados.find(a => a.key === key)) return toast('Key já existe', 'error');
+
+  state.alcados.push({ key, name, imageUrl: '' });
+  state.hotspots[key] = state.hotspots[key] || [];
+  renderAlcadosList();
+  closeModal();
+  activateAlcado(key);
+  document.getElementById('new-alcado-name').value = '';
+  document.getElementById('new-alcado-key').value  = '';
+};
+
+function renderAlcadosList() {
+  const el = document.getElementById('alcados-list');
+  el.innerHTML = '';
+  if (state.alcados.length === 0) {
+    el.innerHTML = '<div style="font-size:.75rem;color:var(--muted);padding:.25rem">Sem alçados. Adiciona um.</div>';
+    return;
+  }
+  state.alcados.forEach(a => {
+    const count = (state.hotspots[a.key] || []).length;
+    const div = document.createElement('div');
+    div.className = 'alcado-item' + (state.activeAlcado === a.key ? ' active' : '');
+    div.innerHTML = `<div class="alcado-dot"></div>
+      <span style="flex:1">${a.name}</span>
+      <span class="alcado-count">${count}</span>`;
+    div.onclick = () => activateAlcado(a.key);
+    el.appendChild(div);
+  });
+}
+
+function activateAlcado(key) {
+  state.activeAlcado = key;
+  const alcado = state.alcados.find(a => a.key === key);
+  if (!alcado) return;
+
+  if (alcado.imageUrl) {
+    showImage(alcado.imageUrl);
+  } else {
+    showUploadZone();
+  }
+  renderAlcadosList();
+  renderHotspotList();
+  renderMarkers();
+}
+
+// ─── Image ──────────────────────────────────────────────────────────────
+function showUploadZone() {
+  document.getElementById('upload-zone').style.display = 'flex';
+  document.getElementById('image-container').style.display = 'none';
+}
+function showImage(url) {
+  document.getElementById('upload-zone').style.display = 'none';
+  const container = document.getElementById('image-container');
+  const img = document.getElementById('alcado-img');
+  container.style.display = 'flex';
+  img.src = url;
+}
+
+window.handleImageUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file || !state.activeAlcado) return;
+  if (!state.projectId) return toast('Carrega o projecto primeiro', 'error');
+
+  toast('A fazer upload…');
+  try {
+    const storageRef = ref(storage, `obras/${state.projectId}/${state.activeAlcado}.jpg`);
+    await uploadBytes(storageRef, file);
+    const url = await getDownloadURL(storageRef);
+
+    const alcado = state.alcados.find(a => a.key === state.activeAlcado);
+    alcado.imageUrl = url;
+    showImage(url);
+    renderAlcadosList();
+    toast('Imagem carregada', 'success');
+  } catch(e) {
+    console.error(e);
+    toast('Erro no upload: ' + e.message, 'error');
+  }
+};
+
+// ─── Mode ───────────────────────────────────────────────────────────────
+window.setMode = (mode) => {
+  state.mode = mode;
+  document.getElementById('btn-view').classList.toggle('active', mode === 'view');
+  document.getElementById('btn-place').classList.toggle('active', mode === 'place');
+
+  const wrapper = document.getElementById('image-wrapper');
+  wrapper.classList.toggle('placing-mode', mode === 'place');
+  document.getElementById('mode-hint').textContent =
+    mode === 'place' ? 'Clica na imagem para colocar um hotspot' : 'Muda para "Colocar" para adicionar hotspots';
+};
+
+// ─── Canvas click ────────────────────────────────────────────────────────
+document.getElementById('image-wrapper').addEventListener('click', (e) => {
+  if (state.mode !== 'place') return;
+  if (!state.activeAlcado) return toast('Selecciona um alçado', 'error');
+
+  const img    = document.getElementById('alcado-img');
+  const rect   = img.getBoundingClientRect();
+  const wrapper = document.getElementById('image-wrapper');
+  const wRect  = wrapper.getBoundingClientRect();
+
+  const x = ((e.clientX - rect.left) / rect.width * 100);
+  const y = ((e.clientY - rect.top)  / rect.height * 100);
+
+  state.pendingCoords = { x: +x.toFixed(2), y: +y.toFixed(2) };
+  state.editingHsId   = null;
+
+  document.getElementById('hs-label').value   = '';
+  document.getElementById('hs-tecnico').value = '';
+  document.getElementById('hs-cliente').value = '';
+  document.getElementById('hs-coords').textContent = `x: ${x.toFixed(1)}% · y: ${y.toFixed(1)}%`;
+  document.getElementById('form-panel-title').textContent = 'Novo Hotspot';
+  selectTipo('tomada');
+
+  openHsForm();
+});
+
+// Mousemove coords display
+document.getElementById('image-wrapper').addEventListener('mousemove', (e) => {
+  const img  = document.getElementById('alcado-img');
+  if (!img.src || img.src === location.href) return;
+  const rect = img.getBoundingClientRect();
+  const x = ((e.clientX - rect.left) / rect.width * 100).toFixed(1);
+  const y = ((e.clientY - rect.top)  / rect.height * 100).toFixed(1);
+  document.getElementById('coords-display').textContent = `x: ${x}% · y: ${y}%`;
+});
+
+// ─── Hotspot form ────────────────────────────────────────────────────────
+function openHsForm() {
+  document.getElementById('hs-form-panel').classList.add('open');
+}
+window.closeHsForm = () => {
+  document.getElementById('hs-form-panel').classList.remove('open');
+  state.pendingCoords = null;
+  state.editingHsId   = null;
+};
+
+let currentTipo = 'tomada';
+window.selectTipo = (tipo) => {
+  currentTipo = tipo;
+  document.querySelectorAll('.tipo-opt').forEach(el => {
+    el.classList.toggle('sel', el.dataset.tipo === tipo);
+  });
+};
+
+window.saveHotspot = () => {
+  const label   = document.getElementById('hs-label').value.trim();
+  const tecnico = document.getElementById('hs-tecnico').value.trim();
+  const cliente = document.getElementById('hs-cliente').value.trim();
+  if (!label) return toast('Insere um label', 'error');
+
+  const key = state.activeAlcado;
+  if (!state.hotspots[key]) state.hotspots[key] = [];
+
+  if (state.editingHsId) {
+    // Edit
+    const hs = state.hotspots[key].find(h => h.id === state.editingHsId);
+    if (hs) { hs.label = label; hs.tecnico = tecnico; hs.cliente = cliente; hs.tipo = currentTipo; }
+  } else {
+    // New
+    if (!state.pendingCoords) return;
+    state.hotspots[key].push({
+      id: 'hs_' + Date.now(),
+      x: state.pendingCoords.x,
+      y: state.pendingCoords.y,
+      tipo: currentTipo,
+      label, tecnico, cliente
+    });
+  }
+
+  closeHsForm();
+  renderHotspotList();
+  renderMarkers();
+  renderAlcadosList();
+  toast('Hotspot guardado', 'success');
+};
+
+// ─── Hotspot list (sidebar) ──────────────────────────────────────────────
+function renderHotspotList() {
+  const el  = document.getElementById('hotspot-list');
+  const key = state.activeAlcado;
+  const hss = key ? (state.hotspots[key] || []) : [];
+
+  if (hss.length === 0) {
+    el.innerHTML = `<div class="empty-state"><span>📐</span>Sem hotspots neste alçado.<br>Muda para "Colocar" e clica na imagem.</div>`;
+    return;
+  }
+
+  el.innerHTML = '';
+  hss.forEach(hs => {
+    const card = document.createElement('div');
+    card.className = 'hs-card' + (state.selectedHsId === hs.id ? ' selected' : '');
+    card.innerHTML = `
+      <div class="hs-card-header">
+        <span class="hs-badge ${hs.tipo}">${hs.tipo}</span>
+        <span class="hs-label">${hs.label}</span>
+        <button class="hs-del" title="Apagar" onclick="deleteHotspot('${hs.id}', event)">✕</button>
+      </div>
+      <div class="hs-preview">${hs.tecnico ? hs.tecnico.substring(0,60) + (hs.tecnico.length>60?'…':'') : '—'}</div>`;
+    card.onclick = () => editHotspot(hs.id);
+    el.appendChild(card);
+  });
+}
+
+window.editHotspot = (id) => {
+  const key = state.activeAlcado;
+  const hs  = (state.hotspots[key] || []).find(h => h.id === id);
+  if (!hs) return;
+
+  state.editingHsId   = id;
+  state.selectedHsId  = id;
+  state.pendingCoords = null;
+
+  document.getElementById('hs-label').value   = hs.label;
+  document.getElementById('hs-tecnico').value = hs.tecnico || '';
+  document.getElementById('hs-cliente').value = hs.cliente || '';
+  document.getElementById('hs-coords').textContent = `x: ${hs.x}% · y: ${hs.y}%`;
+  document.getElementById('form-panel-title').textContent = 'Editar Hotspot';
+  selectTipo(hs.tipo || 'tomada');
+
+  renderHotspotList();
+  highlightMarker(id);
+  openHsForm();
+};
+
+window.deleteHotspot = (id, e) => {
+  e.stopPropagation();
+  const key = state.activeAlcado;
+  state.hotspots[key] = (state.hotspots[key] || []).filter(h => h.id !== id);
+  if (state.editingHsId === id) closeHsForm();
+  renderHotspotList();
+  renderMarkers();
+  renderAlcadosList();
+  toast('Hotspot removido');
+};
+
+// ─── Markers ─────────────────────────────────────────────────────────────
+function renderMarkers() {
+  const wrapper = document.getElementById('image-wrapper');
+  wrapper.querySelectorAll('.hs-marker').forEach(el => el.remove());
+
+  const key = state.activeAlcado;
+  const hss = key ? (state.hotspots[key] || []) : [];
+
+  hss.forEach((hs, i) => {
+    const marker = document.createElement('div');
+    marker.className  = 'hs-marker';
+    marker.id         = 'marker-' + hs.id;
+    marker.style.left = hs.x + '%';
+    marker.style.top  = hs.y + '%';
+    marker.innerHTML  = `<div class="hs-pin tipo-${hs.tipo}" title="${hs.label}">${i+1}</div>`;
+    marker.querySelector('.hs-pin').onclick = (e) => {
+      e.stopPropagation();
+      editHotspot(hs.id);
+    };
+    wrapper.appendChild(marker);
+  });
+}
+
+function highlightMarker(id) {
+  document.querySelectorAll('.hs-pin').forEach(p => p.classList.remove('active'));
+  const marker = document.getElementById('marker-' + id);
+  if (marker) marker.querySelector('.hs-pin').classList.add('active');
+}
+
+// ─── Save / Export ───────────────────────────────────────────────────────
+window.saveFirestore = async () => {
+  if (!state.projectId) return toast('Carrega o projecto primeiro', 'error');
+  try {
+    await updateDoc(doc(db, 'projetos', state.projectId), {
+      'obra.alcados':  state.alcados,
+      'obra.hotspots': state.hotspots,
+      'obra.updatedAt': new Date().toISOString()
+    });
+    toast('Guardado no Firestore ✓', 'success');
+  } catch(e) {
+    console.error(e);
+    toast('Erro ao guardar: ' + e.message, 'error');
+  }
+};
+
+window.exportJSON = () => {
+  const data = JSON.stringify({ alcados: state.alcados, hotspots: state.hotspots }, null, 2);
+  const blob  = new Blob([data], { type: 'application/json' });
+  const url   = URL.createObjectURL(blob);
+  const a     = document.createElement('a');
+  a.href      = url;
+  a.download  = `obra_${state.projectId || 'draft'}.json`;
+  a.click();
+};
+
+// ─── Toast ───────────────────────────────────────────────────────────────
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = 'show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = '', 2800);
+}
+window.toast = toast;
+</script>
+</body>
+</html>
