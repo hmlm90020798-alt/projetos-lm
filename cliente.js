@@ -1137,21 +1137,9 @@ export function renderPaginaCliente(p) {
     secPriv.innerHTML = `${tP.texto} <a href="mailto:${emailPriv}">${tP.contacto} ${emailPriv}</a>`;
 
   // ── Animação em cascata do orçamento ──
-  // Em modo apresentação o observer não dispara dentro do iframe — forçar visibilidade directa
-  if (modoApres) {
-    setTimeout(() => {
-      document.querySelectorAll('.orc-row').forEach(row => {
-        row.style.opacity   = '1';
-        row.style.transform = 'translateY(0)';
-        const barra = row.querySelector('.orc-barra[data-pct]');
-        if (barra) barra.style.width = barra.dataset.pct + '%';
-      });
-      const totalCard = document.querySelector('.orc-total-card');
-      if (totalCard) { totalCard.style.opacity = '1'; totalCard.style.transform = 'translateY(0)'; }
-    }, 300);
-  } else {
-    _iniciarCascataOrcamento();
-  }
+  // Em modo apresentação o IntersectionObserver não dispara dentro do iframe —
+  // passar flag para usar scroll listener e manter o efeito suspense intacto
+  _iniciarCascataOrcamento(modoApres);
   _iniciarSecaoActiva();
 
   // ── FAB Falar Comigo — ocultar no modo apresentação
@@ -1662,7 +1650,7 @@ function _renderNotasPorSeccao(notas, lang) {
 }
 
 // ── Cascata de animação do orçamento ──
-function _iniciarCascataOrcamento() {
+function _iniciarCascataOrcamento(modoApres) {
   const secOrc = document.getElementById('orcamento');
   if (!secOrc) return;
 
@@ -1771,14 +1759,35 @@ function _iniciarCascataOrcamento() {
     });
   };
 
-  // Disparar apenas quando pelo menos 60% da secção está visível
-  const io = new IntersectionObserver(entries => {
-    if (entries[0].isIntersecting) {
-      disparar();
-      io.disconnect();
-    }
-  }, { threshold: 0.6 });
-  io.observe(secOrc);
+  // Em modo apresentação (iframe) o IntersectionObserver não funciona com threshold alto —
+  // usar scroll listener com verificação manual da posição da secção
+  if (modoApres) {
+    let disparado = false;
+    const verificar = () => {
+      if (disparado) return;
+      const rect     = secOrc.getBoundingClientRect();
+      const vh       = window.innerHeight;
+      const visivel  = Math.min(rect.bottom, vh) - Math.max(rect.top, 0);
+      const pctVis   = visivel / rect.height;
+      if (pctVis >= 0.3) {
+        disparado = true;
+        window.removeEventListener('scroll', verificar);
+        disparar();
+      }
+    };
+    window.addEventListener('scroll', verificar, { passive: true });
+    // Verificar já (caso a secção já esteja visível ao carregar)
+    setTimeout(verificar, 400);
+  } else {
+    // Disparar apenas quando pelo menos 60% da secção está visível
+    const io = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) {
+        disparar();
+        io.disconnect();
+      }
+    }, { threshold: 0.6 });
+    io.observe(secOrc);
+  }
 }
 
 // ── Toggle cards de notas ──
