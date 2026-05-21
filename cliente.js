@@ -1137,7 +1137,21 @@ export function renderPaginaCliente(p) {
     secPriv.innerHTML = `${tP.texto} <a href="mailto:${emailPriv}">${tP.contacto} ${emailPriv}</a>`;
 
   // ── Animação em cascata do orçamento ──
-  _iniciarCascataOrcamento();
+  // Em modo apresentação o observer não dispara dentro do iframe — forçar visibilidade directa
+  if (modoApres) {
+    setTimeout(() => {
+      document.querySelectorAll('.orc-row').forEach(row => {
+        row.style.opacity   = '1';
+        row.style.transform = 'translateY(0)';
+        const barra = row.querySelector('.orc-barra[data-pct]');
+        if (barra) barra.style.width = barra.dataset.pct + '%';
+      });
+      const totalCard = document.querySelector('.orc-total-card');
+      if (totalCard) { totalCard.style.opacity = '1'; totalCard.style.transform = 'translateY(0)'; }
+    }, 300);
+  } else {
+    _iniciarCascataOrcamento();
+  }
   _iniciarSecaoActiva();
 
   // ── FAB Falar Comigo — ocultar no modo apresentação

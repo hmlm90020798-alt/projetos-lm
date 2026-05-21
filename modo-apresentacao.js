@@ -195,7 +195,7 @@ const inicio  = new Date();
 const hInicio = pad(inicio.getHours()) + ':' + pad(inicio.getMinutes());
 document.getElementById('tp-nome').textContent   = PROJ_NOME;
 document.getElementById('np-inicio').textContent = hInicio;
-document.getElementById('fr').src = BASE_URL + '?p=' + PROJ_ID;
+document.getElementById('fr').src = BASE_URL + '?p=' + PROJ_ID + '&apres=1';
 
 function pad(n) { return String(n).padStart(2, '0'); }
 
