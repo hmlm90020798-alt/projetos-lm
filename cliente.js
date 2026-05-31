@@ -1041,6 +1041,30 @@ export function renderPaginaCliente(p) {
   if (wrapGal) {
     document.getElementById('sec-galeria').innerHTML = renderGaleria(p);
     setState({ lbImgs: p.imagens || [] });
+
+    // Ficha técnica interactiva — só se o projecto tiver Ref. PC
+    const secFichaTec = document.getElementById('sec-ficha-tecnica');
+    if (secFichaTec) {
+      if (p.refPc) {
+        const obraUrl = 'https://hmlm90020798-alt.github.io/obra-lm/obra-tecnico.html?obra=' + encodeURIComponent(p.refPc);
+        const lang = getLang();
+        const label   = lang === 'en' ? 'Interactive Technical File' : 'Ficha Técnica Interactiva';
+        const sublabel = lang === 'en' ? 'Plants, materials and installation details' : 'Plantas, materiais e detalhes de instalação';
+        const btnLabel = lang === 'en' ? 'Open' : 'Abrir';
+        secFichaTec.innerHTML = `
+          <div class="ficha-tec-card" onclick="window.open('${obraUrl}','obra_${p.refPc}','width=520,height=820,left=100,top=40,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes')">
+            <div class="ficha-tec-icon">📐</div>
+            <div class="ficha-tec-info">
+              <div class="ficha-tec-label">${label}</div>
+              <div class="ficha-tec-sub">${sublabel}</div>
+            </div>
+            <div class="ficha-tec-btn">${btnLabel} →</div>
+          </div>`;
+        secFichaTec.style.display = '';
+      } else {
+        secFichaTec.style.display = 'none';
+      }
+    }
   }
 
   // ── 02 Elementos
