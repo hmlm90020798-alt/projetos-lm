@@ -1046,7 +1046,7 @@ export function renderPaginaCliente(p) {
     const secFichaTec = document.getElementById('sec-ficha-tecnica');
     if (secFichaTec) {
       if (p.refPc) {
-        const obraUrl = 'https://hmlm90020798-alt.github.io/obra-lm/obra-tecnico.html?obra=' + encodeURIComponent(p.refPc);
+        const obraUrl = 'https://hmlm90020798-alt.github.io/obra-lm/obra-cliente.html?obra=' + encodeURIComponent(p.refPc);
         const lang = getLang();
         const label   = lang === 'en' ? 'Interactive Technical File' : 'Ficha Técnica Interactiva';
         const sublabel = lang === 'en' ? 'Plants, materials and installation details' : 'Plantas, materiais e detalhes de instalação';
