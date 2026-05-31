@@ -1042,17 +1042,17 @@ export function renderPaginaCliente(p) {
     document.getElementById('sec-galeria').innerHTML = renderGaleria(p);
     setState({ lbImgs: p.imagens || [] });
 
-    // Ficha técnica interactiva — só se o projecto tiver Ref. PC
+    // Ficha de Obra — só se o projecto tiver linkObra definido
     const secFichaTec = document.getElementById('sec-ficha-tecnica');
     if (secFichaTec) {
-      if (p.refPc) {
-        const obraUrl = 'https://hmlm90020798-alt.github.io/obra-lm/obra-cliente.html?obra=' + encodeURIComponent(p.refPc);
-        const lang = getLang();
-        const label   = lang === 'en' ? 'Interactive Technical File' : 'Ficha Técnica Interactiva';
+      if (p.linkObra) {
+        const lang     = getLang();
+        const label    = lang === 'en' ? 'Interactive Technical File' : 'Ficha de Obra Interactiva';
         const sublabel = lang === 'en' ? 'Plants, materials and installation details' : 'Plantas, materiais e detalhes de instalação';
         const btnLabel = lang === 'en' ? 'Open' : 'Abrir';
+        const urlSafe  = p.linkObra.replace(/"/g, '&quot;');
         secFichaTec.innerHTML = `
-          <div class="ficha-tec-card" onclick="window.open('${obraUrl}','obra_${p.refPc}','width=520,height=820,left=100,top=40,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes')">
+          <div class="ficha-tec-card" onclick="window.open('${urlSafe}','obra_viewer','width=520,height=820,left=100,top=40,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes')">
             <div class="ficha-tec-icon">📐</div>
             <div class="ficha-tec-info">
               <div class="ficha-tec-label">${label}</div>
