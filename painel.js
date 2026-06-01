@@ -113,7 +113,6 @@ export function editarProjeto(id) {
   sv('f-notas', p.notas);
   sv('f-ref-pc', p.refPc);
   sv('f-ref-os', p.refOs);
-  sv('f-link-obra', p.linkObra || '');
   sv('f-tema', p.tema || 'escuro');
 
   // Pack Projeto
@@ -307,7 +306,6 @@ export async function guardarProjeto() {
     notas:       notas,
     refPc:       gv('f-ref-pc').trim(),
     refOs:       gv('f-ref-os').trim(),
-    linkObra:    gv('f-link-obra').trim(),
     tema:        gv('f-tema') || 'escuro',
     docs,
     // Elementos (com URL)
