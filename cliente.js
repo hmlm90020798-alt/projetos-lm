@@ -1041,29 +1041,29 @@ export function renderPaginaCliente(p) {
   if (wrapGal) {
     document.getElementById('sec-galeria').innerHTML = renderGaleria(p);
     setState({ lbImgs: p.imagens || [] });
+  }
 
-    // Ficha de Obra — só se o projecto tiver linkObra definido
-    const secFichaTec = document.getElementById('sec-ficha-tecnica');
-    if (secFichaTec) {
-      if (p.linkObra) {
-        const lang     = getLang();
-        const label    = lang === 'en' ? 'Interactive Technical File' : 'Ficha de Obra Interactiva';
-        const sublabel = lang === 'en' ? 'Plants, materials and installation details' : 'Plantas, materiais e detalhes de instalação';
-        const btnLabel = lang === 'en' ? 'Open' : 'Abrir';
-        const urlSafe  = p.linkObra.replace(/"/g, '&quot;');
-        secFichaTec.innerHTML = `
-          <div class="ficha-tec-card" onclick="window.open('${urlSafe}','obra_viewer','width=520,height=820,left=100,top=40,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes')">
-            <div class="ficha-tec-icon">📐</div>
-            <div class="ficha-tec-info">
-              <div class="ficha-tec-label">${label}</div>
-              <div class="ficha-tec-sub">${sublabel}</div>
-            </div>
-            <div class="ficha-tec-btn">${btnLabel} →</div>
-          </div>`;
-        secFichaTec.style.display = '';
-      } else {
-        secFichaTec.style.display = 'none';
-      }
+  // Ficha de Obra — independente de haver imagens
+  const secFichaTec = document.getElementById('sec-ficha-tecnica');
+  if (secFichaTec) {
+    if (p.linkObra) {
+      const lang     = getLang();
+      const label    = lang === 'en' ? 'Interactive Technical File' : 'Ficha de Obra Interactiva';
+      const sublabel = lang === 'en' ? 'Plants, materials and installation details' : 'Plantas, materiais e detalhes de instalação';
+      const btnLabel = lang === 'en' ? 'Open' : 'Abrir';
+      const urlSafe  = p.linkObra.replace(/"/g, '&quot;');
+      secFichaTec.innerHTML = `
+        <div class="ficha-tec-card" onclick="window.open('${urlSafe}','obra_viewer','width=520,height=820,left=100,top=40,menubar=no,toolbar=no,location=no,status=no,scrollbars=yes,resizable=yes')">
+          <div class="ficha-tec-icon">📐</div>
+          <div class="ficha-tec-info">
+            <div class="ficha-tec-label">${label}</div>
+            <div class="ficha-tec-sub">${sublabel}</div>
+          </div>
+          <div class="ficha-tec-btn">${btnLabel} →</div>
+        </div>`;
+      secFichaTec.style.display = '';
+    } else {
+      secFichaTec.style.display = 'none';
     }
   }
 
