@@ -1803,14 +1803,32 @@ function _iniciarCascataOrcamento(modoApres) {
     // Verificar já (caso a secção já esteja visível ao carregar)
     setTimeout(verificar, 400);
   } else {
-    // Disparar apenas quando pelo menos 60% da secção está visível
+    // Disparar assim que uma parte da secção fique visível.
+    // Nota: threshold alto (ex.: 0.6) nunca dispara em secções mais altas
+    // que o viewport (ratio de área visível nunca atinge 60%) — o orçamento
+    // ficava permanentemente com opacity:0, invisível para o cliente.
+    let disparado = false;
     const io = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) {
+      if (entries[0].isIntersecting && !disparado) {
+        disparado = true;
         disparar();
         io.disconnect();
       }
-    }, { threshold: 0.6 });
+    }, { threshold: 0.15 });
     io.observe(secOrc);
+
+    // Rede de segurança: se por algum motivo o observer não disparar
+    // (ex.: secção já visível ao carregar, sem evento de scroll),
+    // garantir que o orçamento aparece ao fim de 2.5s.
+    setTimeout(() => {
+      if (disparado) return;
+      const rect = secOrc.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        disparado = true;
+        disparar();
+        io.disconnect();
+      }
+    }, 2500);
   }
 }
 
