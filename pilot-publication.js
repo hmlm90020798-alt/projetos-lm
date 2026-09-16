@@ -55,19 +55,40 @@ export function adaptarPublicacaoParaPortal(publication) {
   const tipoNorm = tipoRaw.toLocaleLowerCase('pt-PT');
   const tipo = tipoNorm.includes('cozinha') ? 'cozinha' : 'renovacao-parcial';
 
+  const allowedPhases = new Set(['proposta','retificacao','aprovado','encomenda','entrega','montagem','concluido']);
+  const phase = clean(c.progress?.phase).toLowerCase();
+  const fase = allowedPhases.has(phase) ? phase : 'proposta';
+  const dates = c.progress?.dates && typeof c.progress.dates === 'object' ? c.progress.dates : {};
+  const occurrences = (Array.isArray(c.occurrences) ? c.occurrences : []).map((item, index) => {
+    const status = clean(item?.status).toLowerCase();
+    const estado = status.includes('resolvid') || status.includes('conclu') ? 'resolvida'
+      : status.includes('acompanh') || status.includes('resolu') || status.includes('aguard') ? 'resolucao' : 'detectada';
+    return {
+      id: `public-${index + 1}`,
+      tipo: 'outro',
+      descricao: clean(item?.description) || clean(item?.title),
+      estado,
+      data: clean(item?.date),
+      publica: true,
+    };
+  }).filter(item => item.descricao);
+
   return {
     id: publication.publicId,
     nome: clean(c.client?.name),
     tipo,
     tipoOutro: tipoRaw,
-    fase: 'proposta',
+    fase,
+    dataEntregaMat: clean(dates.delivery),
+    dataInstalacao: clean(dates.installation),
+    dataConclusao: clean(dates.completion),
     tema: 'escuro',
     titulo: clean(c.presentation?.title),
     objetivo: clean(c.presentation?.objective),
     imagens,
     docs: [],
     notas: [],
-    ocorrencias: [],
+    ocorrencias: occurrences,
     orcamento,
     elem_extras,
     total,
