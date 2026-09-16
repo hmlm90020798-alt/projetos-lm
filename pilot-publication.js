@@ -46,6 +46,11 @@ export function adaptarPublicacaoParaPortal(publication) {
     itens: section.itens.map(item => ({ ...item })),
   }));
 
+  const imagens = (Array.isArray(c.media) ? c.media : [])
+    .filter(item => clean(item?.url).startsWith('data:image/'))
+    .sort((a,b) => Number(b?.featured === true) - Number(a?.featured === true))
+    .map(item => clean(item?.url));
+
   const tipoRaw = clean(c.project?.type) || 'Cozinha';
   const tipoNorm = tipoRaw.toLocaleLowerCase('pt-PT');
   const tipo = tipoNorm.includes('cozinha') ? 'cozinha' : 'renovacao-parcial';
@@ -59,7 +64,7 @@ export function adaptarPublicacaoParaPortal(publication) {
     tema: 'escuro',
     titulo: clean(c.presentation?.title),
     objetivo: clean(c.presentation?.objective),
-    imagens: [],
+    imagens,
     docs: [],
     notas: [],
     ocorrencias: [],
