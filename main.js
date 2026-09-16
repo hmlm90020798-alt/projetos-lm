@@ -11,6 +11,7 @@
 // ════════════════════════════════════════════════
 
 import { getState, setState }    from './state.js';
+import { carregarPublicacaoPiloto, adaptarPublicacaoParaPortal, isPilotPublicId } from './pilot-publication.js';
 import { carregar, doLogin, doLogout, onAuth, registarVisita, carregarGroqKey, guardarGroqKey,
          carregarMensagens, enviarMensagemCliente, responderMensagem, marcarMensagensLidas,
          _auth } from './firebase.js';
@@ -140,10 +141,34 @@ async function loginHandler() {
 // ── checkUrlParam ─────────────────────────────────
 async function checkUrlParam() {
   const params  = new URLSearchParams(window.location.search);
+  const publicId = params.get('pub');
   const id      = params.get('p');
   const isPrint = params.get('print') === '1';
+
+  // 4P.33D — rota segura exclusiva do piloto. Nunca cai na coleção legada `projetos`.
+  if (publicId) {
+    setState({ isClienteMode: true, projAtualId: publicId, pilotSecureMode: true, pilotPublicId: publicId });
+    window._LANG = 'pt';
+    try {
+      if (!isPilotPublicId(publicId)) { setView('expirada'); return true; }
+      const publication = await carregarPublicacaoPiloto(publicId);
+      if (!publication) { setView('expirada'); return true; }
+      const p = adaptarPublicacaoParaPortal(publication);
+      setState({ pilotRevision: publication.revision });
+      renderPaginaCliente(p);
+      setView('cliente');
+      const btnV = document.getElementById('btn-voltar-painel');
+      if (btnV) btnV.style.display = 'none';
+      if (isPrint) setTimeout(() => { window.print(); }, 800);
+    } catch (err) {
+      const isOffline = !navigator.onLine || err?.code === 'unavailable';
+      mostrarErroRede(publicId, isOffline);
+    }
+    return true;
+  }
+
   if (!id) return false;
-  setState({ isClienteMode: true, projAtualId: id });
+  setState({ isClienteMode: true, projAtualId: id, pilotSecureMode: false, pilotPublicId: null, pilotRevision: null });
   window._LANG = 'pt';
   try {
     const { carregarUm } = await import('./firebase.js');
@@ -293,9 +318,17 @@ function popularTiposSelect() {
 
   // Se há ?p= no URL, aguardar resolução do estado de auth antes de renderizar.
   // Garante que HM autenticado nunca vê a página de expiração ao abrir um link.
-  const temParam = !!new URLSearchParams(window.location.search).get('p');
+  const urlParams = new URLSearchParams(window.location.search);
+  const temPub = !!urlParams.get('pub');
+  const temParam = !!urlParams.get('p') || temPub;
 
   if (temParam) {
+    // A rota ?pub= é pública e isolada; não necessita de esperar pelo estado Auth da Gestão.
+    if (temPub) {
+      await checkUrlParam();
+      ov.remove();
+      return;
+    }
     // Aguardar auth (máx. 3s) e depois correr checkUrlParam com contexto correcto
     await new Promise(resolve => {
       const timer = setTimeout(resolve, 3000);

@@ -9,6 +9,7 @@ import { _db, registarVisita, aprovarClienteFirebase, carregarUm,
 import { mostrarToast }                         from './ui.js';
 import { doc, getDoc }                          from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 import { esc, safeUrl, nl2br }                  from './sanitize.js';
+import { enviarEventoPiloto }                    from './pilot-publication.js';
 
 // ── Helpers ──────────────────────────────────────
 
@@ -176,7 +177,7 @@ function renderOrcamento(p) {
         <div class="orc-artigos-inner">
         ${c.artigos.map(a => `
           <div class="orc-artigo-item">
-            <span class="orc-artigo-nome">${esc(a.nome)}</span>
+            <span class="orc-artigo-nome">${esc(a.nome)}${a.referencia ? `<small style="display:block;opacity:.62;margin-top:2px">Ref. ${esc(a.referencia)}</small>` : ''}</span>
             <div class="orc-artigo-direita">
               ${a.preco && parseFloat(a.preco) > 0 ? `<span class="orc-artigo-preco">${fmt(a.preco)}</span>` : ''}
               ${a.url ? `<a href="${safeUrl(a.url)}" target="_blank" rel="noopener noreferrer" class="elem-link">${lang==='en'?'View':'VER ARTIGO'}</a>` : ''}
@@ -585,6 +586,24 @@ export async function aprovarProposta() {
   const id  = getState('projAtualId') || getState('projCache')?.id;
   if (!id) { alert('Erro: ID do projeto não encontrado.'); return; }
   const btn = document.getElementById('btn-aprovar-proj');
+
+  if (getState('pilotSecureMode')) {
+    if (btn) { btn.disabled = true; btn.textContent = 'A registar…'; }
+    try {
+      await enviarEventoPiloto({
+        publicId: getState('pilotPublicId'),
+        revision: Number(getState('pilotRevision')),
+        type: 'proposal_approval',
+      });
+      mostrarToast('✓ Aprovação recebida', 'A sua decisão foi enviada para validação.');
+      if (btn) btn.textContent = '✓ Aprovação enviada';
+    } catch (e) {
+      console.error('Erro ao enviar aprovação segura:', e);
+      if (btn) { btn.disabled = false; btn.textContent = T[getLang()].aprovacao.btn; }
+      alert('Não foi possível registar a aprovação. Por favor tente novamente.');
+    }
+    return;
+  }
   if (btn) { btn.disabled = true; btn.textContent = 'A registar…'; }
 
   const agora = new Date();
@@ -805,10 +824,21 @@ export async function enviarMensagem() {
   input.disabled = true;
 
   try {
-    await enviarMensagemCliente(projId, texto);
-    input.value = '';
-    await renderMensagens(projId, true); // forcarScroll após envio
-    mostrarToast('✓ Mensagem enviada', 'Hélder Melo responderá em breve.');
+    if (getState('pilotSecureMode')) {
+      await enviarEventoPiloto({
+        publicId: getState('pilotPublicId'),
+        revision: Number(getState('pilotRevision')),
+        type: 'client_message',
+        message: texto,
+      });
+      input.value = '';
+      mostrarToast('✓ Mensagem enviada', 'Hélder Melo responderá em breve.');
+    } else {
+      await enviarMensagemCliente(projId, texto);
+      input.value = '';
+      await renderMensagens(projId, true); // forcarScroll após envio
+      mostrarToast('✓ Mensagem enviada', 'Hélder Melo responderá em breve.');
+    }
   } catch (e) {
     mostrarToast('⚠️ Erro ao enviar', 'Tente novamente.');
     console.error(e);
@@ -1092,7 +1122,11 @@ export function renderPaginaCliente(p) {
 
   // ── 07 Mensagens — carregar e renderizar (não no modo apresentação)
   const projId = getState('projAtualId') || getState('projCache')?.id;
-  if (projId && !modoApres) renderMensagens(projId);
+  if (projId && !modoApres && !getState('pilotSecureMode')) renderMensagens(projId);
+  if (getState('pilotSecureMode')) {
+    const msgWrap = document.getElementById('sec-mensagens');
+    if (msgWrap) msgWrap.innerHTML = `<div class="msg-vazio"><div class="msg-vazio-icon">💬</div><p>${lang === 'en' ? 'Send us a question or comment below.' : 'Envie-nos uma dúvida ou comentário.'}</p></div>`;
+  }
 
   // ── Documentos por secção ──
   const docs = p.docs || [];
