@@ -39,23 +39,44 @@ function removerSecaoExistente() {
 
 export function prepararDecisoesPublicas(items) {
   const decisoes = normalizarDecisoes(items);
+  if (!decisoes.length) {
+    removerSecaoExistente();
+    return;
+  }
 
-  // A renderização da página cliente ocorre depois da adaptação da publicação.
-  // Executar no ciclo seguinte mantém o adaptador sem dependência de cliente.js.
+  // O Portal monta a vista cliente no mesmo ciclo em que adapta a publicação.
+  // Em vez de depender de um único frame, tentamos em pontos controlados do ciclo
+  // e paramos assim que a secção fica efetivamente montada. Isto mantém o módulo
+  // desacoplado de cliente.js e evita falhas por ordem de renderização/cache.
+  const tentar = () => {
+    renderDecisoesPublicas(decisoes);
+    return !!document.getElementById('wrap-decisoes-publicas');
+  };
+
   queueMicrotask(() => {
-    requestAnimationFrame(() => renderDecisoesPublicas(decisoes));
+    if (tentar()) return;
+    requestAnimationFrame(() => {
+      if (tentar()) return;
+      [80, 250, 700, 1500].forEach(ms => setTimeout(() => {
+        if (!document.getElementById('wrap-decisoes-publicas')) tentar();
+      }, ms));
+    });
   });
 }
 
 export function renderDecisoesPublicas(items) {
-  removerSecaoExistente();
   const decisoes = normalizarDecisoes(items);
-  if (!decisoes.length) return;
+  if (!decisoes.length) {
+    removerSecaoExistente();
+    return false;
+  }
 
   const docs = document.getElementById('wrap-docs');
   const approval = document.getElementById('aprovacao');
   const parent = docs?.parentNode || approval?.parentNode;
-  if (!parent) return;
+  if (!parent) return false;
+
+  removerSecaoExistente();
 
   const lang = globalThis._LANG === 'en' ? 'en' : 'pt';
   const eyebrow = lang === 'en' ? 'Project decisions' : 'Decisões do projeto';
@@ -101,4 +122,5 @@ export function renderDecisoesPublicas(items) {
   } else {
     parent.insertBefore(wrap, approval || null);
   }
+  return true;
 }
