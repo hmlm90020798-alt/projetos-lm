@@ -1579,7 +1579,7 @@ window._abrirMensagens = function() {
           <textarea id="msg-input-drawer" class="msg-textarea" placeholder="Escreva a sua dúvida, comentário ou pedido de alteração…" rows="4" onkeydown="if(event.key==='Enter'&&event.ctrlKey)window._enviarMsgDrawer()"></textarea>
           <div class="msg-form-footer">
             <span class="msg-hint">Ctrl+Enter para enviar</span>
-            <button class="btn-msg-enviar" onclick="window._enviarMsgDrawer()">Enviar</button>
+            <button id="btn-enviar-msg-drawer" class="btn-msg-enviar" onclick="window._enviarMsgDrawer()">Enviar</button>
           </div>
         </div>
       </div>`;
@@ -1619,15 +1619,69 @@ window._fecharMensagens = function() {
   setTimeout(() => { d.style.display = 'none'; }, 450);
 };
 
+window._novaMsgDrawer = function() {
+  _mensagemPilotoEnviada = false;
+  window._novaMensagemPiloto();
+  const input = document.getElementById('msg-input-drawer');
+  const btn = document.getElementById('btn-enviar-msg-drawer');
+  if (input) {
+    input.disabled = false;
+    input.value = '';
+    input.placeholder = getLang() === 'en'
+      ? 'Write your question, comment or change request…'
+      : 'Escreva a sua dúvida, comentário ou pedido de alteração…';
+    input.focus();
+  }
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = getLang() === 'en' ? 'Send' : 'Enviar';
+    btn.onclick = () => window._enviarMsgDrawer();
+  }
+};
+
 window._enviarMsgDrawer = async function() {
   const input = document.getElementById('msg-input-drawer');
+  const btn = document.getElementById('btn-enviar-msg-drawer');
+
+  if (getState('pilotSecureMode') && _mensagemPilotoEnviada) {
+    if (input) input.disabled = true;
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = getLang() === 'en' ? 'New message' : 'Nova mensagem';
+      btn.onclick = () => window._novaMsgDrawer();
+    }
+    return;
+  }
+
   const texto = input?.value?.trim();
   if (!texto) return;
-  // Copiar para o input principal e enviar
+
+  if (btn) { btn.disabled = true; btn.textContent = getLang() === 'en' ? 'Sending…' : 'A enviar…'; }
+  if (input) input.disabled = true;
+
+  // Copiar para o input principal e enviar pelo mesmo circuito seguro.
   const mainInput = document.getElementById('msg-input');
   if (mainInput) mainInput.value = texto;
   await window.enviarMensagem();
-  if (input) input.value = '';
+
+  if (getState('pilotSecureMode') && _mensagemPilotoEnviada) {
+    if (input) {
+      input.value = '';
+      input.disabled = true;
+      input.placeholder = getLang() === 'en'
+        ? 'Message sent. Choose “New message” to write another.'
+        : 'Mensagem enviada. Escolha “Nova mensagem” para escrever outra.';
+    }
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = getLang() === 'en' ? 'New message' : 'Nova mensagem';
+      btn.onclick = () => window._novaMsgDrawer();
+    }
+  } else {
+    if (input) { input.value = ''; input.disabled = false; }
+    if (btn) { btn.disabled = false; btn.textContent = getLang() === 'en' ? 'Send' : 'Enviar'; }
+  }
+
   // Actualizar mensagens no drawer
   const msgSec = document.getElementById('sec-mensagens');
   const msgDrawer = document.getElementById('sec-mensagens-drawer');
