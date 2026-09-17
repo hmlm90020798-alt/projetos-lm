@@ -52,8 +52,10 @@ export function renderDecisoesPublicas(items) {
   const decisoes = normalizarDecisoes(items);
   if (!decisoes.length) return;
 
-  const anchor = document.getElementById('wrap-docs') || document.getElementById('aprovacao');
-  if (!anchor?.parentNode) return;
+  const docs = document.getElementById('wrap-docs');
+  const approval = document.getElementById('aprovacao');
+  const parent = docs?.parentNode || approval?.parentNode;
+  if (!parent) return;
 
   const lang = globalThis._LANG === 'en' ? 'en' : 'pt';
   const eyebrow = lang === 'en' ? 'Project decisions' : 'Decisões do projeto';
@@ -93,5 +95,10 @@ export function renderDecisoesPublicas(items) {
       </div>
     </section>`;
 
-  anchor.parentNode.insertBefore(wrap, anchor);
+  // Documentos são a secção 05; decisões (06) entram imediatamente depois.
+  if (docs?.parentNode === parent) {
+    parent.insertBefore(wrap, docs.nextSibling);
+  } else {
+    parent.insertBefore(wrap, approval || null);
+  }
 }
