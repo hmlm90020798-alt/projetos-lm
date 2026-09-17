@@ -3,7 +3,7 @@
 // Cache dos assets estáticos para instalação PWA
 // ════════════════════════════════════════════════
 
-const CACHE = 'projetos-lm-v7'; // incrementar a cada deploy significativo
+const CACHE = 'projetos-lm-v8'; // incrementar a cada deploy significativo
 
 // Assets estáticos — cache-first (imagens, fontes, html)
 const ASSETS_STATIC = [
@@ -19,6 +19,8 @@ const ASSETS_CODE = [
   '/projetos-lm/style.css',
   '/projetos-lm/main.js',
   '/projetos-lm/firebase.js',
+  '/projetos-lm/pilot-publication.js',
+  '/projetos-lm/pilot-decisions.js',
   '/projetos-lm/painel.js',
   '/projetos-lm/painel-dashboard.js',
   '/projetos-lm/painel-alertas.js',
