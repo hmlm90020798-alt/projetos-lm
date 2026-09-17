@@ -3,6 +3,7 @@
 
 import { _db } from './firebase.js';
 import { doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { prepararDecisoesPublicas } from './pilot-decisions.js';
 
 export const PILOT_PUBLIC_ID = 'pp_MUjoiPPMmubyWeLXo0TJYyV2gdq8FY_K';
 export const PILOT_CLIENT_EVENT_URL = 'https://us-central1-hm-projetos-lm.cloudfunctions.net/pilotClientEvent';
@@ -73,6 +74,17 @@ export function adaptarPublicacaoParaPortal(publication) {
     };
   }).filter(item => item.descricao);
 
+  const decisoesPublicas = (Array.isArray(c.decisions) ? c.decisions : []).map(item => ({
+    titulo: clean(item?.title),
+    estado: clean(item?.status),
+    data: clean(item?.date),
+    texto: clean(item?.note),
+  })).filter(item => item.titulo);
+
+  // 4P.41.1: apenas prepara a apresentação do conteúdo que já pertence
+  // à projeção pública controlada. Sem leituras adicionais ou mutações.
+  prepararDecisoesPublicas(decisoesPublicas);
+
   return {
     id: publication.publicId,
     nome: clean(c.client?.name),
@@ -87,7 +99,7 @@ export function adaptarPublicacaoParaPortal(publication) {
     objetivo: clean(c.presentation?.objective),
     imagens,
     docs: (Array.isArray(c.documents) ? c.documents : []).map(item => ({ nome: clean(item?.name), url: clean(item?.url), tipo: clean(item?.type), seccao: 'documentos' })).filter(item => item.nome && item.url),
-    decisoesPublicas: (Array.isArray(c.decisions) ? c.decisions : []).map(item => ({ titulo: clean(item?.title), estado: clean(item?.status), data: clean(item?.date), texto: clean(item?.note) })).filter(item => item.titulo),
+    decisoesPublicas,
     notas: [],
     ocorrencias: occurrences,
     orcamento,
